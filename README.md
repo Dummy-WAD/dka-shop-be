@@ -1,4 +1,4 @@
-# DKA Shop - An online local store offering a wide variety of shoes for all ages and styles
+# DKA Shop - An online local store offering a wide variety of clothing for all ages and styles
 
 ## Introduction
 DKA Shop is an e-commerce platform specializing in fashion retail. It provides customers with an easy-to-use interface for browsing, searching, and purchasing clothing products.
