@@ -3,10 +3,10 @@
 module.exports = (sequelize, DataTypes) => {
   const address = sequelize.define('address', {
     id: {
-        allowNull: false,
-        autoIncrement: true,
-        primaryKey: true,
-        type: DataTypes.INTEGER
+      allowNull: false,
+      autoIncrement: true,
+      primaryKey: true,
+      type: DataTypes.INTEGER
     },
     customer_id: DataTypes.INTEGER,
     local_address: DataTypes.STRING,

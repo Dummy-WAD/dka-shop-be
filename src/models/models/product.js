@@ -3,10 +3,10 @@
 module.exports = (sequelize, DataTypes) => {
   const product = sequelize.define('product', {
     id: {
-        allowNull: false,
-        autoIncrement: true,
-        primaryKey: true,
-        type: DataTypes.INTEGER
+      allowNull: false,
+      autoIncrement: true,
+      primaryKey: true,
+      type: DataTypes.INTEGER
     },
     name: DataTypes.STRING,
     price: DataTypes.DOUBLE,
@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
       constraints: false
     });
     product.belongsToMany(db.discountOffer, { 
-      through: productDiscountOffer,
+      through: db.productDiscountOffer,
       foreignKey: 'product_id',
       constraints: false
     });

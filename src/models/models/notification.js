@@ -3,10 +3,10 @@
 module.exports = (sequelize, DataTypes) => {
   const notification = sequelize.define('notification', {
     id: {
-        allowNull: false,
-        autoIncrement: true,
-        primaryKey: true,
-        type: DataTypes.INTEGER
+      allowNull: false,
+      autoIncrement: true,
+      primaryKey: true,
+      type: DataTypes.INTEGER
     },
     user_id: DataTypes.STRING,
     title: DataTypes.STRING,

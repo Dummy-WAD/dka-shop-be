@@ -3,10 +3,10 @@
 module.exports = (sequelize, DataTypes) => {
   const productVariant = sequelize.define('productVariant', {
     id: {
-        allowNull: false,
-        autoIncrement: true,
-        primaryKey: true,
-        type: DataTypes.INTEGER
+      allowNull: false,
+      autoIncrement: true,
+      primaryKey: true,
+      type: DataTypes.INTEGER
     },
     product_id: DataTypes.INTEGER,
     size: DataTypes.STRING,
