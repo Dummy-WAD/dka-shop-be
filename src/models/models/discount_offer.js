@@ -14,12 +14,12 @@ module.exports = (sequelize, DataTypes) => {
     expiration_date: DataTypes.DATE,
     is_deleted: DataTypes.BOOLEAN
   });
-  discountOffer.associate((db) => {
+  discountOffer.associate = (db) => {
     discountOffer.belongsToMany(db.product, { 
       through: db.productDiscountOffer,
       foreignKey: 'discount_offer_id',
       constraints: false
     });
-  })
+  }
   return discount - offer;
 };
