@@ -5,8 +5,6 @@ var bcrypt = require('bcryptjs');
 require("dotenv").config();
 
 const isPasswordMatch = async function (password, hashPassword) {
-  console.log(password, hashPassword);
-  
   return bcrypt.compare(password, hashPassword);
 };
 

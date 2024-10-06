@@ -10,11 +10,14 @@ module.exports = (sequelize, DataTypes) => {
     },
     name: DataTypes.STRING,
     description: DataTypes.STRING,
-    is_deleted: DataTypes.BOOLEAN,
+    is_deleted: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE
   });
-  category.associate((db) => {
+  category.associate = ((db) => {
     category.hasMany(db.productVariant, {
       foreignKey: 'product_id',
       constraints: false

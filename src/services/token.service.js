@@ -19,8 +19,6 @@ const saveToken = async (refresh_token, user_id, status) => {
     refresh_token,
     user_id,
     status,
-    createAt: new Date(),
-    updateAt: new Date(),
   });
   return tokenDoc;
 };
