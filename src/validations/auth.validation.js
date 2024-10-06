@@ -1,4 +1,4 @@
-const Joi = require("joi");
+import Joi from 'joi';
 
 const login = {
   body: Joi.object().keys({
@@ -9,11 +9,18 @@ const login = {
 
 const refreshTokens = {
   body: Joi.object().keys({
-    refreshtoken: Joi.string().required(),
+    refresh_token: Joi.string().required(),
   }),
 };
 
-module.exports = {
+const logout = {
+  body: Joi.object().keys({
+    refresh_token: Joi.string().required(),
+  }),
+};
+
+export default {
   login,
   refreshTokens,
+  logout
 };

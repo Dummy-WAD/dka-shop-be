@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "An online local store offering a wide variety of shoes for all ages and styles",
   "main": "index.js",
+  "type": "module", 
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon ./src/index.js",

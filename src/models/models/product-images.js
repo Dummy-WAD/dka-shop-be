@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = (sequelize, DataTypes) => {
+export default (sequelize, DataTypes) => {
   const productImage = sequelize.define('productImage', {
     id: {
       allowNull: false,

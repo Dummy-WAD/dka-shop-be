@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = (sequelize, DataTypes) => {
+export default (sequelize, DataTypes) => {
   const productDiscountOffer = sequelize.define('productDiscountOffer', {
     id: {
       allowNull: false,
