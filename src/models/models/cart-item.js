@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = (sequelize, DataTypes) => {
+export default (sequelize, DataTypes) => {
   const cartItem = sequelize.define('cartItem', {
     id: {
       allowNull: false,

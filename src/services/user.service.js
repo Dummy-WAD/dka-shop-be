@@ -1,7 +1,9 @@
-const httpStatus = require('http-status');
-const { User } = require("../models");
-const ApiError = require('../utils/ApiError');
-const paginate = require('./plugins/paginate.plugin');
+import httpStatus from 'http-status';
+import db from "../models/index.js";
+import ApiError from '../utils/ApiError.js';
+import paginate from './plugins/paginate.plugin.js';
+
+const { User } = db;
 
 const isEmailTaken = async (email, excludeUserId) => {
   const user = await User.findOne({
@@ -26,7 +28,7 @@ const queryUsers = async (filter, options) => {
 };
 
 const getUserById = async (id) => {
-  return User.findById(id);
+  return User.findOne({id});
 };
 
 const getUserByEmail = async (email) => {
@@ -55,7 +57,7 @@ const deleteUserById = async (userId) => {
   return user;
 };
 
-module.exports = {
+export default {
   createUser,
   queryUsers,
   getUserById,

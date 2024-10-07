@@ -1,8 +1,12 @@
-const jwt = require('jsonwebtoken');
-const moment = require('moment');
-const config = require('../config/config');
-const { Token } = require('../models');
-const { tokenTypes } = require('../config/tokens');
+import jwt from 'jsonwebtoken';
+import moment from 'moment';
+import config from '../config/config.js';
+import db from '../models/index.js';
+import tokenTypes from '../config/tokens.js';
+import ApiError from '../utils/ApiError.js';
+import httpStatus from 'http-status';
+
+const { Token } = db
 
 const generateToken = (userId, expires, type, secret = config.jwt.secret) => {
   const payload = {
@@ -23,22 +27,33 @@ const saveToken = async (refresh_token, user_id, status) => {
   return tokenDoc;
 };
 
-const verifyToken = async (token, type) => {
-  const payload = jwt.verify(token, config.jwt.secret);
-  const tokenDoc = await Token.findOne({ token, type, user: payload.sub, blacklisted: false });
+const verifyToken = async (refresh_token) => {
+  let payload;
+  try {
+    payload = jwt.verify(refresh_token, config.jwt.secret);
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      throw new ApiError(httpStatus.UNAUTHORIZED, 'Token expired');
+    }
+
+    throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid token');
+  }
+
+  const tokenDoc = await Token.findOne({ refresh_token, user_id: payload.sub.id });
   if (!tokenDoc) {
-    throw new Error('Token not found');
+    throw new ApiError(httpStatus.NOT_FOUND, 'Token not found');
   }
   return tokenDoc;
 };
 
-const generateAuthTokens = async (userId) => {
+const generateAuthTokens = async (user) => {
+  const { id, email, role } = user;
   const accessTokenExpires = moment().add(config.jwt.accessExpirationMinutes, 'minutes');
-  const accessToken = generateToken(userId, accessTokenExpires, tokenTypes.ACCESS);
+  const accessToken = generateToken({ id, email, role } , accessTokenExpires, tokenTypes.ACCESS);
 
   const refreshTokenExpires = moment().add(config.jwt.refreshExpirationDays, 'days');
-  const refreshToken = generateToken(userId, refreshTokenExpires, tokenTypes.REFRESH);
-  await saveToken(refreshToken, userId, '');
+  const refreshToken = generateToken({ id, email, role } , refreshTokenExpires, tokenTypes.REFRESH);
+  await saveToken(refreshToken, id, '');
 
   return {
     access: {
@@ -71,7 +86,7 @@ const generateVerifyEmailToken = async (user) => {
   return verifyEmailToken;
 };
 
-module.exports = {
+export default {
   generateToken,
   saveToken,
   verifyToken,

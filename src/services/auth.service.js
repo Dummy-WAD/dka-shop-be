@@ -1,8 +1,11 @@
-const httpStatus = require("http-status");
-const { User } = require("../models");
-const ApiError = require("../utils/ApiError");
-var bcrypt = require('bcryptjs');
-require("dotenv").config();
+import httpStatus from "http-status";
+import db from "../models/index.js"; 
+import { userServices, tokenServices } from "../services/index.js";
+import bcrypt from 'bcryptjs';
+import ApiError from "../utils/ApiError.js";
+import dotenv from 'dotenv';
+dotenv.config();
+const { User, Token } = db;
 
 const isPasswordMatch = async function (password, hashPassword) {
   return bcrypt.compare(password, hashPassword);
@@ -16,26 +19,22 @@ const login = async (userData) => {
   return user;
 };
 
-const logout = async (refreshToken) => {
-  const refreshTokenDoc = await Token.findOne({ token: refreshToken, type: tokenTypes.REFRESH, blacklisted: false });
+const logout = async (refresh_token) => {
+  const refreshTokenDoc = await Token.findOne({ refresh_token });
   if (!refreshTokenDoc) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Not found');
   }
-  await refreshTokenDoc.remove();
+  await refreshTokenDoc.destroy();
 };
 
-const refreshAuth = async (refreshToken) => {
-  try {
-    const refreshTokenDoc = await tokenService.verifyToken(refreshToken, tokenTypes.REFRESH);
-    const user = await userService.getUserById(refreshTokenDoc.user);
+const refreshAuth = async (refresh_token) => {
+    const refreshTokenDoc = await tokenServices.verifyToken(refresh_token);
+    const user = await userServices.getUserById(refreshTokenDoc.user_id);
     if (!user) {
-      throw new Error();
-    }
-    await refreshTokenDoc.remove();
-    return tokenService.generateAuthTokens(user);
-  } catch (error) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'Please authenticate');
-  }
+      throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
+    };
+    await refreshTokenDoc.destroy();
+    return tokenServices.generateAuthTokens(user);
 };
 
-module.exports = { login, logout, refreshAuth };
+export default { login, logout, refreshAuth };

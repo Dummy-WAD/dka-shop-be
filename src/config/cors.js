@@ -1,4 +1,5 @@
-require("dotenv").config();
+import dotenv from 'dotenv';
+dotenv.config();
 
 function configCors(app) {
   app.use(function (req, res, next) {
@@ -23,4 +24,4 @@ function configCors(app) {
   });
 }
 
-module.exports = { configCors };
+export default { configCors };

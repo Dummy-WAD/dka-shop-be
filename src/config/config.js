@@ -1,8 +1,6 @@
-const dotenv = require('dotenv');
-const path = require('path');
-const Joi = require('joi');
-
-dotenv.config({ path: path.join(__dirname, '../../.env') });
+import dotenv from 'dotenv';
+import Joi from 'joi';
+dotenv.config();
 
 const envVarsSchema = Joi.object()
   .keys({
@@ -36,7 +34,7 @@ if (error) {
   throw new Error(`Config validation error: ${error.message}`);
 }
 
-module.exports = {
+export default {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
   jwt: {
@@ -51,7 +49,7 @@ module.exports = {
     port: envVars.DB_PORT,
     name: envVars.DB_NAME,
     user: envVars.DB_USER,
-    password: envVars.DB_PASSWORD
+    password: envVars.DB_PASSWORD,
   },
   email: {
     smtp: {

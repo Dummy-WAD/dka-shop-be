@@ -1,6 +1,8 @@
-const httpStatus = require('http-status');
-const { Category } = require("../models");
-const ApiError = require('../utils/ApiError');
+import httpStatus from 'http-status';
+import db from "../models/index.js";
+import ApiError from '../utils/ApiError.js';
+
+const { Category } = db;
 
 const createCategory = async (categoryPayload) => {
     const category = await Category.findOne({
@@ -12,4 +14,4 @@ const createCategory = async (categoryPayload) => {
     return Category.create(categoryPayload);
 };
 
-module.exports = { createCategory }
+export default { createCategory }

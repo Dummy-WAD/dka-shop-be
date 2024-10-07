@@ -30,4 +30,4 @@ const paginate = async function (tableName, filter = {}, options = {}) {
 
   return result;
 };
-module.exports = paginate;
+export default paginate;
