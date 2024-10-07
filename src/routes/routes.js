@@ -1,38 +1,12 @@
 import express from "express";
-import validate from "../middlewares/validate.js";
-import passport from "passport"; 
-import authController from "../controllers/auth.controller.js";
-import authValidation from "../validations/auth.validation.js";
-import categoryValidation from "../validations/category.validation.js";
-import categoryController from "../controllers/category.controller.js";
+
+import authRoute from "./auth.route.js";
+import userRoute from "./user.route.js";
+import adminRoute from "./admin.route.js";
 
 const router = express.Router();
-
-// No authentication required
-router.post(
-  "/auth/login",
-  validate(authValidation.login),
-  authController.login
-);
-
-router.post(
-  "/auth/logout",
-  validate(authValidation.logout),
-  authController.logout
-);
-
-router.post(
-  "/auth/refresh-token",
-  validate(authValidation.refreshTokens),
-  authController.refreshTokens
-);
-
-router.use(passport.authenticate('jwt', { session: false }));
-
-router.post(
-  "/admin/create-category",
-  validate(categoryValidation.createCategory),
-  categoryController.createCategory
-);
+router.use("/auth", authRoute);
+router.use("/user", userRoute);
+router.use("/admin", adminRoute);
 
 export default router;
