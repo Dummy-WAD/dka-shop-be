@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "An online local store offering a wide variety of shoes for all ages and styles",
   "main": "index.js",
-  "type": "module", 
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon ./src/index.js",
@@ -15,6 +15,7 @@
   "license": "ISC",
   "devDependencies": {
     "@eslint/js": "^9.12.0",
+    "@types/passport-jwt": "^4.0.1",
     "eslint": "^9.12.0",
     "eslint-plugin-react": "^7.37.1",
     "globals": "^15.10.0",
