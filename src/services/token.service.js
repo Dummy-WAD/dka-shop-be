@@ -3,6 +3,8 @@ import moment from 'moment';
 import config from '../config/config.js';
 import db from '../models/index.js';
 import tokenTypes from '../config/tokens.js';
+import ApiError from '../utils/ApiError.js';
+import httpStatus from 'http-status';
 
 const { Token } = db
 
@@ -26,10 +28,20 @@ const saveToken = async (refresh_token, user_id, status) => {
 };
 
 const verifyToken = async (refresh_token) => {
-  const payload = jwt.verify(refresh_token, config.jwt.secret);
+  let payload;
+  try {
+    payload = jwt.verify(refresh_token, config.jwt.secret);
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      throw new ApiError(httpStatus.UNAUTHORIZED, 'Token expired');
+    }
+
+    throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid token');
+  }
+
   const tokenDoc = await Token.findOne({ refresh_token, user_id: payload.sub.id });
   if (!tokenDoc) {
-    throw new Error('Token not found');
+    throw new ApiError(httpStatus.NOT_FOUND, 'Token not found');
   }
   return tokenDoc;
 };

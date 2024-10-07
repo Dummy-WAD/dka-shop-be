@@ -28,11 +28,6 @@ const logout = async (refresh_token) => {
 };
 
 const refreshAuth = async (refresh_token) => {
-  try {
-    const refreshToken = await Token.findOne({ refresh_token });
-    if (!refreshToken) {
-      throw new ApiError(httpStatus.NOT_FOUND, 'Not found');
-    };
     const refreshTokenDoc = await tokenServices.verifyToken(refresh_token);
     const user = await userServices.getUserById(refreshTokenDoc.user_id);
     if (!user) {
@@ -40,9 +35,6 @@ const refreshAuth = async (refresh_token) => {
     };
     await refreshTokenDoc.destroy();
     return tokenServices.generateAuthTokens(user);
-  } catch (error) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'Please authenticate');
-  }
 };
 
 export default { login, logout, refreshAuth };

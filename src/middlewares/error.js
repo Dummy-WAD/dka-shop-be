@@ -3,11 +3,13 @@ const errorHandler = (err, req, res, next) => {
   let { statusCode, message } = err;
   res.locals.errorMessage = err.message;
 
+  const responseStatusCode = statusCode || 500;
+
   const response = {
-    code: statusCode,
+    code: responseStatusCode,
     message,
   };
-  res.status(statusCode).send(response);
+  res.status(responseStatusCode).send(response);
 };
 
 
