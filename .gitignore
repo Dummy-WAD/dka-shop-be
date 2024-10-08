@@ -20,5 +20,5 @@
 
 # local files
 /models/config/config.json
-*.bat
-*.sh
+run_initial.bat
+run_initial.sh
