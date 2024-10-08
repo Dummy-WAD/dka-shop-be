@@ -11,7 +11,7 @@ DKA Shop is an e-commerce platform specializing in fashion retail. It provides c
 ### Configure project to connect to your database
 1. Go to `src\models\config\config.json` to fix your database config
 ### Initialize the database
-1. To init the database `npx sequelize db:migrate`
+1. To init the database `npx sequelize-cli db:migrate`
 2. To seed data: 
     Run all files: `npx sequelize-cli db:seed:all`
     Run a seed file: `npx sequelize-cli db:seed --seed <seed-filename>`
