@@ -19,6 +19,7 @@ const login = async (userData) => {
       'id',
       'email',
       'role',
+      'status',
       'password',
       [Sequelize.fn('concat',
         Sequelize.fn('coalesce', Sequelize.col('last_name'), ''),
@@ -55,7 +56,7 @@ const refreshAuth = async (refresh_token) => {
     const user = await userServices.getUserById(refreshTokenDoc.user_id);
     if (!user) {
       throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
-    };
+    }
     await refreshTokenDoc.destroy();
     return tokenServices.generateAuthTokens(user);
 };
