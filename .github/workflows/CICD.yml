@@ -11,10 +11,10 @@ jobs:
     if: github.ref == 'refs/heads/develop'
     uses: Dummy-WAD/dka-shop-be/.github/workflows/dev-CI.yml@DEK-63-Implement-CI-CD-pipeline
     secrets: inherit
-  # dev-CD:
-  #   if: github.ref == 'refs/heads/develop'
-  #   needs: dev-CI
-  #   uses: Dummy-WAD/dka-shop-be/.github/workflows/dev-CD.yml@DEK-63-Implement-CI-CD-pipeline
+  dev-CD:
+    if: github.ref == 'refs/heads/develop'
+    needs: dev-CI
+    uses: Dummy-WAD/dka-shop-be/.github/workflows/dev-CD.yml@DEK-63-Implement-CI-CD-pipeline
 
 
   staging-CI:
