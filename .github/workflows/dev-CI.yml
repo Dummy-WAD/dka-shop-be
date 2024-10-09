@@ -60,8 +60,8 @@ jobs:
         # Pre-build server
       - name: Pre-build server
         run: |
-          touch .env.be
-          envsubst < .env.be.example > .env.be
+          touch .env
+          envsubst < .env.example > .env
           npm install
 
       - name: Migrate Database
