@@ -69,6 +69,7 @@ jobs:
           BRANCH: ${{ steps.extract_branch.outputs.branch }}
         run: |
           pwd
+          ls -la 
           docker build -t dek_server:"${{ env.BRANCH }}-${{ env.SHA }}" .
           docker tag dek_server:"${{ env.BRANCH }}-${{ env.SHA }}" "${{ env.ECR_SERVER_URL }}":"${{ env.BRANCH }}-${{ env.SHA }}"
           aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ env.ECR_URL }}
