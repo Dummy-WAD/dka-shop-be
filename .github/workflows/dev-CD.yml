@@ -1,11 +1,11 @@
-name: CI Phase Dev
+name: CD Phase Dev
 
 on:
   workflow_call:
 
 jobs:
-  build_dev:
-    runs-on: ubuntu-latest
+  deploy_dev:
+    runs-on: cnpm-runner
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -35,8 +35,6 @@ jobs:
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
 
     steps:
-      - uses: actions/checkout@v4
-
       - uses: benjlevesque/short-sha@v3.0
         id: short-sha
         with:
@@ -50,29 +48,10 @@ jobs:
       - name: Check Docker version
         run: docker --version
 
-        # Pre-build server
-      - name: Pre-build server
-        run: |
-          touch .env
-          envsubst < .env.example > .env
-
-      - name: Migrate Database
-        run: |
-          cd src/models
-          chmod +x migration.sh
-          ./migration.sh
-        continue-on-error: false
-
-      - name: Build Back-end Server
+      - name: Deploy
         env:
           SHA: ${{ steps.short-sha.outputs.sha }}
           BRANCH: ${{ steps.extract_branch.outputs.branch }}
         run: |
-          pwd
-          ls -la 
-          docker build -t dek_server:"${{ env.BRANCH }}-${{ env.SHA }}" .
-          docker tag dek_server:"${{ env.BRANCH }}-${{ env.SHA }}" "${{ env.ECR_SERVER_URL }}":"${{ env.BRANCH }}-${{ env.SHA }}"
-          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ env.ECR_URL }}
-          docker push "${{ env.ECR_SERVER_URL }}:${{ env.BRANCH }}-${{ env.SHA }}"
-        continue-on-error: false
-        
+          pwd 
+          echo "Deploying to dev"
