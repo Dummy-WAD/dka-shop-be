@@ -10,7 +10,7 @@ export default (sequelize, DataTypes) => {
     },
     refresh_token: DataTypes.TEXT,
     user_id: DataTypes.INTEGER,
-    status: DataTypes.STRING,
+    expiration_date: DataTypes.DATE,
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE
   });
