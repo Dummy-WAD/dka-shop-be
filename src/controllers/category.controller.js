@@ -16,7 +16,9 @@ const deleteCategory = catchAsync(async (req, res) => {
   
 const getAllCategories = catchAsync(async (req, res) => {
   const { page, limit, sortBy, name } = req.query;
-  const filter = {};
+  const filter = {
+    is_deleted: 0
+  };
   if (name) {
     filter.name = name;
   }
