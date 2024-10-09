@@ -17,9 +17,7 @@ services:
       - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
       - AWS_REGION=ap-southeast-1
-
-    networks:
-      - app-network
+    network_mode: "host"
 
   db:
     image: mysql:8.0.39
