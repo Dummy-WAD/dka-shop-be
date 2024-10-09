@@ -18,5 +18,7 @@ router.delete(
     validate(categoryValidation.deleteCategory),
     categoryController.deleteCategory
   );
+  
+router.get('/', categoryController.getAllCategories)
 
 export default router;
