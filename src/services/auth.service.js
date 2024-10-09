@@ -23,7 +23,7 @@ const createUser = async (userData) => {
     ...userData,
     password: await bcrypt.hash(userData.password, 8),
     role: 'CUSTOMER',
-    status: 'ACTIVE',
+    status: 'INACTIVE',
     createdAt: new Date(),
     updatedAt: new Date()
   });
