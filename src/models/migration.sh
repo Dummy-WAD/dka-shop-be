@@ -3,6 +3,7 @@ echo "Create package.json file"
 cat > package.json <<EOF
 {
     "name": "DKA-shop",
+    "type": "module",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "lint": "eslint . --fix --max-warnings=0",
