@@ -34,6 +34,8 @@ jobs:
       DB_USER: ${{ secrets.DB_USER }}
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
 
+      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -53,7 +55,7 @@ jobs:
       - name: Set up Node.js 20.x
         uses: actions/setup-node@v3
         with:
-          node-version: '22.x'
+          node-version: "22.x"
 
         # Pre-build server
       - name: Pre-build server
@@ -74,6 +76,19 @@ jobs:
           ./migration.sh
         continue-on-error: false
 
+      - name: Build artifact
+        env:
+          SHA: ${{ steps.short-sha.outputs.sha }}
+          BRANCH: ${{ steps.extract_branch.outputs.branch }}
+        run: |
+          touch .env.be
+          echo "ECR_SERVER_URL=${{ env.ECR_SERVER_URL }}" >> .env
+          echo "BRANCH=${{ env.BRANCH }}" >> .env
+          echo "SHA=${{ env.SHA }}" >> .env
+          echo "AWS_ACCESS_KEY_ID=${{ env.AWS_ACCESS_KEY_ID }}" >> .env
+          echo "AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY }}" >> .env
+        continue-on-error: false
+
       - name: Build Back-end Server
         env:
           SHA: ${{ steps.short-sha.outputs.sha }}
@@ -86,3 +101,23 @@ jobs:
           aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ env.ECR_URL }}
           docker push "${{ env.ECR_SERVER_URL }}:${{ env.BRANCH }}-${{ env.SHA }}"
         continue-on-error: false
+
+      - uses: hkusu/s3-upload-action@v2
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: "ap-northeast-1"
+          aws-bucket: ${{ env.AWS_S3_BUCKET }}
+          file-path: ".env.be"
+          destination-dir: "develop/"
+          bucket-root: "/"
+
+      - uses: hkusu/s3-upload-action@v2
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: "ap-northeast-1"
+          aws-bucket: ${{ env.AWS_S3_BUCKET }}
+          file-path: "docker-compose-be.yml"
+          destination-dir: "develop/"
+          bucket-root: "/"
