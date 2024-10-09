@@ -60,8 +60,8 @@ jobs:
         # Pre-build server
       - name: Pre-build server
         run: |
-          touch .env
-          envsubst < .env.example > .env
+          touch .env.be
+          envsubst < .env.be.example > .env.be
           npm install
 
       - name: Migrate Database
@@ -82,12 +82,12 @@ jobs:
           BRANCH: ${{ steps.extract_branch.outputs.branch }}
         run: |
           touch .env.be
-          echo "ECR_SERVER_URL=${{ env.ECR_SERVER_URL }}" >> .env
-          echo "BRANCH=${{ env.BRANCH }}" >> .env
-          echo "SHA=${{ env.SHA }}" >> .env
-          echo "BACKEND_PORT=${{ env.PORT }}" >> .env
-          echo "AWS_ACCESS_KEY_ID=${{ env.AWS_ACCESS_KEY_ID }}" >> .env
-          echo "AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY }}" >> .env
+          echo "ECR_SERVER_URL=${{ env.ECR_SERVER_URL }}" >> .env.be
+          echo "BRANCH=${{ env.BRANCH }}" >> .env.be
+          echo "SHA=${{ env.SHA }}" >> .env.be
+          echo "BACKEND_PORT=${{ env.PORT }}" >> .env.be
+          echo "AWS_ACCESS_KEY_ID=${{ env.AWS_ACCESS_KEY_ID }}" >> .env.be
+          echo "AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY }}" >> .env.be
         continue-on-error: false
 
       - name: Build Back-end Server
