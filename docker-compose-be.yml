@@ -3,7 +3,7 @@ services:
     image: $ECR_SERVER_URL:$BRANCH-$SHA
     container_name: backend
     depends_on:
-      db:
+      mysql_db:
         condition: service_healthy
     ports:
       - $BACKEND_PORT:8080
