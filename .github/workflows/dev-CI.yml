@@ -59,6 +59,7 @@ jobs:
       - name: Migrate Database
         run: |
           cd src/models
+          chmod +x migration.sh
           ./migration.sh
         continue-on-error: false
 
