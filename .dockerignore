@@ -37,6 +37,3 @@ Dockerfile*
 .DS_Store
 Thumbs.db
 
-# Ignore package manager locks (if you don't use them in production)
-package-lock.json
-yarn.lock
