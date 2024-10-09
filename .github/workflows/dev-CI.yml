@@ -14,7 +14,7 @@ jobs:
 
         PORT: ${{ secrets.PORT_DEV }}
         REACT_URL: ${{ secrets.REACT_URL_DEV }}
-        
+
         JWT_SECRET: ${{ secrets.JWT_SECRET_DEV }}
         JWT_ACCESS_EXPIRATION_MINUTES: ${{ secrets.JWT_ACCESS_EXPIRATION_MINUTES_DEV }}
         JWT_REFRESH_EXPIRATION_DAYS: ${{ secrets.JWT_REFRESH_EXPIRATION_DAYS_DEV }}
@@ -22,13 +22,12 @@ jobs:
         JWT_VERIFY_EMAIL_EXPIRATION_MINUTES: ${{ secrets.JWT_VERIFY_EMAIL_EXPIRATION_MINUTES_DEV }}
 
         NODE_ENV: ${{ secrets.NODE_ENV_DEV }}
-
         SMTP_HOST: ${{ secrets.SMTP_HOST_DEV }}
         SMTP_PORT: ${{ secrets.SMTP_PORT_DEV }}
         SMTP_USERNAME: ${{ secrets.SMTP_USERNAME_DEV }}
         SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD_DEV }}
         EMAIL_FROM: ${{ secrets.EMAIL_FROM_DEV }}
-
+        
         DB_HOST: ${{ secrets.DB_HOST_DEV }}
         DB_PORT: ${{ secrets.DB_PORT_DEV }}
         DB_NAME: ${{ secrets.DB_NAME_DEV }}
@@ -51,29 +50,17 @@ jobs:
       - name: Check Docker version
         run: docker --version
 
-        # Pre-build Client
-      - name: Pre-build Client
+        # Pre-build server
+      - name: Pre-build server
         run: |
           touch .env
-          echo "PORT=${{ env.PORT }}" >> .env
-          echo "REACT_URL=${{ env.REACT_URL }}" >> .env
-          echo "JWT_SECRET=${{ env.JWT_SECRET }}" >> .env
-          echo "JWT_ACCESS_EXPIRATION_MINUTES=${{ env.JWT_ACCESS_EXPIRATION_MINUTES }}" >> .env
-          echo "JWT_REFRESH_EXPIRATION_DAYS=${{ env.JWT_REFRESH_EXPIRATION_DAYS }}" >> .env
-          echo "JWT_RESET_PASSWORD_EXPIRATION_MINUTES=${{ env.JWT_RESET_PASSWORD_EXPIRATION_MINUTES }}" >> .env
-          echo "JWT_VERIFY_EMAIL_EXPIRATION_MINUTES=${{ env.JWT_VERIFY_EMAIL_EXPIRATION_MINUTES }}" >> .env
-          echo "NODE_ENV=${{ env.NODE_ENV }}" >> .env
-          echo "SMTP_HOST=${{ env.SMTP_HOST }}" >> .env
-          echo "SMTP_PORT=${{ env.SMTP_PORT }}" >> .env
-          echo "SMTP_USERNAME=${{ env.SMTP_USERNAME }}" >> .env
-          echo "SMTP_PASSWORD=${{ env.SMTP_PASSWORD }}" >> .env
-          echo "EMAIL_FROM=${{ env.EMAIL_FROM }}" >> .env
-          echo "DB_HOST=${{ env.DB_HOST }}" >> .env
-          echo "DB_PORT=${{ env.DB_PORT }}" >> .env
-          echo "DB_NAME=${{ env.DB_NAME }}" >> .env
-          echo "DB_USER=${{ env.DB_USER }}" >> .env
-          echo "DB_PASSWORD=${{ env.DB_PASSWORD }}" >> .env
+          envsubst < .env.example > .env
 
+      - name: Migrate Database
+        run: |
+          cd src/models
+          ./migration.sh
+        continue-on-error: false
 
       - name: Build Back-end Server
         env:
