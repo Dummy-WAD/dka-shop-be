@@ -18,11 +18,11 @@ const generateToken = (userId, expires, type, secret = config.jwt.secret) => {
   return jwt.sign(payload, secret);
 };
 
-const saveToken = async (refresh_token, user_id, status) => {
+const saveToken = async (refresh_token, user_id, expiration_date) => {
   const tokenDoc = await Token.create({
     refresh_token,
     user_id,
-    status,
+    expiration_date,
   });
   return tokenDoc;
 };
@@ -39,7 +39,11 @@ const verifyToken = async (refresh_token) => {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid token');
   }
 
-  const tokenDoc = await Token.findOne({ refresh_token, user_id: payload.sub.id });
+  const tokenDoc = await Token.findOne({
+    where: {
+      refresh_token, user_id: payload.sub.id
+    }
+  });
   if (!tokenDoc) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Token not found');
   }
@@ -53,7 +57,7 @@ const generateAuthTokens = async (user) => {
 
   const refreshTokenExpires = moment().add(config.jwt.refreshExpirationDays, 'days');
   const refreshToken = generateToken({ id, email, role } , refreshTokenExpires, tokenTypes.REFRESH);
-  await saveToken(refreshToken, id, '');
+  await saveToken(refreshToken, id, refreshTokenExpires);
 
   return {
     access: {

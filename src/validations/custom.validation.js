@@ -11,7 +11,6 @@ const password = (value, helpers) => {
 };
 
 export default {
-  objectId,
   password,
 };
   
