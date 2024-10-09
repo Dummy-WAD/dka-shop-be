@@ -8,17 +8,31 @@ export default (sequelize, DataTypes) => {
       primaryKey: true,
       type: DataTypes.INTEGER
     },
-    first_name: DataTypes.STRING,
-    last_name: DataTypes.STRING,
+    firstName: {
+      type: DataTypes.STRING,
+      field: 'first_name'
+    },
+    lastName: {
+      type: DataTypes.STRING,
+      field: 'last_name'
+    },
     email: DataTypes.STRING,
     password: DataTypes.STRING,
-    phone_number: DataTypes.STRING,
-    gender: DataTypes.BOOLEAN,
+    phoneNumber: {
+      type: DataTypes.STRING,
+      field: 'phone_number'
+    },
+    gender: DataTypes.STRING,
     role: DataTypes.STRING,
-    status: DataTypes.BOOLEAN,
-    register_at: DataTypes.DATE,
-    createdAt: DataTypes.DATE,
-    updatedAt: DataTypes.DATE
+    status: DataTypes.STRING,
+    createdAt: {
+      type: DataTypes.DATE,
+      field: 'created_at'
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      field: 'updated_at'
+    }
   });
   user.associate = (db) => {
     user.hasMany(db.address, {
