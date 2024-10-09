@@ -5,7 +5,7 @@ import productRoute from "./admin/product.route.js";
 
 const router = express.Router();
 
-router.use("/category", categoryRoute);
-router.use("/product", productRoute);
+router.use("/categories", categoryRoute);
+router.use("/products", productRoute);
 
 export default router;

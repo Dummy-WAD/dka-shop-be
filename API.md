@@ -25,26 +25,19 @@ Output:
 {
     "user": {
         "id": 2,
-        "first_name": "Ha",
-        "last_name": "Nguyen Phuong",
         "email": "phuongha@gmail.com",
-        "password": "$2y$10$NVdVT5fdzPLiHpUK9c95geYV3L51IzrgnRuDIoHus.TalwidmFfzW",
-        "phone_number": "0353905692",
-        "gender": "0",
         "role": "Staff",
         "status": null,
-        "register_at": "2024-10-08 14:53:16",
-        "createdAt": "2024-10-08T14:53:16.000Z",
-        "updatedAt": "2024-10-08T14:53:16.000Z"
+        "fullName": "Nguyen Phuong Ha"
     },
     "tokens": {
         "access": {
-            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOnsiaWQiOjIsImVtYWlsIjoicGh1b25naGFAZ21haWwuY29tIiwicm9sZSI6IlN0YWZmIn0sImlhdCI6MTcyODQwMDgzNiwiZXhwIjoxNzI4NDAyNjM2LCJ0eXBlIjoiYWNjZXNzIn0.3vjaMk0bCnppMxDwLCmvqFfS5r35MdSASxdw7Xq-qCA",
-            "expires": "2024-10-08T15:50:36.597Z"
+            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOnsiaWQiOjIsImVtYWlsIjoicGh1b25naGFAZ21haWwuY29tIiwicm9sZSI6IlN0YWZmIn0sImlhdCI6MTcyODQ4MjcwMSwiZXhwIjoxNzI4NDg0NTAxLCJ0eXBlIjoiYWNjZXNzIn0.eKePbj-aHp_ATjmKsruZonKD5IbJEM96-slNb2c_FNg",
+            "expires": "2024-10-09T14:35:01.687Z"
         },
         "refresh": {
-            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOnsiaWQiOjIsImVtYWlsIjoicGh1b25naGFAZ21haWwuY29tIiwicm9sZSI6IlN0YWZmIn0sImlhdCI6MTcyODQwMDgzNiwiZXhwIjoxNzMwOTkyODM2LCJ0eXBlIjoicmVmcmVzaCJ9.8bVkYBa1bDlXTi3G5AES8QF29UrAWc2xY-wHRYgF2A4",
-            "expires": "2024-11-07T15:20:36.602Z"
+            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOnsiaWQiOjIsImVtYWlsIjoicGh1b25naGFAZ21haWwuY29tIiwicm9sZSI6IlN0YWZmIn0sImlhdCI6MTcyODQ4MjcwMSwiZXhwIjoxNzMxMDc0NzAxLCJ0eXBlIjoicmVmcmVzaCJ9.qhXlrG0TW0x4RFzQuTxhFr6d9hC-kYl8jV1pXxOb_qQ",
+            "expires": "2024-11-08T14:05:01.692Z"
         }
     }
 }
@@ -56,7 +49,7 @@ Output:
 
 ### Create a new category
 ```bash
-curl --location 'http://localhost:8088/api/admin/category/create' \
+curl --location 'http://localhost:8088/api/admin/categories' \
 --header 'Content-Type: application/json' \
 --data '{
     "name": "Category1",
@@ -78,7 +71,7 @@ Output:
 
 ### Delete a category with categoryId
 ```bash
-curl --location --request DELETE 'http://localhost:8088/api/admin/category/4'
+curl --location --request DELETE 'http://localhost:8088/api/admin/categories/4'
 ```
 
 Output (successful)
