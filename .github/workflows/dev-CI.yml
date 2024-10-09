@@ -81,13 +81,13 @@ jobs:
           SHA: ${{ steps.short-sha.outputs.sha }}
           BRANCH: ${{ steps.extract_branch.outputs.branch }}
         run: |
-          touch .env.be
-          echo "ECR_SERVER_URL=${{ env.ECR_SERVER_URL }}" >> .env.be
-          echo "BRANCH=${{ env.BRANCH }}" >> .env.be
-          echo "SHA=${{ env.SHA }}" >> .env.be
-          echo "BACKEND_PORT=${{ env.PORT }}" >> .env.be
-          echo "AWS_ACCESS_KEY_ID=${{ env.AWS_ACCESS_KEY_ID }}" >> .env.be
-          echo "AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY }}" >> .env.be
+          touch envbe
+          echo "ECR_SERVER_URL=${{ env.ECR_SERVER_URL }}" >> envbe
+          echo "BRANCH=${{ env.BRANCH }}" >> envbe
+          echo "SHA=${{ env.SHA }}" >> envbe
+          echo "BACKEND_PORT=${{ env.PORT }}" >> envbe
+          echo "AWS_ACCESS_KEY_ID=${{ env.AWS_ACCESS_KEY_ID }}" >> envbe
+          echo "AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY }}" >> envbe
         continue-on-error: false
 
       - name: Build Back-end Server
@@ -109,7 +109,7 @@ jobs:
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
           aws-region: "ap-northeast-1"
           aws-bucket: ${{ env.AWS_S3_BUCKET }}
-          file-path: ".env.be"
+          file-path: "envbe"
           destination-dir: "develop/"
           bucket-root: "/"
 
