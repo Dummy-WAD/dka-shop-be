@@ -13,8 +13,24 @@ const deleteCategory = catchAsync(async (req, res) => {
     message: `Category with id: ${req.params.categoryId} deleted successfully`,
   });
 });
+  
+const getAllCategories = catchAsync(async (req, res) => {
+  const { page, limit, sortBy, name } = req.query;
+  const filter = {};
+  if (name) {
+    filter.name = name;
+  }
+  const options = {
+    page,
+    limit,
+    sortBy
+  }
+  const categories = await categoryService.getAllCategories(filter, options);
+  res.status(httpStatus.OK).send(categories);
+});
 
 export default {
   createCategory,
-  deleteCategory
+  deleteCategory,
+  getAllCategories,
 };
