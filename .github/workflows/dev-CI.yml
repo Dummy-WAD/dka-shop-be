@@ -64,7 +64,7 @@ jobs:
           sed -i 's/\$DB_PASSWORD/'"$DB_PASSWORD"'/g' /config/config.json
           sed -i 's/\$DB_NAME/'"$DB_NAME"'/g' /config/config.json
           sed -i 's/\$DB_HOST/'"$DB_HOST"'/g' /config/config.json
-          cat /config/config.json
+          cat config/config.json
           chmod +x migration.sh
           ./migration.sh
         continue-on-error: false
