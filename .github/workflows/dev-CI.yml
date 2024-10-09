@@ -41,11 +41,6 @@ jobs:
         id: short-sha
         with:
           length: 6
-          
-      - name: Set up Node.js 20.x
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20.x'
 
       - name: Extract branch name
         shell: bash
@@ -54,6 +49,11 @@ jobs:
 
       - name: Check Docker version
         run: docker --version
+
+      - name: Set up Node.js 20.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22.x'
 
         # Pre-build server
       - name: Pre-build server
@@ -70,7 +70,8 @@ jobs:
           sed -i 's/\$DB_NAME/'"$DB_NAME"'/g' config/config.json
           sed -i 's/\$DB_HOST/'"$DB_HOST"'/g' config/config.json
           cat config/config.json
-          npx sequelize-cli db:migrate
+          chmod +x migration.sh
+          ./migration.sh
         continue-on-error: false
 
       - name: Build Back-end Server
