@@ -10,7 +10,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       ECR_URL: ${{ secrets.ECR_URL }}
-      ECR_SERVER_URL: ${{ secrets.ECR_SERVER_URL_DEV }}
+      ECR_SERVER_URL: ${{ secrets.ECR_SERVER_URL }}
 
       PORT: ${{ secrets.PORT_DEV }}
       REACT_URL: ${{ secrets.REACT_URL_DEV }}
