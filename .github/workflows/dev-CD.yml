@@ -33,6 +33,6 @@ jobs:
           pwd
           mkdir -p ${{ env.BRANCH }}
           aws s3api get-object --bucket ${{ env.AWS_S3_BUCKET }} --key ${{ env.BRANCH }}/docker-compose-be.yml ${{ env.BRANCH }}/docker-compose-be.yml
-          aws s3api get-object --bucket ${{ env.AWS_S3_BUCKET }} --key .env.be ${{ env.BRANCH }}/.env.be
+          aws s3api get-object --bucket ${{ env.AWS_S3_BUCKET }} --key ${{ env.BRANCH }}/.env.be ${{ env.BRANCH }}/.env.be
           cd ${{ env.BRANCH }}
           docker compose -f docker-compose-be.yml up -d --build
