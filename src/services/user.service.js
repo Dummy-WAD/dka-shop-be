@@ -28,7 +28,11 @@ const queryUsers = async (filter, options) => {
 };
 
 const getUserById = async (id) => {
-  return User.findOne({id});
+  return User.findOne({
+    where: {
+      id
+    }
+  });
 };
 
 const getUserByEmail = async (email) => {
