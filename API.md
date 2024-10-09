@@ -49,3 +49,50 @@ Output:
     }
 }
 ```
+
+## Category
+
+<span style="color:red">**The examples below only apply when Passport is disabled.**</span>
+
+### Create a new category
+```bash
+curl --location 'http://localhost:8088/api/admin/category/create' \
+--header 'Content-Type: application/json' \
+--data '{
+    "name": "Category1",
+    "description": "This is description"
+}'
+```
+
+Output:
+```json
+{
+    "is_deleted": false,
+    "id": 4,
+    "name": "Category1",
+    "description": "This is description",
+    "updatedAt": "2024-10-09T03:57:33.921Z",
+    "createdAt": "2024-10-09T03:57:33.921Z"
+}
+```
+
+### Delete a category with categoryId
+```bash
+curl --location --request DELETE 'http://localhost:8088/api/admin/category/4'
+```
+
+Output (successful)
+```json
+{
+    "message": "Category with id: 4 deleted successfully"
+}
+```
+
+Output (error)
+
+```json
+{
+    "code": 404,
+    "message": "Category not found"
+}
+```
