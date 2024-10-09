@@ -85,6 +85,7 @@ jobs:
           echo "ECR_SERVER_URL=${{ env.ECR_SERVER_URL }}" >> .env
           echo "BRANCH=${{ env.BRANCH }}" >> .env
           echo "SHA=${{ env.SHA }}" >> .env
+          echo "BACKEND_PORT=${{ env.PORT }}" >> .env
           echo "AWS_ACCESS_KEY_ID=${{ env.AWS_ACCESS_KEY_ID }}" >> .env
           echo "AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY }}" >> .env
         continue-on-error: false
