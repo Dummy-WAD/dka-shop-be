@@ -1,5 +1,7 @@
 'use strict';
 
+import { AccountStatus, Gender, UserRole } from "../../utils/enums.js";
+
 export default (sequelize, DataTypes) => {
   const user = sequelize.define('user', {
     id: {
@@ -22,9 +24,18 @@ export default (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       field: 'phone_number'
     },
-    gender: DataTypes.STRING,
-    role: DataTypes.STRING,
-    status: DataTypes.STRING,
+    gender: {
+      type: DataTypes.ENUM,
+      values: Object.values(Gender)
+    },
+    role: {
+      type: DataTypes.ENUM,
+      values: Object.values(UserRole)
+    },
+    status: {
+      type: DataTypes.ENUM,
+      values: Object.values(AccountStatus)
+    },
     createdAt: {
       type: DataTypes.DATE,
       field: 'created_at'
