@@ -1,6 +1,10 @@
 import httpStatus from 'http-status';
 import db from "../models/index.js";
 import ApiError from '../utils/ApiError.js';
+import paginate from './plugins/paginate.plugin.js';
+import sequelize from '../models/configs/sequelizeConnection.js';
+import { Sequelize } from 'sequelize';
+import defineCategory from '../models/models/category.js';
 
 const { Category } = db;
 
@@ -24,7 +28,14 @@ const deleteCategory = async (categoryId) => {
     await category.destroy();
 }
 
+const getAllCategories = async (filter, options) => {
+    const Category = defineCategory(sequelize, Sequelize.DataTypes);
+    const categories = await paginate(Category, filter, options);
+    return categories;
+}
+
 export default { 
     createCategory, 
-    deleteCategory
+    deleteCategory,
+    getAllCategories
 }

@@ -1,33 +1,41 @@
-const paginate = async function (tableName, filter = {}, options = {}) {
-  let sort = options.sortBy ? options.sortBy : 'created_at';
+import { Op } from 'sequelize';
+
+const paginate = async function (model, filter = {}, options = {}) {
+  let sort = options.sortBy ? options.sortBy : 'createdAt';
 
   const limit = options.limit && parseInt(options.limit, 10) > 0 ? parseInt(options.limit, 10) : 10;
   const page = options.page && parseInt(options.page, 10) > 0 ? parseInt(options.page, 10) : 1;
   const offset = (page - 1) * limit;
 
-  const filterKeys = Object.keys(filter);
-  let whereClause = '';
-  if (filterKeys.length > 0) {
-    const conditions = filterKeys.map((key, index) => `${key} = $${index + 1}`).join(' AND ');
-    whereClause = `WHERE ${conditions}`;
+  const whereClause = {};
+
+  if (Object.keys(filter).length > 0) {
+    Object.keys(filter).forEach(key => {
+      if (key === 'name') {
+        whereClause[key] = { [Op.like]: `%${filter[key]}%` };
+      } else {
+        whereClause[key] = filter[key];
+      }
+    });
   }
 
-  const countQuery = `SELECT COUNT(*) FROM ${tableName} ${whereClause}`;
-  const countResult = await pool.query(countQuery, Object.values(filter));
-  const totalResults = parseInt(countResult.rows[0].count, 10);
+  const { count, rows } = await model.findAndCountAll({
+    where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
+    limit,
+    offset,
+    order: [[sort, 'ASC']],
+  });
+
+  const totalResults = count;
   const totalPages = Math.ceil(totalResults / limit);
 
-  const dataQuery = `SELECT * FROM ${tableName} ${whereClause} ORDER BY ${sort} LIMIT $${filterKeys.length + 1} OFFSET $${filterKeys.length + 2}`;
-  const dataResult = await pool.query(dataQuery, [...Object.values(filter), limit, offset]);
-
-  const result = {
-    results: dataResult.rows,
+  return {
+    results: rows,
     page,
     limit,
     totalPages,
     totalResults,
   };
-
-  return result;
 };
+
 export default paginate;
