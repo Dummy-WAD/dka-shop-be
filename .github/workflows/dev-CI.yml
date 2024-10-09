@@ -60,10 +60,10 @@ jobs:
       - name: Migrate Database
         run: |
           cd src/models
-          sed -i 's/\$DB_USER/'"$DB_USER"'/g' /config/config.json
-          sed -i 's/\$DB_PASSWORD/'"$DB_PASSWORD"'/g' /config/config.json
-          sed -i 's/\$DB_NAME/'"$DB_NAME"'/g' /config/config.json
-          sed -i 's/\$DB_HOST/'"$DB_HOST"'/g' /config/config.json
+          sed -i 's/\$DB_USER/'"$DB_USER"'/g' config/config.json
+          sed -i 's/\$DB_PASSWORD/'"$DB_PASSWORD"'/g' config/config.json
+          sed -i 's/\$DB_NAME/'"$DB_NAME"'/g' config/config.json
+          sed -i 's/\$DB_HOST/'"$DB_HOST"'/g' config/config.json
           cat config/config.json
           chmod +x migration.sh
           ./migration.sh
