@@ -7,6 +7,12 @@ const router = express.Router();
 
 // No authentication required
 router.post(
+  "/sign-up", 
+  validate(authValidation.register), 
+  authController.register
+);
+
+router.post(
   "/login",
   validate(authValidation.login),
   authController.login

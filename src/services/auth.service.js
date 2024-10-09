@@ -4,12 +4,31 @@ import { userServices, tokenServices } from "../services/index.js";
 import bcrypt from 'bcryptjs';
 import ApiError from "../utils/ApiError.js";
 import dotenv from 'dotenv';
+import { hash } from "bcrypt";
 dotenv.config();
 const { User, Token } = db;
 
 const isPasswordMatch = async function (password, hashPassword) {
   return bcrypt.compare(password, hashPassword);
 };
+
+const createUser = async (userData) => {
+
+  if (await User.findOne({ where: { email: userData.email }})) {
+    throw new ApiError(httpStatus.CONFLICT, "Email already taken");
+  }
+
+  const savedUser = await User.create({
+    ...userData,
+    password: await bcrypt.hash(userData.password, 8),
+    role: 'CUSTOMER',
+    status: 'ACTIVE',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  });
+
+  return savedUser;
+}
 
 const login = async (userData) => {
   const user = await User.findOne({ where: { email: userData.email }});
@@ -37,4 +56,4 @@ const refreshAuth = async (refresh_token) => {
     return tokenServices.generateAuthTokens(user);
 };
 
-export default { login, logout, refreshAuth };
+export default { createUser, login, logout, refreshAuth };
