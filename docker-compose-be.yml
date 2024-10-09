@@ -6,7 +6,7 @@ services:
     ports:
       - $BACKEND_PORT:8080
     env_file:
-      - .env.be
+      - envbe
     healthcheck:
       test: ["CMD-SHELL", "nc -z localhost $BACKEND_PORT || exit 1"]
       interval: 1m30s
