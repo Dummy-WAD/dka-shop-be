@@ -1,4 +1,35 @@
 #!/bin/sh
+echo "Generate config/config.json file"
+user=$1
+password=$2
+cp -r config/config.json config/config.json.bak
+cat > config/config.json <<EOF
+{
+    "development": {
+        "username": "$user",
+        "password": "$password",
+        "database": "dka_shop",
+        "host": "127.0.0.1",
+        "dialect": "mysql",
+        "port": 3306
+    },
+    "test": {
+        "username": "$user",
+        "password": "$password",
+        "database": "dka_shop",
+        "host": "",
+        "dialect": "mysql"
+    },
+    "production": {
+        "username": "$user",
+        "password": "$password",
+        "database": "dka_shop",
+        "host": "",
+        "dialect": "mysql"
+    }
+}
+EOF
+
 echo "Create package.json file"
 cat > package.json <<EOF
 {
@@ -32,11 +63,11 @@ EOF
 echo "Migrating..."
 npx sequelize-cli db:migrate
 npx sequelize-cli db:seed:all
-
-
 echo "Remove package.json and package-lock.json"
 rm package.json
 rm package-lock.json
-
-
 echo "Migration done"
+
+echo "Restore config/config.json file"
+mv config/config.json.bak config/config.json
+rm config/config.json.bak

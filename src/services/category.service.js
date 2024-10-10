@@ -25,7 +25,11 @@ const createCategory = async (categoryPayload) => {
 const deleteCategory = async (categoryId) => {
     const category = await Category.findByPk(categoryId);
     if (!category) throw new ApiError(httpStatus.NOT_FOUND, "Category not found");
-    await category.destroy();
+    if (category.is_deleted) throw new ApiError(httpStatus.BAD_REQUEST, "Category already deleted");
+    // change isDeleted to true
+    category.is_deleted = true;
+    await category.save();
+    // await category.destroy();
 }
 
 const getAllCategories = async (filter, options) => {
