@@ -2,9 +2,6 @@ services:
   backend:
     image: $ECR_SERVER_URL:$BRANCH-$SHA
     container_name: backend
-    depends_on:
-      db:
-        condition: service_healthy
     ports:
       - $BACKEND_PORT:8080
     healthcheck:
@@ -19,7 +16,7 @@ services:
       - AWS_REGION=ap-southeast-1
     networks:
       - app-network
-      
+
 networks:
   app-network:
     external: true
