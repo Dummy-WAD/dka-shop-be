@@ -6,7 +6,7 @@ const { host, name, user, password } = dbConfig.databaseCf;
 const sequelize = new Sequelize(name, user, password, {
   host: host,
   dialect: 'mysql',
-  logging: (msg) => console.log(`SQL: ${msg}`),
+  logging: (msg) => console.log(`SQL: ${msg}`)
 });
 
 sequelize.authenticate()

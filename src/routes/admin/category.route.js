@@ -17,5 +17,7 @@ router.delete(
     "/:categoryId",
     categoryController.deleteCategory
   );
+  
+router.get('/', categoryController.getAllCategories)
 
 export default router;

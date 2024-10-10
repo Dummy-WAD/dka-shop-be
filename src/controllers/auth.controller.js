@@ -5,7 +5,15 @@ import { authServices, tokenServices } from '../services/index.js';
 const register = catchAsync(async (req, res) => {
   const user = await authServices.createUser(req.body);
   const tokens = await tokenServices.generateAuthTokens(user);
-  res.status(httpStatus.CREATED).send({ user, tokens });
+  res.status(httpStatus.CREATED).send({ 
+    user: {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      status: user.status
+    }, 
+    tokens: tokens 
+  });
 });
 
 const login = catchAsync(async (req, res) => {
