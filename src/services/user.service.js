@@ -2,6 +2,8 @@ import httpStatus from 'http-status';
 import db from "../models/index.js";
 import ApiError from '../utils/ApiError.js';
 import paginate from './plugins/paginate.plugin.js';
+import { AccountStatus, UserRole } from '../utils/enums.js';
+
 
 const { User } = db;
 
@@ -15,12 +17,21 @@ const isEmailTaken = async (email, excludeUserId) => {
   return !!user; 
 };
 
-const createUser = async (userBody) => {
-  if (await isEmailTaken(userBody.email)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
+const createUser = async (userData) => {
+
+  if (await User.findOne({ where: { email: userData.email }})) {
+    throw new ApiError(httpStatus.CONFLICT, "Email already taken");
   }
-  return User.create(userBody);
-};
+
+  const savedUser = await User.create({
+    ...userData,
+    password: await bcrypt.hash(userData.password, process.env.PASSWORD_HASH_ROUND),
+    role: UserRole.CUSTOMER,
+    status: AccountStatus.INACTIVE
+  });
+
+  return savedUser;
+}
 
 const queryUsers = async (filter, options) => {
   const users = await paginate('users', filter, options);
