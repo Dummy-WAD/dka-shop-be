@@ -33,6 +33,7 @@ jobs:
       DB_NAME: ${{ secrets.DB_NAME }}
       DB_USER: ${{ secrets.DB_USER }}
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      IP_HOST: ${{ secrets.IP_HOST }}
 
       AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
 
@@ -70,7 +71,7 @@ jobs:
           sed -i 's/\$DB_USER/'"$DB_USER"'/g' config/config.json
           sed -i 's/\$DB_PASSWORD/'"$DB_PASSWORD"'/g' config/config.json
           sed -i 's/\$DB_NAME/'"$DB_NAME"'/g' config/config.json
-          sed -i 's/\$DB_HOST/'"$DB_HOST"'/g' config/config.json
+          sed -i 's/\$DB_HOST/'"$IP_HOST"'/g' config/config.json
           cat config/config.json
           chmod +x migration.sh
           ./migration.sh
