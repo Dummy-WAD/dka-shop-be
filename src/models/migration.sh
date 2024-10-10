@@ -35,4 +35,9 @@ echo "Migrating..."
 npx sequelize-cli db:migrate
 npx sequelize-cli db:seed:all
 
+echo "Remove package.json and package-lock.json"
+rm package.json
+rm package-lock.json
+
+
 echo "Migration done"
