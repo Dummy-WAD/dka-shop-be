@@ -37,8 +37,8 @@ on:
         required: true
       EMAIL_FROM:
         required: true
-      # DB_HOST:
-      #   required: true
+      DB_HOST:
+        required: true
       DB_PORT:
         required: true
       DB_NAME:
