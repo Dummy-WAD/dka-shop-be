@@ -16,7 +16,15 @@ const deleteProduct = {
         productId: Joi.number().integer().positive().required()
     })
 };
+
+const getProductDetail = {
+    params: Joi.object().keys({
+        productId: Joi.number().integer().positive().required()
+    })
+};
+
 export default {
     getProducts,
-    deleteProduct
+    deleteProduct,
+    getProductDetail
 }
