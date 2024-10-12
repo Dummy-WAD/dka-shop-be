@@ -16,13 +16,20 @@ export default (sequelize, DataTypes) => {
     updatedAt: DataTypes.DATE
   });
   product.associate = (db) => {
-    product.belongsTo(db.category);
+    product.belongsTo(db.category, {
+      foreignKey: 'category_id',
+      targetKey: 'id',
+    });
     product.hasMany(db.productVariant, {
       foreignKey: 'product_id',
       constraints: false
     });
     product.belongsToMany(db.discountOffer, { 
       through: db.productDiscountOffer,
+      foreignKey: 'product_id',
+      constraints: false
+    });
+    product.hasMany(db.productImage, {
       foreignKey: 'product_id',
       constraints: false
     });

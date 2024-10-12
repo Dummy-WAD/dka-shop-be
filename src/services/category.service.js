@@ -1,29 +1,26 @@
 import httpStatus from 'http-status';
-import db from "../models/index.js";
+import db from "../models/models/index.js";
 import ApiError from '../utils/ApiError.js';
 import paginate from './plugins/paginate.plugin.js';
-import sequelize from '../models/configs/sequelizeConnection.js';
-import { Sequelize } from 'sequelize';
-import defineCategory from '../models/models/category.js';
 
-const { Category } = db;
 
 const createCategory = async (categoryPayload) => {
-    const category = await Category.findOne({
+    const category = await db.category.findOne({
         where: {
             name: categoryPayload.name,
+            is_deleted: false
         }
     });
 
     // console.log(category);
     // check category is null
     if (!!category) throw new ApiError(httpStatus.BAD_REQUEST, "This category already taken");
-    return Category.create(categoryPayload);
+    return db.category.create(categoryPayload);
 };
 
 
 const deleteCategory = async (categoryId) => {
-    const category = await Category.findByPk(categoryId);
+    const category = await db.category.findByPk(categoryId);
     if (!category) throw new ApiError(httpStatus.NOT_FOUND, "Category not found");
     if (category.is_deleted) throw new ApiError(httpStatus.BAD_REQUEST, "Category already deleted");
     // change isDeleted to true
@@ -33,8 +30,7 @@ const deleteCategory = async (categoryId) => {
 }
 
 const getAllCategories = async (filter, options) => {
-    const Category = defineCategory(sequelize, Sequelize.DataTypes);
-    const categories = await paginate(Category, filter, options);
+    const categories = await paginate(db.category, filter, options);
     return categories;
 }
 

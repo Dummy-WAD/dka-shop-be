@@ -9,8 +9,13 @@ export default (sequelize, DataTypes) => {
       type: DataTypes.INTEGER
     },
     product_id: DataTypes.INTEGER,
+    image_url: DataTypes.TEXT,
     type: DataTypes.TEXT('medium'),
     is_primary: DataTypes.BOOLEAN
+  },
+  {
+    tableName: 'product_images',
+    freezeTableName: true,
   });
   productImage.associate = (db) => {
     productImage.belongsTo(db.product, {
