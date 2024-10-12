@@ -28,7 +28,7 @@ jobs:
       SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
       SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
       EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
-      # DB_HOST: ${{ secrets.DB_HOST_DEV }}
+      DB_HOST: ${{ secrets.DB_HOST }}
       DB_PORT: ${{ secrets.DB_PORT_DEV }}
       DB_NAME: ${{ secrets.DB_NAME }}
       DB_USER: ${{ secrets.DB_USER }}
@@ -62,7 +62,7 @@ jobs:
       SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
       SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
       EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
-      # DB_HOST: ${{ secrets.DB_HOST_STAGING }}
+      DB_HOST: ${{ secrets.DB_HOST }}
       DB_PORT: ${{ secrets.DB_PORT_STAGING }}
       DB_NAME: ${{ secrets.DB_NAME }}
       DB_USER: ${{ secrets.DB_USER }}
@@ -96,7 +96,7 @@ jobs:
       SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
       SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
       EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
-      # DB_HOST: ${{ secrets.DB_HOST }}
+      DB_HOST: ${{ secrets.DB_HOST }}
       DB_PORT: ${{ secrets.DB_PORT }}
       DB_NAME: ${{ secrets.DB_NAME }}
       DB_USER: ${{ secrets.DB_USER }}
