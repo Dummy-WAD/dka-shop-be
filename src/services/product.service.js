@@ -1,5 +1,7 @@
 import paginate from './plugins/paginate.plugin.js';
 import db from '../models/models/index.js';
+import ApiError from '../utils/ApiError.js';
+import httpStatus from 'http-status';
 
 const getAllProductsByCondition = async (filter, options) => {
     const include = [{
@@ -13,4 +15,14 @@ const getAllProductsByCondition = async (filter, options) => {
     return await paginate(db.product, filter, options, include);
 };
 
-export default { getAllProductsByCondition };
+const deleteProduct = async (productId) => {
+    const product = await db.product.findByPk(productId);
+    
+    if (!product) throw new ApiError(httpStatus.NOT_FOUND, 'Product not found!');
+    if (product.isDeleted) throw new ApiError(httpStatus.BAD_REQUEST, 'Product already deleted!');
+    
+    product.isDeleted = true;
+    await product.save();
+};
+
+export default { getAllProductsByCondition, deleteProduct };
