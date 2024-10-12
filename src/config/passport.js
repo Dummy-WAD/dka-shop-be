@@ -1,9 +1,7 @@
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import config from './config.js';
 import tokenTypes from './tokens.js';
-import db from '../models/index.js';
-
-const { User } = db;
+import db from '../models/models/index.js';
 
 const jwtOptions = {
   secretOrKey: config.jwt.secret,
@@ -15,7 +13,7 @@ const jwtVerify = async (payload, done) => {
     if (payload.type !== tokenTypes.ACCESS) {
       throw new Error('Invalid token type');
     }
-    const user = await User.findOne({ id: payload.sub.id });
+    const user = await db.user.findOne({ where: { id: payload.sub.id } });
     if (!user) {
       return done(null, false, { message: 'User not found' });
     }
