@@ -1,6 +1,6 @@
 import { Op } from 'sequelize';
 
-const paginate = async function (model, filter = {}, options = {}, include = []) {
+const paginate = async function (model, filter = {}, options = {}, include = [], searchFields = []) {
   const limit = options.limit && parseInt(options.limit, 10) > 0 ? parseInt(options.limit, 10) : 10;
   const page = options.page && parseInt(options.page, 10) > 0 ? parseInt(options.page, 10) : 1;
   const offset = (page - 1) * limit;
@@ -9,7 +9,11 @@ const paginate = async function (model, filter = {}, options = {}, include = [])
 
   if (Object.keys(filter).length > 0) {
     Object.keys(filter).forEach(key => {
-      if (key === 'name') {
+      if (key === 'keyword' && searchFields.length > 0) {
+        whereClause[Op.or] = searchFields.map(field => ({
+          [field]: { [Op.like]: `%${filter[key].trim()}%` }
+        }));
+      } else if (key === 'name') {
         whereClause[key] = { [Op.like]: `%${filter[key].trim()}%` };
       } else {
         whereClause[key] = filter[key].toString().trim();
@@ -23,11 +27,11 @@ const paginate = async function (model, filter = {}, options = {}, include = [])
     const order = options.order ? options.order.toUpperCase() : 'ASC';
     orderClause.push([sortBy, order]);
   } else {
-    orderClause.push(['createdAt', 'ASC']);
+    orderClause.push(['id', 'ASC']);
   };
 
   const { count, rows } = await model.findAndCountAll({
-    where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
+    where: Object.keys(whereClause).length > 0 || whereClause[Op.or] ? whereClause : undefined,
     limit,
     offset,
     order: orderClause,
