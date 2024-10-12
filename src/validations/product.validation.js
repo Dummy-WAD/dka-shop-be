@@ -1,6 +1,6 @@
 import Joi from 'joi';
 
-const readProducts = {
+const getProducts = {
     query: Joi.object().keys({
         name: Joi.string().trim().max(30).optional(),
         category_id: Joi.number().integer().positive().optional(),
@@ -11,5 +11,5 @@ const readProducts = {
     })
 };
 export default {
-    readProducts
+    getProducts
 }
