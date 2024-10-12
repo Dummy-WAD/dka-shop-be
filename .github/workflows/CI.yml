@@ -1,0 +1,170 @@
+name: CI Phase Dev
+
+on:
+  workflow_call:
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      ECR_URL:
+        required: true
+      ECR_SERVER_URL:
+        required: true
+      PORT:
+        required: true
+      REACT_URL:
+        required: true
+      JWT_SECRET:
+        required: true
+      JWT_ACCESS_EXPIRATION_MINUTES:
+        required: true
+      JWT_REFRESH_EXPIRATION_DAYS:
+        required: true
+      JWT_RESET_PASSWORD_EXPIRATION_MINUTES:
+        required: true
+      JWT_VERIFY_EMAIL_EXPIRATION_MINUTES:
+        required: true
+      NODE_ENV:
+        required: true
+      SMTP_HOST:
+        required: true
+      SMTP_PORT:
+        required: true
+      SMTP_USERNAME:
+        required: true
+      SMTP_PASSWORD:
+        required: true
+      EMAIL_FROM:
+        required: true
+      DB_HOST:
+        required: true
+      DB_PORT:
+        required: true
+      DB_NAME:
+        required: true
+      DB_USER:
+        required: true
+      DB_PASSWORD:
+        required: true
+      IP_HOST:
+        required: true
+      AWS_S3_BUCKET:
+        required: true
+
+jobs:
+  build_dev:
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      ECR_URL: ${{ secrets.ECR_URL }}
+      ECR_SERVER_URL: ${{ secrets.ECR_SERVER_URL }}
+      PORT: ${{ secrets.PORT }}
+      REACT_URL: ${{ secrets.REACT_URL }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      JWT_ACCESS_EXPIRATION_MINUTES: ${{ secrets.JWT_ACCESS_EXPIRATION_MINUTES }}
+      JWT_REFRESH_EXPIRATION_DAYS: ${{ secrets.JWT_REFRESH_EXPIRATION_DAYS }}
+      JWT_RESET_PASSWORD_EXPIRATION_MINUTES: ${{ secrets.JWT_RESET_PASSWORD_EXPIRATION_MINUTES }}
+      JWT_VERIFY_EMAIL_EXPIRATION_MINUTES: ${{ secrets.JWT_VERIFY_EMAIL_EXPIRATION_MINUTES }}
+      NODE_ENV: ${{ secrets.NODE_ENV }}
+      SMTP_HOST: ${{ secrets.SMTP_HOST }}
+      SMTP_PORT: ${{ secrets.SMTP_PORT }}
+      SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+      SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+      EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_PORT: ${{ secrets.DB_PORT }}
+      DB_NAME: ${{ secrets.DB_NAME }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      IP_HOST: ${{ secrets.IP_HOST }}
+      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: benjlevesque/short-sha@v3.0
+        id: short-sha
+        with:
+          length: 6
+
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
+
+      - name: Check Docker version
+        run: docker --version
+
+      - name: Set up Node.js 20.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: "22.x"
+
+        # Pre-build server
+      - name: Pre-build server
+        run: |
+          touch .env
+          envsubst < .env.example > .env
+          npm install
+
+      - name: Migrate Database
+        run: |
+          cd src/models
+          sed -i 's/\$DB_USER/'"$DB_USER"'/g' config/config.json
+          sed -i 's/\$DB_PASSWORD/'"$DB_PASSWORD"'/g' config/config.json
+          sed -i 's/\$DB_NAME/'"$DB_NAME"'/g' config/config.json
+          sed -i 's/\$DB_HOST/'"$IP_HOST"'/g' config/config.json
+          cat config/config.json
+          chmod +x migration.sh
+          ./migration.sh
+        continue-on-error: false
+
+      - name: Build artifact
+        env:
+          SHA: ${{ steps.short-sha.outputs.sha }}
+          BRANCH: ${{ steps.extract_branch.outputs.branch }}
+        run: |
+          touch envbe
+          echo "ECR_SERVER_URL=${{ env.ECR_SERVER_URL }}" >> envbe
+          echo "BRANCH=${{ env.BRANCH }}" >> envbe
+          echo "SHA=${{ env.SHA }}" >> envbe
+          echo "BACKEND_PORT=${{ env.PORT }}" >> envbe
+          echo "AWS_ACCESS_KEY_ID=${{ env.AWS_ACCESS_KEY_ID }}" >> envbe
+          echo "AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY }}" >> envbe
+          echo "DB_PORT=${{ env.DB_PORT }}" >> envbe
+        continue-on-error: false
+
+      - name: Build Back-end Server
+        env:
+          SHA: ${{ steps.short-sha.outputs.sha }}
+          BRANCH: ${{ steps.extract_branch.outputs.branch }}
+        run: |
+          pwd
+          ls -la 
+          docker build -t dek_server:"${{ env.BRANCH }}-${{ env.SHA }}" .
+          docker tag dek_server:"${{ env.BRANCH }}-${{ env.SHA }}" "${{ env.ECR_SERVER_URL }}":"${{ env.BRANCH }}-${{ env.SHA }}"
+          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ env.ECR_URL }}
+          docker push "${{ env.ECR_SERVER_URL }}:${{ env.BRANCH }}-${{ env.SHA }}"
+        continue-on-error: false
+
+      - uses: hkusu/s3-upload-action@v2
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: "ap-northeast-1"
+          aws-bucket: ${{ env.AWS_S3_BUCKET }}
+          file-path: "envbe"
+          destination-dir: "develop/"
+          bucket-root: "/"
+
+      - uses: hkusu/s3-upload-action@v2
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: "ap-northeast-1"
+          aws-bucket: ${{ env.AWS_S3_BUCKET }}
+          file-path: "docker-compose-be.yml"
+          destination-dir: "develop/"
+          bucket-root: "/"
