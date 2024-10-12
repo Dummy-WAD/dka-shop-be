@@ -10,6 +10,13 @@ const getAllProducts = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(products);
 });
 
+const deleteProduct = catchAsync(async (req, res) => {
+  await productServices.deleteProduct(req.params.productId);
+  res.status(httpStatus.OK).send({
+    message: `This product deleted successfully`,
+  });
+});
 export default {
   getAllProducts,
+  deleteProduct
 };
