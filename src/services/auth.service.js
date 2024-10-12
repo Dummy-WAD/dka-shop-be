@@ -1,13 +1,10 @@
 import httpStatus from "http-status";
-import db from "../models/index.js"; 
+import db from "../models/models/index.js"; 
 import { userServices, tokenServices } from "../services/index.js";
 import bcrypt from 'bcryptjs';
 import ApiError from "../utils/ApiError.js";
 import dotenv from 'dotenv';
-import { Sequelize } from "sequelize";
-import { hash } from "bcrypt";
 dotenv.config();
-const { User, Token } = db;
 
 const isPasswordMatch = async function (password, hashPassword) {
   return bcrypt.compare(password, hashPassword);
@@ -15,11 +12,11 @@ const isPasswordMatch = async function (password, hashPassword) {
 
 const createUser = async (userData) => {
 
-  if (await User.findOne({ where: { email: userData.email }})) {
+  if (await db.user.findOne({ where: { email: userData.email }})) {
     throw new ApiError(httpStatus.CONFLICT, "Email already taken");
   }
 
-  const savedUser = await User.create({
+  const savedUser = await db.user.create({
     ...userData,
     password: await bcrypt.hash(userData.password, 8),
     role: 'CUSTOMER',
@@ -32,7 +29,7 @@ const createUser = async (userData) => {
 }
 
 const login = async (userData) => {
-  const foundUser = await User.findOne({
+  const foundUser = await db.user.findOne({
     where: { email: userData.email },
     attributes: [
       'id',
@@ -40,11 +37,8 @@ const login = async (userData) => {
       'role',
       'status',
       'password',
-      [Sequelize.fn('concat',
-        Sequelize.fn('coalesce', Sequelize.col('last_name'), ''),
-        ' ',
-        Sequelize.fn('coalesce', Sequelize.col('first_name'), '')
-      ), 'fullName']
+      'firstName',
+      'lastName'
     ],
   });
 
@@ -58,7 +52,7 @@ const login = async (userData) => {
 };
 
 const logout = async (refresh_token) => {
-  const refreshTokenDoc = await Token.findOne({
+  const refreshTokenDoc = await db.token.findOne({
     where: {
       refresh_token
     }

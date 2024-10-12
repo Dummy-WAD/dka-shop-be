@@ -1,12 +1,10 @@
 import jwt from 'jsonwebtoken';
 import moment from 'moment';
 import config from '../config/config.js';
-import db from '../models/index.js';
+import db from '../models/models/index.js';
 import tokenTypes from '../config/tokens.js';
 import ApiError from '../utils/ApiError.js';
 import httpStatus from 'http-status';
-
-const { Token } = db
 
 const generateToken = (userId, expires, type, secret = config.jwt.secret) => {
   const payload = {
@@ -19,7 +17,7 @@ const generateToken = (userId, expires, type, secret = config.jwt.secret) => {
 };
 
 const saveToken = async (refresh_token, user_id, expiration_date) => {
-  const tokenDoc = await Token.create({
+  const tokenDoc = await db.token.create({
     refresh_token,
     user_id,
     expiration_date,
@@ -39,7 +37,7 @@ const verifyToken = async (refresh_token) => {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid token');
   }
 
-  const tokenDoc = await Token.findOne({
+  const tokenDoc = await db.token.findOne({
     where: {
       refresh_token, user_id: payload.sub.id
     }
