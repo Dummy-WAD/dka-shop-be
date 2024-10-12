@@ -37,8 +37,8 @@ const login = async (userData) => {
       'role',
       'status',
       'password',
-      ['first_name', 'firstName'],
-      ['last_name', 'lastName']
+      'firstName',
+      'lastName'
     ],
   });
 

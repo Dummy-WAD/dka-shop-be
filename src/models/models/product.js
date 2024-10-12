@@ -11,13 +11,20 @@ export default (sequelize, DataTypes) => {
     name: DataTypes.STRING,
     price: DataTypes.DOUBLE,
     description: DataTypes.TEXT,
-    category_id: DataTypes.INTEGER,
+    categoryId: {
+      type: DataTypes.INTEGER,
+      field: 'category_id'
+    },
+    isDeleted: {
+      type: DataTypes.BOOLEAN,
+      field: 'is_deleted'
+    },
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE
   });
   product.associate = (db) => {
     product.belongsTo(db.category, {
-      foreignKey: 'category_id',
+      foreignKey: 'categoryId',
       targetKey: 'id',
     });
     product.hasMany(db.productVariant, {
