@@ -21,5 +21,5 @@ export default (sequelize, DataTypes) => {
       constraints: false
     });
   }
-  return discount - offer;
+  return discountOffer;
 };

@@ -12,9 +12,8 @@ export default {
       phone_number: '0353905691',
       gender: false,
       role: 'Admin',
-      register_at: new Date(),
-      createdAt: new Date(),
-      updatedAt: new Date()
+      created_at: new Date(),
+      updated_at: new Date()
     },
     {
       id: '2',
@@ -25,9 +24,8 @@ export default {
       phone_number: '0353905692',
       gender: false,
       role: 'Staff',
-      register_at: new Date(),
-      createdAt: new Date(),
-      updatedAt: new Date()
+      created_at: new Date(),
+      updated_at: new Date()
     },
     {
       id: '3',
@@ -38,9 +36,8 @@ export default {
       phone_number: '0353903691',
       gender: false,
       role: 'Staff',
-      register_at: new Date(),
-      createdAt: new Date(),
-      updatedAt: new Date()
+      created_at: new Date(),
+      updated_at: new Date()
     }], {});
   },
   // eslint-disable-next-line no-unused-vars

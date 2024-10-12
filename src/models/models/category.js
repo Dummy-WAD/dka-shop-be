@@ -18,8 +18,8 @@ export default (sequelize, DataTypes) => {
     updatedAt: DataTypes.DATE
   });
   category.associate = ((db) => {
-    category.hasMany(db.productVariant, {
-      foreignKey: 'product_id',
+    category.hasMany(db.product, {
+      foreignKey: 'categoryId',
       constraints: false
     })
   })
