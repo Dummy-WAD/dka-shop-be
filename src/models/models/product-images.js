@@ -8,10 +8,19 @@ export default (sequelize, DataTypes) => {
       primaryKey: true,
       type: DataTypes.INTEGER
     },
-    product_id: DataTypes.INTEGER,
-    image_url: DataTypes.TEXT,
+    productId: {
+      type: DataTypes.INTEGER,
+      field: 'product_id'
+    },
+    imageUrl: {
+      type: DataTypes.TEXT,
+      field: 'image_url'
+    },
     type: DataTypes.TEXT('medium'),
-    is_primary: DataTypes.BOOLEAN
+    isPrimary: {
+      type: DataTypes.BOOLEAN,
+      field: 'is_primary'
+    }
   },
   {
     tableName: 'product_images',
@@ -19,7 +28,7 @@ export default (sequelize, DataTypes) => {
   });
   productImage.associate = (db) => {
     productImage.belongsTo(db.product, {
-      foreignKey: 'product_id',
+      foreignKey: 'productId',
       constraints: false
     });
   };

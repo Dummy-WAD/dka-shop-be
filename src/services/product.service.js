@@ -25,4 +25,40 @@ const deleteProduct = async (productId) => {
     await product.save();
 };
 
-export default { getAllProductsByCondition, deleteProduct };
+const getProductDetail = async (productId) => {
+    const productDetail = await db.product.findOne({
+        where: { id: productId, isDeleted: false },
+        include: [
+            {
+                model: db.category,
+                attributes: ['id', 'name'],
+            },
+            {
+                model: db.productImage,
+                attributes: ['imageUrl', 'isPrimary'],
+                required: false
+            },
+            {
+                model: db.productVariant,
+                where: { isDeleted: false },
+                attributes: ['size', 'color', 'quantity', 'isDeleted'],
+                required: false
+            }
+        ],
+    });
+
+    if (!productDetail) throw new ApiError(httpStatus.NOT_FOUND, 'Product not found!');
+
+    const { productImages, isDeleted, categoryId, ...basicInfo } = productDetail.get();
+
+    const primaryImage = productDetail.productImages.find(img => img.isPrimary)?.imageUrl || null;
+    const otherImages = productDetail.productImages.filter(img => !img.isPrimary).map(img => img?.imageUrl || null);
+
+    return {
+        ...basicInfo,
+        primaryImage,
+        otherImages
+    };
+};
+
+export default { getAllProductsByCondition, deleteProduct, getProductDetail };
