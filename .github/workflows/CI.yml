@@ -107,6 +107,7 @@ jobs:
         run: |
           touch .env
           envsubst < .env.example > .env
+          cat .env
           npm install
 
       - name: Migrate Database
