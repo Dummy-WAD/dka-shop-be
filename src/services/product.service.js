@@ -27,7 +27,7 @@ const deleteProduct = async (productId) => {
 
 const getProductDetail = async (productId) => {
     const productDetail = await db.product.findOne({
-        where: { id: productId },
+        where: { id: productId, isDeleted: false },
         include: [
             {
                 model: db.category,
@@ -36,7 +36,6 @@ const getProductDetail = async (productId) => {
             {
                 model: db.productImage,
                 attributes: ['imageUrl', 'isPrimary'],
-                order: [['isPrimary', 'DESC']],
                 required: false
             },
             {

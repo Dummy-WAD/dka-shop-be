@@ -15,7 +15,7 @@ const deleteCategory = catchAsync(async (req, res) => {
 });
   
 const getAllCategories = catchAsync(async (req, res) => {
-  const { page, limit, sortBy, name } = req.query;
+  const { page, limit, sortBy, name, order } = req.query;
   const filter = {
     is_deleted: 0
   };
@@ -25,7 +25,8 @@ const getAllCategories = catchAsync(async (req, res) => {
   const options = {
     page,
     limit,
-    sortBy
+    sortBy,
+    order
   }
   const categories = await categoryService.getAllCategories(filter, options);
   res.status(httpStatus.OK).send(categories);
