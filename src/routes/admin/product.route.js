@@ -12,4 +12,17 @@ router.get(
     validate(productValidation.getProducts),
     productController.getAllProducts
   );
+
+router.delete(
+    "/:productId",
+    validate(productValidation.deleteProduct),
+    productController.deleteProduct
+  );
+
+router.get(
+    "/:productId",
+    validate(productValidation.getProductDetail),
+    productController.getProductDetail
+  );
+  
 export default router;

@@ -3,7 +3,12 @@ dotenv.config();
 
 function configCors(app) {
   app.use(function (req, res, next) {
-    res.setHeader("Access-Control-Allow-Origin", process.env.REACT_URL);
+    const allowedOrigins = [process.env.REACT_URL, process.env.LOCALHOST_URL];
+    const origin = req.headers.origin;
+
+    if (allowedOrigins.includes(origin)) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+    };
 
     res.setHeader(
       "Access-Control-Allow-Methods",

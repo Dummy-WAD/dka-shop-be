@@ -10,6 +10,21 @@ const getProducts = {
         limit: Joi.number().integer().min(1).max(100).default(20)
     })
 };
+
+const deleteProduct = {
+    params: Joi.object().keys({
+        productId: Joi.number().integer().positive().required()
+    })
+};
+
+const getProductDetail = {
+    params: Joi.object().keys({
+        productId: Joi.number().integer().positive().required()
+    })
+};
+
 export default {
-    getProducts
+    getProducts,
+    deleteProduct,
+    getProductDetail
 }

@@ -8,16 +8,27 @@ export default (sequelize, DataTypes) => {
       primaryKey: true,
       type: DataTypes.INTEGER
     },
-    product_id: DataTypes.INTEGER,
+    productId: {
+      type: DataTypes.INTEGER,
+      field: 'product_id'
+    },
     size: DataTypes.STRING,
     color: DataTypes.STRING,
     quantity: DataTypes.STRING,
+    isDeleted: {
+      type: DataTypes.BOOLEAN,
+      field: 'is_deleted'
+    },
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE
+  },
+  {
+    tableName: 'product_variants',
+    freezeTableName: true,
   });
   productVariant.associate = (db) => {
     productVariant.belongsTo(db.product, {
-      foreignKey: 'product_id',
+      foreignKey: 'productId',
       constraints: false
     });
     productVariant.belongsToMany(db.order, { 
