@@ -37,7 +37,10 @@ const getAllCategories = async (filter, options) => {
 const editCategory = async (req) => {
     const {categoryId} = req.params
     const {name, description} = req.body
-    const currentCategory = await db.category.findOne({ where: { id: categoryId } });
+    const currentCategory = await db.category.findOne({ where: { id: categoryId, is_deleted: false } });
+    if (!currentCategory) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Category does not exist");
+    }
     if (name !== undefined) {
         const trimmedName = name.trim();
         if (trimmedName !== currentCategory.name) {
@@ -56,16 +59,12 @@ const editCategory = async (req) => {
     await db.category.update(
         { 
             name: name !== undefined ? name.trim() : currentCategory.name,
-            description: description !== undefined ? description : currentCategory.description
+            description: description !== undefined ? description.trim() : currentCategory.description
         },
         { 
             where: { id: categoryId } 
         }
     );
-    const updatedCategory = await db.category.findOne({
-        where: { id: categoryId }
-    });
-    return updatedCategory;
 };
 
 

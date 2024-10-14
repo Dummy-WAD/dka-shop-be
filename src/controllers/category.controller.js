@@ -10,7 +10,7 @@ const createCategory = catchAsync(async (req, res) => {
 const deleteCategory = catchAsync(async (req, res) => {
   await categoryService.deleteCategory(req.params.categoryId);
   res.status(httpStatus.OK).send({
-    message: `Category with id: ${req.params.categoryId} deleted successfully`,
+    message: `Category deleted successfully`,
   });
 });
   
@@ -33,8 +33,10 @@ const getAllCategories = catchAsync(async (req, res) => {
 });
 
 const editCategory = catchAsync(async (req, res) => {
-  const category = await categoryService.editCategory(req);
-  res.status(httpStatus.OK).send(category);
+  await categoryService.editCategory(req);
+  res.status(httpStatus.OK).send({
+    message: `Category updated successfully`,
+  });
 });
 
 export default {
