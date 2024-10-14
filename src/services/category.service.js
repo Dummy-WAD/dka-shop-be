@@ -34,8 +34,44 @@ const getAllCategories = async (filter, options) => {
     return categories;
 }
 
+const editCategory = async (req) => {
+    const {categoryId} = req.params
+    const {name, description} = req.body
+    const currentCategory = await db.category.findOne({ where: { id: categoryId } });
+    if (name !== undefined) {
+        const trimmedName = name.trim();
+        if (trimmedName !== currentCategory.name) {
+            const existingCategory = await db.category.findOne({
+                where: {
+                    name: trimmedName,
+                    is_deleted: false
+                }
+            });
+
+            if (existingCategory) {
+                throw new ApiError(httpStatus.UNPROCESSABLE_ENTITY, "This category already taken");
+            }
+        }
+    }
+    await db.category.update(
+        { 
+            name: name !== undefined ? name.trim() : currentCategory.name,
+            description: description !== undefined ? description : currentCategory.description
+        },
+        { 
+            where: { id: categoryId } 
+        }
+    );
+    const updatedCategory = await db.category.findOne({
+        where: { id: categoryId }
+    });
+    return updatedCategory;
+};
+
+
 export default { 
     createCategory, 
     deleteCategory,
-    getAllCategories
+    getAllCategories,
+    editCategory
 }

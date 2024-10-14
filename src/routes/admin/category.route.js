@@ -15,9 +15,16 @@ router.post(
 
 router.delete(
     "/:categoryId",
+    validate(categoryValidation.deleteCategory),
     categoryController.deleteCategory
   );
   
 router.get('/', categoryController.getAllCategories)
+
+router.patch(
+  "/:categoryId",
+  validate(categoryValidation.editCategory),
+  categoryController.editCategory
+);
 
 export default router;
