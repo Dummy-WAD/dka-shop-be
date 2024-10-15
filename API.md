@@ -1,47 +1,16 @@
 # API manual
-## Login 
-```bash
-curl --location 'http://<HOST>:<PORT>/api/auth/login' \
---header 'Content-Type: application/json' \
---data-raw '{
-    "email": "<<email>>",
-    "password": "<<password>>"
-}'
-```
-Example: 
 
-Please open the `Terminal` and type the following command: 
-```bash
-curl --location 'http://localhost:8088/api/auth/login' \
---header 'Content-Type: application/json' \
---data-raw '{
-    "email": "phuongha@gmail.com",
-    "password": "phuongha@123"
-}'
-```
-
-Output:
-```json
-{
-    "user": {
-        "id": 2,
-        "email": "phuongha@gmail.com",
-        "role": "Staff",
-        "status": null,
-        "fullName": "Nguyen Phuong Ha"
-    },
-    "tokens": {
-        "access": {
-            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOnsiaWQiOjIsImVtYWlsIjoicGh1b25naGFAZ21haWwuY29tIiwicm9sZSI6IlN0YWZmIn0sImlhdCI6MTcyODQ4MjcwMSwiZXhwIjoxNzI4NDg0NTAxLCJ0eXBlIjoiYWNjZXNzIn0.eKePbj-aHp_ATjmKsruZonKD5IbJEM96-slNb2c_FNg",
-            "expires": "2024-10-09T14:35:01.687Z"
-        },
-        "refresh": {
-            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOnsiaWQiOjIsImVtYWlsIjoicGh1b25naGFAZ21haWwuY29tIiwicm9sZSI6IlN0YWZmIn0sImlhdCI6MTcyODQ4MjcwMSwiZXhwIjoxNzMxMDc0NzAxLCJ0eXBlIjoicmVmcmVzaCJ9.qhXlrG0TW0x4RFzQuTxhFr6d9hC-kYl8jV1pXxOb_qQ",
-            "expires": "2024-11-08T14:05:01.692Z"
-        }
-    }
-}
-```
+API:
++ Admin
+    + 
++ Customer
+    + Customer
+        + [Get Customer information](docs/customer.md#customer-api-documentation)
++ Auth
+    + [Login](docs/auth.md#login)
+    + [Sign-up](docs/auth.md#sign-up)
+    + [Logout](docs/auth.md#logout)
+    + [Refresh-Token](docs/auth.md#refresh-token)
 
 ## Category
 
