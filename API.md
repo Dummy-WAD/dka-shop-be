@@ -5,7 +5,7 @@ API:
     + 
 + Customer
     + Customer
-        + [Get Customer information](docs/customer.md#customer-api-documentation)
+        + [Get Customer information](docs/customer.md#get-customer-information)
 + Auth
     + [Login](docs/auth.md#login)
     + [Sign-up](docs/auth.md#sign-up)
