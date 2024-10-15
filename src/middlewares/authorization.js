@@ -2,18 +2,8 @@ import jwt from "jsonwebtoken";
 
 const isTokenValid = (req, res, next) => {
     console.log("CHECKING IF TOKEN IS VALID");
-    // Check if the user is authenticated
-    if (!req.user) {
-        return res.status(401).json({ message: "Unauthorized" });
-    }
-    next();
-}
-
-const isTokenExpired = (req, res, next) => {
-    console.log("CHECKING IF TOKEN IS EXPIRED");
-    // Check if the token is expired
     const token = req.headers.authorization.split(" ")[1];
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    jwt.verify(token, process.env.JWT_SECRET, (err) => {
         if (err) {
             return res.status(401).json({ message: "Unauthorized" });
         }
@@ -40,7 +30,6 @@ const isCustomer = (req, res, next) => {
 
 export {
     isTokenValid,
-    isTokenExpired,
     isAdmin,
     isCustomer
 };

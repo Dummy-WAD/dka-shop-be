@@ -1,6 +1,6 @@
 import express from "express";
 import passport from "passport"; // Import passport for authentication
-import { isTokenValid, isTokenExpired, isCustomer } from "../../middlewares/authorization.js";
+import { isTokenValid, isCustomer } from "../../middlewares/authorization.js";
 
 const router = express.Router();
 
@@ -10,7 +10,6 @@ const router = express.Router();
 // Protect all routes
 router.use(passport.authenticate("jwt", { session: false }));
 router.use(isTokenValid); // check if the token is valid
-router.use(isTokenExpired); // check if the token is expired
 router.use(isCustomer); // check if the user is a customer
 
 // after this line, all routes are protected
