@@ -15,7 +15,13 @@ const getAllCustomers = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(customers);
 });
 
+const getCustomerDetail = catchAsync(async (req, res) => {
+  const customers = await customerServices.getCustomerDetail(req.params.customerId);
+  res.status(httpStatus.OK).send(customers);
+});
+
 export default {
     // getCustomerInfo,
-    getAllCustomers
+    getAllCustomers,
+    getCustomerDetail
 };
