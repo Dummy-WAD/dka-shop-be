@@ -45,7 +45,33 @@ Output:
 
 ## Category
 
-<span style="color:red">**The examples below only apply when Passport is disabled.**</span>
+<!-- <span style="color:red">**The examples below only apply when Passport is disabled.**</span> -->
+
+### Get all categories
+```bash
+curl --location 'http://localhost:8088/api/admin/categories' \
+--header 'Authorization: ••••••'
+```
+
+```json
+{
+    "results": [
+        {
+            "id": 7,
+            "name": "Category3",
+            "description": "This is description",
+            "is_deleted": false,
+            "createdAt": "2024-10-10T09:54:28.000Z",
+            "updatedAt": "2024-10-10T09:54:28.000Z"
+        }
+    ],
+    "page": 1,
+    "limit": 10,
+    "totalPages": 1,
+    "totalResults": 1
+}
+```
+
 
 ### Create a new category
 ```bash
