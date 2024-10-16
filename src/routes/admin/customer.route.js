@@ -10,4 +10,10 @@ router.get(
     customerController.getAllCustomers
   );
 
+router.get(
+  "/:customerId",
+  validate(customerValidation.getCustomerDetail),
+  customerController.getCustomerDetail
+);
+
 export default router;
