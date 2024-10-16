@@ -19,18 +19,18 @@ router.post(
   authController.login
 );
 
+router.post(
+  "/refresh-token",
+  validate(authValidation.refreshTokens),
+  authController.refreshTokens
+);
+
 // Protect all routes
 router.use(passport.authenticate("jwt", { session: false }));
 router.post(
   "/logout",
   validate(authValidation.logout),
   authController.logout
-);
-
-router.post(
-  "/refresh-token",
-  validate(authValidation.refreshTokens),
-  authController.refreshTokens
 );
 
 export default router;
