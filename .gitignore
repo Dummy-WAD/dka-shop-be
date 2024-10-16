@@ -17,3 +17,8 @@
 .env.production.local
 
 .env
+
+# local files
+/models/config/config.json
+run_initial.bat
+run_initial.sh

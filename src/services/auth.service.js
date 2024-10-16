@@ -1,43 +1,77 @@
-const httpStatus = require("http-status");
-const { User } = require("../models");
-const ApiError = require("../utils/ApiError");
-var bcrypt = require('bcryptjs');
-require("dotenv").config();
+import httpStatus from "http-status";
+import db from "../models/models/index.js"; 
+import { userServices, tokenServices } from "../services/index.js";
+import bcrypt from 'bcryptjs';
+import ApiError from "../utils/ApiError.js";
+import dotenv from 'dotenv';
+dotenv.config();
 
 const isPasswordMatch = async function (password, hashPassword) {
-  console.log(password, hashPassword);
-  
   return bcrypt.compare(password, hashPassword);
 };
 
+const createUser = async (userData) => {
+
+  if (await db.user.findOne({ where: { email: userData.email }})) {
+    throw new ApiError(httpStatus.CONFLICT, "Email already taken");
+  }
+
+  const savedUser = await db.user.create({
+    ...userData,
+    password: await bcrypt.hash(userData.password, 8),
+    role: 'CUSTOMER',
+    status: 'INACTIVE',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  });
+
+  return savedUser;
+}
+
 const login = async (userData) => {
-  const user = await User.findOne({ where: { email: userData.email }});
-  if (!user || !(await isPasswordMatch(userData.password, user.password))) {
+  const foundUser = await db.user.findOne({
+    where: { email: userData.email },
+    attributes: [
+      'id',
+      'email',
+      'role',
+      'status',
+      'password',
+      'firstName',
+      'lastName'
+    ],
+  });
+
+  if (!foundUser || !(await isPasswordMatch(userData.password, foundUser?.password))) {
     throw new ApiError(httpStatus.UNAUTHORIZED, "Incorrect username or password");
   }
+  const user = foundUser.get({ plain: true });
+  delete user.password;
+
   return user;
 };
 
-const logout = async (refreshToken) => {
-  const refreshTokenDoc = await Token.findOne({ token: refreshToken, type: tokenTypes.REFRESH, blacklisted: false });
+const logout = async (refresh_token) => {
+  const refreshTokenDoc = await db.token.findOne({
+    where: {
+      refresh_token
+    }
+  });
+
   if (!refreshTokenDoc) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Not found');
   }
-  await refreshTokenDoc.remove();
+  await refreshTokenDoc.destroy();
 };
 
-const refreshAuth = async (refreshToken) => {
-  try {
-    const refreshTokenDoc = await tokenService.verifyToken(refreshToken, tokenTypes.REFRESH);
-    const user = await userService.getUserById(refreshTokenDoc.user);
+const refreshAuth = async (refresh_token) => {
+    const refreshTokenDoc = await tokenServices.verifyToken(refresh_token);
+    const user = await userServices.getUserById(refreshTokenDoc.user_id);
     if (!user) {
-      throw new Error();
+      throw new ApiError(httpStatus.NOT_FOUND, "User not found!");
     }
-    await refreshTokenDoc.remove();
-    return tokenService.generateAuthTokens(user);
-  } catch (error) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'Please authenticate');
-  }
+    await refreshTokenDoc.destroy();
+    return tokenServices.generateAuthTokens(user);
 };
 
-module.exports = { login, logout, refreshAuth };
+export default { createUser, login, logout, refreshAuth };

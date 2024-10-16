@@ -1,0 +1,110 @@
+name: CICD
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+    branches: ["*"]
+
+jobs:
+  dev-CI:
+    if: github.ref == 'refs/heads/develop'
+    uses: Dummy-WAD/dka-shop-be/.github/workflows/CI.yml@DEK-63-Implement-CI-CD-pipeline
+    secrets: 
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      ECR_URL: ${{ secrets.ECR_URL }}
+      ECR_SERVER_URL: ${{ secrets.ECR_SERVER_URL }}
+      PORT: ${{ secrets.PORT_DEV }}
+      REACT_URL: ${{ secrets.REACT_URL_DEV }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      JWT_ACCESS_EXPIRATION_MINUTES: ${{ secrets.JWT_ACCESS_EXPIRATION_MINUTES }}
+      JWT_REFRESH_EXPIRATION_DAYS: ${{ secrets.JWT_REFRESH_EXPIRATION_DAYS }}
+      JWT_RESET_PASSWORD_EXPIRATION_MINUTES: ${{ secrets.JWT_RESET_PASSWORD_EXPIRATION_MINUTES }}
+      JWT_VERIFY_EMAIL_EXPIRATION_MINUTES: ${{ secrets.JWT_VERIFY_EMAIL_EXPIRATION_MINUTES }}
+      NODE_ENV: ${{ secrets.NODE_ENV_DEV }}
+      SMTP_HOST: ${{ secrets.SMTP_HOST }}
+      SMTP_PORT: ${{ secrets.SMTP_PORT }}
+      SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+      SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+      EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_PORT: ${{ secrets.DB_PORT_DEV }}
+      DB_NAME: ${{ secrets.DB_NAME }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      IP_HOST: ${{ secrets.IP_HOST }}
+      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+  dev-CD:
+    if: github.ref == 'refs/heads/develop'
+    needs: dev-CI
+    uses: Dummy-WAD/dka-shop-be/.github/workflows/CD.yml@DEK-63-Implement-CI-CD-pipeline
+    secrets: inherit
+
+  staging-CI:
+    if: github.ref == 'refs/heads/staging'
+    uses: Dummy-WAD/dka-shop-be/.github/workflows/CI.yml@DEK-63-Implement-CI-CD-pipeline
+    secrets: 
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      ECR_URL: ${{ secrets.ECR_URL }}
+      ECR_SERVER_URL: ${{ secrets.ECR_SERVER_URL }}
+      PORT: ${{ secrets.PORT_STAGING }}
+      REACT_URL: ${{ secrets.REACT_URL_STAGING }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      JWT_ACCESS_EXPIRATION_MINUTES: ${{ secrets.JWT_ACCESS_EXPIRATION_MINUTES }}
+      JWT_REFRESH_EXPIRATION_DAYS: ${{ secrets.JWT_REFRESH_EXPIRATION_DAYS }}
+      JWT_RESET_PASSWORD_EXPIRATION_MINUTES: ${{ secrets.JWT_RESET_PASSWORD_EXPIRATION_MINUTES }}
+      JWT_VERIFY_EMAIL_EXPIRATION_MINUTES: ${{ secrets.JWT_VERIFY_EMAIL_EXPIRATION_MINUTES }}
+      NODE_ENV: ${{ secrets.NODE_ENV_STAGING }}
+      SMTP_HOST: ${{ secrets.SMTP_HOST }}
+      SMTP_PORT: ${{ secrets.SMTP_PORT }}
+      SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+      SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+      EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_PORT: ${{ secrets.DB_PORT_STAGING }}
+      DB_NAME: ${{ secrets.DB_NAME }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      IP_HOST: ${{ secrets.IP_HOST }}
+      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+  staging-CD:
+    if: github.ref == 'refs/heads/staging'
+    needs: staging-CI
+    uses: Dummy-WAD/dka-shop-be/.github/workflows/CD.yml@DEK-63-Implement-CI-CD-pipeline
+    secrets: inherit
+
+  prod-CI:
+    if: github.ref == 'refs/heads/main'
+    uses: Dummy-WAD/dka-shop-be/.github/workflows/CI.yml@DEK-63-Implement-CI-CD-pipeline
+    secrets: 
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      ECR_URL: ${{ secrets.ECR_URL }}
+      ECR_SERVER_URL: ${{ secrets.ECR_SERVER_URL }}
+      PORT: ${{ secrets.PORT }}
+      REACT_URL: ${{ secrets.REACT_URL }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      JWT_ACCESS_EXPIRATION_MINUTES: ${{ secrets.JWT_ACCESS_EXPIRATION_MINUTES }}
+      JWT_REFRESH_EXPIRATION_DAYS: ${{ secrets.JWT_REFRESH_EXPIRATION_DAYS }}
+      JWT_RESET_PASSWORD_EXPIRATION_MINUTES: ${{ secrets.JWT_RESET_PASSWORD_EXPIRATION_MINUTES }}
+      JWT_VERIFY_EMAIL_EXPIRATION_MINUTES: ${{ secrets.JWT_VERIFY_EMAIL_EXPIRATION_MINUTES }}
+      NODE_ENV: ${{ secrets.NODE_ENV }}
+      SMTP_HOST: ${{ secrets.SMTP_HOST }}
+      SMTP_PORT: ${{ secrets.SMTP_PORT }}
+      SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+      SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+      EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_PORT: ${{ secrets.DB_PORT }}
+      DB_NAME: ${{ secrets.DB_NAME }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      IP_HOST: ${{ secrets.IP_HOST }}
+      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+  prod-CD:
+    if: github.ref == 'refs/heads/main'
+    needs: prod-CI
+    uses: Dummy-WAD/dka-shop-be/.github/workflows/CD.yml@DEK-63-Implement-CI-CD-pipeline
+    secrets: inherit

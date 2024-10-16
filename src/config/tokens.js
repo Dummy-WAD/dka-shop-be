@@ -5,7 +5,5 @@ const tokenTypes = {
     VERIFY_EMAIL: 'verifyEmail',
   };
   
-  module.exports = {
-    tokenTypes,
-  };
+  export default tokenTypes;
   

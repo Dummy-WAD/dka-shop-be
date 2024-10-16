@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = (sequelize, DataTypes) => {
+export default (sequelize, DataTypes) => {
   const productImage = sequelize.define('productImage', {
     id: {
       allowNull: false,
@@ -8,13 +8,27 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true,
       type: DataTypes.INTEGER
     },
-    product_id: DataTypes.INTEGER,
+    productId: {
+      type: DataTypes.INTEGER,
+      field: 'product_id'
+    },
+    imageUrl: {
+      type: DataTypes.TEXT,
+      field: 'image_url'
+    },
     type: DataTypes.TEXT('medium'),
-    is_primary: DataTypes.BOOLEAN
+    isPrimary: {
+      type: DataTypes.BOOLEAN,
+      field: 'is_primary'
+    }
+  },
+  {
+    tableName: 'product_images',
+    freezeTableName: true,
   });
   productImage.associate = (db) => {
     productImage.belongsTo(db.product, {
-      foreignKey: 'product_id',
+      foreignKey: 'productId',
       constraints: false
     });
   };

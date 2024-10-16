@@ -1,6 +1,8 @@
 'use strict';
 
-module.exports = (sequelize, DataTypes) => {
+import { AccountStatus, Gender, UserRole } from "../../utils/enums.js";
+
+export default (sequelize, DataTypes) => {
   const user = sequelize.define('user', {
     id: {
       allowNull: false,
@@ -8,17 +10,40 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true,
       type: DataTypes.INTEGER
     },
-    first_name: DataTypes.STRING,
-    last_name: DataTypes.STRING,
+    firstName: {
+      type: DataTypes.STRING,
+      field: 'first_name'
+    },
+    lastName: {
+      type: DataTypes.STRING,
+      field: 'last_name'
+    },
     email: DataTypes.STRING,
     password: DataTypes.STRING,
-    phone_number: DataTypes.STRING,
-    gender: DataTypes.BOOLEAN,
-    role: DataTypes.STRING,
-    status: DataTypes.BOOLEAN,
-    register_at: DataTypes.DATE,
-    createdAt: DataTypes.DATE,
-    updatedAt: DataTypes.DATE
+    phoneNumber: {
+      type: DataTypes.STRING,
+      field: 'phone_number'
+    },
+    gender: {
+      type: DataTypes.ENUM,
+      values: Object.values(Gender)
+    },
+    role: {
+      type: DataTypes.ENUM,
+      values: Object.values(UserRole)
+    },
+    status: {
+      type: DataTypes.ENUM,
+      values: Object.values(AccountStatus)
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      field: 'created_at'
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      field: 'updated_at'
+    }
   });
   user.associate = (db) => {
     user.hasMany(db.address, {

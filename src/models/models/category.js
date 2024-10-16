@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = (sequelize, DataTypes) => {
+export default (sequelize, DataTypes) => {
   const category = sequelize.define('category', {
     id: {
       allowNull: false,
@@ -10,13 +10,16 @@ module.exports = (sequelize, DataTypes) => {
     },
     name: DataTypes.STRING,
     description: DataTypes.STRING,
-    is_deleted: DataTypes.BOOLEAN,
+    is_deleted: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE
   });
-  category.associate((db) => {
-    category.hasMany(db.productVariant, {
-      foreignKey: 'product_id',
+  category.associate = ((db) => {
+    category.hasMany(db.product, {
+      foreignKey: 'categoryId',
       constraints: false
     })
   })

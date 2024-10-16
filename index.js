@@ -1,13 +1,13 @@
-const express = require("express");
-const routes = require("./src/routes/routes");
-const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
-const cf = require("./src/config/cors");
-const passport = require('passport');
-const { jwtStrategy } = require('./src/config/passport');
-const { errorHandler } = require("./src/middlewares/error");
+import express from "express";
+import routes from './src/routes/routes.js';
+import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
+import cf from "./src/config/cors.js";
+import passport from 'passport';
+import jwtStrategy from './src/config/passport.js';
+import errorHandler from "./src/middlewares/error.js";
 const app = express();
-const config = require('./src/config/config');
+import config from './src/config/config.js';
 const PORT = config.port || 8080;
 
 // CORS configuration

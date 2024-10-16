@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = (sequelize, DataTypes) => {
+export default (sequelize, DataTypes) => {
   const cartItem = sequelize.define('cartItem', {
     id: {
       allowNull: false,
@@ -12,8 +12,8 @@ module.exports = (sequelize, DataTypes) => {
     product_variant_id: DataTypes.INTEGER,
     quantity: DataTypes.INTEGER
   });
-  user.associate = (db) => {
-    user.belongsTo(db.user, {
+  cartItem.associate = (db) => {
+    cartItem.belongsTo(db.user, {
       foreignKey: 'user_id',
       constraints: false
     });

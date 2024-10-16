@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = (sequelize, DataTypes) => {
+export default (sequelize, DataTypes) => {
   const token = sequelize.define('token', {
     id: {
       allowNull: false,
@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     refresh_token: DataTypes.TEXT,
     user_id: DataTypes.INTEGER,
-    status: DataTypes.STRING,
+    expiration_date: DataTypes.DATE,
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE
   });

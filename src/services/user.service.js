@@ -1,24 +1,24 @@
-const httpStatus = require('http-status');
-const { User } = require("../models");
-const ApiError = require('../utils/ApiError');
-const paginate = require('./plugins/paginate.plugin');
+import httpStatus from 'http-status';
+import db from "../models/models/index.js";
+import ApiError from '../utils/ApiError.js';
+import paginate from './plugins/paginate.plugin.js';
+import { AccountStatus, UserRole } from '../utils/enums.js';
 
-const isEmailTaken = async (email, excludeUserId) => {
-  const user = await User.findOne({
-    where: {
-      email: email,
-      id: { [Sequelize.Op.ne]: excludeUserId }
-    }
-  });
-  return !!user; 
-};
+const createUser = async (userData) => {
 
-const createUser = async (userBody) => {
-  if (await isEmailTaken(userBody.email)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
+  if (await db.user.findOne({ where: { email: userData.email }})) {
+    throw new ApiError(httpStatus.CONFLICT, "Email already taken");
   }
-  return User.create(userBody);
-};
+
+  const savedUser = await db.user.create({
+    ...userData,
+    password: await bcrypt.hash(userData.password, process.env.PASSWORD_HASH_ROUND),
+    role: UserRole.CUSTOMER,
+    status: AccountStatus.INACTIVE
+  });
+
+  return savedUser;
+}
 
 const queryUsers = async (filter, options) => {
   const users = await paginate('users', filter, options);
@@ -26,11 +26,15 @@ const queryUsers = async (filter, options) => {
 };
 
 const getUserById = async (id) => {
-  return User.findById(id);
+  return db.user.findOne({
+    where: {
+      id
+    }
+  });
 };
 
 const getUserByEmail = async (email) => {
-  return User.findOne({ email });
+  return db.user.findOne({ email });
 };
 
 const updateUserById = async (userId, updateBody) => {
@@ -38,7 +42,7 @@ const updateUserById = async (userId, updateBody) => {
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
-  if (updateBody.email && (await User.isEmailTaken(updateBody.email, userId))) {
+  if (updateBody.email && (await db.user.isEmailTaken(updateBody.email, userId))) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
   }
   Object.assign(user, updateBody);
@@ -55,7 +59,7 @@ const deleteUserById = async (userId) => {
   return user;
 };
 
-module.exports = {
+export default {
   createUser,
   queryUsers,
   getUserById,
