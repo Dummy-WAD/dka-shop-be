@@ -61,7 +61,7 @@ jobs:
       ECR_URL: ${{ secrets.ECR_URL }}
       ECR_SERVER_URL: ${{ secrets.ECR_SERVER_URL }}
       PORT: ${{ secrets.PORT }}
-      REACT_URL: https://staging.dekan.io.vn
+      REACT_URL: ${{ secrets.REACT_URL }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       JWT_ACCESS_EXPIRATION_MINUTES: ${{ secrets.JWT_ACCESS_EXPIRATION_MINUTES }}
       JWT_REFRESH_EXPIRATION_DAYS: ${{ secrets.JWT_REFRESH_EXPIRATION_DAYS }}
