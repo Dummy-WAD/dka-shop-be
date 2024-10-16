@@ -3,12 +3,12 @@ dotenv.config();
 
 function configCors(app) {
   app.use(function (req, res, next) {
-    const allowedOrigins = [process.env.REACT_URL, process.env.LOCALHOST_URL];
+    const reactUrl = process.env.REACT_URL;
     const origin = req.headers.origin;
 
-    if (allowedOrigins.includes(origin)) {
+    if (origin === reactUrl) {
       res.setHeader("Access-Control-Allow-Origin", origin);
-    };
+    }
 
     res.setHeader(
       "Access-Control-Allow-Methods",
@@ -17,7 +17,7 @@ function configCors(app) {
 
     res.setHeader(
       "Access-Control-Allow-Headers",
-      "X-Requested-With,content-type,Authorization"
+      "X-Requested-With, content-type, Authorization"
     );
 
     res.setHeader("Access-Control-Allow-Credentials", true);
