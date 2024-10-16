@@ -29,4 +29,4 @@ function configCors(app) {
   });
 }
 
-export default configCors;
+export default { configCors };
