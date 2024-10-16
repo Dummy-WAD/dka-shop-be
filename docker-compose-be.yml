@@ -1,7 +1,7 @@
 services:
   backend:
     image: $ECR_SERVER_URL:$BRANCH-$SHA
-    container_name: backend
+    container_name: backend_$BRANCH
     ports:
       - $BACKEND_PORT:8080
     healthcheck:
