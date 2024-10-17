@@ -12,17 +12,17 @@ const isPasswordMatch = async function (password, hashPassword) {
 
 const createUser = async (userData) => {
 
+  const SALT_ROUND = 10;
+
   if (await db.user.findOne({ where: { email: userData.email }})) {
     throw new ApiError(httpStatus.CONFLICT, "Email already taken");
   }
 
   const savedUser = await db.user.create({
     ...userData,
-    password: await bcrypt.hash(userData.password, 8),
+    password: await bcrypt.hash(userData.password, SALT_ROUND),
     role: 'CUSTOMER',
     status: 'INACTIVE',
-    createdAt: new Date(),
-    updatedAt: new Date()
   });
 
   return savedUser;

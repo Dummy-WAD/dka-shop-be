@@ -12,6 +12,13 @@ const getAllCustomers = {
     })
 };
 
+const getCustomerDetail = {
+    params: Joi.object().keys({
+        customerId: Joi.number().integer().positive().required()
+    })
+};
+
 export default {
-    getAllCustomers
+    getAllCustomers,
+    getCustomerDetail
 }

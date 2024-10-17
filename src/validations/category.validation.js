@@ -2,8 +2,8 @@ import Joi from 'joi';
 
 const createCategory = {
   body: Joi.object().keys({
-    name: Joi.string().required(),
-    description: Joi.string().trim(),
+    name: Joi.string().trim().required(),
+    description: Joi.string().trim().required(),
   }),
 };
 
@@ -19,7 +19,7 @@ const editCategory = {
   }),
   body: Joi.object().keys({
     name: Joi.string().trim().optional(),
-    description: Joi.string().trim().allow('').optional()
+    description: Joi.string().trim().optional()
   })
 };
 
