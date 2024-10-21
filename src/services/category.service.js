@@ -40,7 +40,7 @@ const editCategory = async (req) => {
     const currentCategory = await db.category.findOne({ where: { id: categoryId, is_deleted: false } });
     if (!currentCategory) {
         throw new ApiError(httpStatus.NOT_FOUND, "Category does not exist");
-    }
+    };
     if (name !== undefined) {
         const trimmedName = name.trim();
         if (trimmedName !== currentCategory.name) {
@@ -55,7 +55,7 @@ const editCategory = async (req) => {
                 throw new ApiError(httpStatus.UNPROCESSABLE_ENTITY, "This category already taken");
             }
         }
-    }
+    };
     await db.category.update(
         { 
             name: name !== undefined ? name.trim() : currentCategory.name,
