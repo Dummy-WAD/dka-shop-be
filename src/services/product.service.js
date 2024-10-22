@@ -2,7 +2,7 @@ import paginate from './plugins/paginate.plugin.js';
 import db from '../models/models/index.js';
 import ApiError from '../utils/ApiError.js';
 import httpStatus from 'http-status';
-import { DiscountType } from '../utils/enums.js';
+import { DiscountType, DeleteStatus } from '../utils/enums.js';
 import { Op } from 'sequelize';
 
 const getAllProductsByCondition = async (filter, options) => {
@@ -24,6 +24,57 @@ const getAllProductsByCondition = async (filter, options) => {
     ];
     return await paginate(db.product, filter, options, include);
 };
+
+const createProduct = async (productBody) => {
+    const product = await db.product.findOne({ 
+        where: { 
+            name: productBody.name,
+            is_deleted: DeleteStatus.NOT_DELETED
+        } 
+    });
+
+    if (product) throw new ApiError(httpStatus.BAD_REQUEST, 'Product already exists!');
+    
+    const category = await db.category.findOne({
+        where: { id: productBody.categoryId, is_deleted: DeleteStatus.NOT_DELETED }
+    });
+
+    if (!category) throw new ApiError(httpStatus.BAD_REQUEST, 'Category not found!');
+
+    // Create product
+    const newProduct = await db.product.create({
+        name: productBody.name,
+        price: productBody.price,
+        description: productBody.description,
+        categoryId: category.id,
+        isDeleted: DeleteStatus.NOT_DELETED,
+    });
+
+    // Create product images
+    if (productBody.productImages && productBody.productImages.length > 0) {
+        const images = productBody.productImages.map(image => ({
+            productId: newProduct.id,
+            imageUrl: `${process.env.AWS_CLOUDFRONT_URL}/${image.filename}`,
+            isPrimary: image.isPrimary,
+        }));
+        await db.productImage.bulkCreate(images);
+    }
+
+    // Create product variants
+    if (productBody.productVariants && productBody.productVariants.length > 0) {
+        const variants = productBody.productVariants.map(variant => ({
+            productId: newProduct.id,
+            size: variant.size,
+            color: variant.color,
+            quantity: variant.quantity,
+            isDeleted: DeleteStatus.NOT_DELETED,
+        }));
+        await db.productVariant.bulkCreate(variants);
+    }
+
+    // return created product with images and variants
+    return {status: 'success', message: 'Product created successfully!'};
+}
 
 const deleteProduct = async (productId) => {
     const product = await db.product.findByPk(productId);
@@ -234,6 +285,7 @@ const getProductsForCustomer = async (filter, search, options) => {
 
 export default { 
     getAllProductsByCondition,
+    createProduct,
     deleteProduct,
     getProductDetail,
     getProductDetailForCustomer,

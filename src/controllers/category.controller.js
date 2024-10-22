@@ -13,7 +13,7 @@ const deleteCategory = catchAsync(async (req, res) => {
     message: `Category deleted successfully`,
   });
 });
-  
+
 const getAllCategories = catchAsync(async (req, res) => {
   const { page, limit, sortBy, name, order } = req.query;
   const filter = {
