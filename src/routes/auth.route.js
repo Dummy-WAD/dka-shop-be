@@ -20,6 +20,11 @@ router.post(
   authController.login
 );
 
+router.get(
+  "/confirm-sign-up",
+  authController.confirmRegister
+);
+
 router.post(
   "/refresh-token",
   validate(authValidation.refreshTokens),
