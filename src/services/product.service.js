@@ -60,14 +60,13 @@ const getProductDetail = async (productId) => {
 
     if (!productDetail) throw new ApiError(httpStatus.NOT_FOUND, 'Product not found!');
 
-    const { productImages, isDeleted, categoryId, category, ...basicInfo } = productDetail.get();
+    const { productImages, isDeleted, categoryId, ...basicInfo } = productDetail.get();
 
     const primaryImage = productDetail.productImages.find(img => img.isPrimary)?.imageUrl || null;
     const otherImages = productDetail.productImages.filter(img => !img.isPrimary).map(img => img?.imageUrl || null);
 
     return {
         ...basicInfo,
-        categoryName: category?.name ?? null,
         primaryImage,
         otherImages
     };
