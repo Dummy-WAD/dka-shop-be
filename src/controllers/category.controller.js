@@ -1,6 +1,7 @@
 import httpStatus from 'http-status';
 import catchAsync from '../utils/catchAsync.js';
 import { categoryService } from '../services/index.js';
+import pick from '../utils/pick.js';
 
 const createCategory = catchAsync(async (req, res) => {
   const category = await categoryService.createCategory(req.body);
@@ -39,9 +40,16 @@ const editCategory = catchAsync(async (req, res) => {
   });
 });
 
+const getBestSellerProducts = catchAsync(async (req, res) => {
+  const filter = pick(req.query, ['categoryId', 'limit']);
+  const bestSellerProducts = await categoryService.getBestSellerProducts(filter);
+  res.status(httpStatus.OK).send(bestSellerProducts);
+});
+
 export default {
   createCategory,
   deleteCategory,
   getAllCategories,
-  editCategory
+  editCategory,
+  getBestSellerProducts
 };

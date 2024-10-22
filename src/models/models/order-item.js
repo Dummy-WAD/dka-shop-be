@@ -12,6 +12,10 @@ export default (sequelize, DataTypes) => {
     product_variant_id: DataTypes.INTEGER,
     price: DataTypes.DOUBLE,
     quantity: DataTypes.INTEGER
+  }, 
+  {
+    tableName: 'order_items',
+    freezeTableName: true,
   });
   orderItem.associate = (db) => {
     orderItem.belongsTo(db.order, {
