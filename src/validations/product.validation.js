@@ -2,7 +2,7 @@ import Joi from 'joi';
 
 const getProducts = {
     query: Joi.object().keys({
-        name: Joi.string().trim().max(30).optional(),
+        name: Joi.string().trim().allow('').max(30).optional(),
         categoryId: Joi.number().integer().positive().optional(),
         sortBy: Joi.string().valid('name', 'price', 'createdAt', 'updatedAt').optional(),
         order: Joi.string().valid('asc', 'desc').optional(),
@@ -25,7 +25,7 @@ const getProductDetail = {
 
 const getProductsForCustomer = {
     query: Joi.object().keys({
-        name: Joi.string().trim().max(30).optional(),
+        name: Joi.string().trim().allow('').max(30).optional(),
         categoryId: Joi.number().integer().positive().optional(),
         sortBy: Joi.string().valid('price', 'updatedAt').default('updatedAt'),
         order: Joi.string().valid('asc', 'desc').default('desc'),
