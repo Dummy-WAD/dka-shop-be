@@ -14,6 +14,8 @@ router.get(
     categoryController.getBestSellerProducts
 );
 
+router.get('/', categoryController.getAllCategoriesForCustomer)
+
 // Protect all routes
 router.use(passport.authenticate("jwt", { session: false }));
 router.use(isCustomer); // check if the user is a customer

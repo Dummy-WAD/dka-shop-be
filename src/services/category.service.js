@@ -34,6 +34,15 @@ const getAllCategories = async (filter, options) => {
     return categories;
 }
 
+const getAllCategoriesForCustomer = async () => {
+    return await db.category.findAll({ 
+        where: { 
+            is_deleted: false 
+        },
+        attributes: ['id', 'name']
+    });
+};
+
 const editCategory = async (req) => {
     const { categoryId } = req.params
     const { name, description } = req.body
@@ -124,6 +133,6 @@ export default {
     createCategory,
     deleteCategory,
     getAllCategories,
-    editCategory,
-    getBestSellerProducts
+    getAllCategoriesForCustomer,
+    editCategory
 }

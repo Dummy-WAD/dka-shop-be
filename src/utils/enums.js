@@ -18,6 +18,11 @@ export const DiscountType = Object.freeze({
     PERCENTAGE: 'PERCENTAGE'
 });
 
+export const ConfirmationTokenStatus = Object.freeze({
+    PENDING: 'PENDING',
+    CONFIRMED: 'CONFIRMED'
+});
+
 export const DeleteStatus = Object.freeze({
     DELETED: true,
     NOT_DELETED: false
