@@ -8,18 +8,27 @@ export default (sequelize, DataTypes) => {
       primaryKey: true,
       type: DataTypes.INTEGER
     },
-    discount_offer_id: DataTypes.INTEGER,
-    product_id: DataTypes.INTEGER,
+    discountOfferId: {
+      type: DataTypes.INTEGER,
+      field: 'discount_offer_id'
+    },
+    productId: {
+      type: DataTypes.INTEGER,
+      field: 'product_id'
+    },
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE
+  },{
+    tableName: 'product_discount_offers',
+    freezeTableName: true,
   });
   productDiscountOffer.associate = (db) => {
     productDiscountOffer.belongsTo(db.product, {
-      foreignKey: 'product_id',
+      foreignKey: 'productId',
       constraints: false
     });
     productDiscountOffer.belongsTo(db.discountOffer, {
-      foreignKey: 'discount_offer_id',
+      foreignKey: 'discountOfferId',
       constraints: false
     });
   };

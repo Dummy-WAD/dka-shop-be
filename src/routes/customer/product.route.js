@@ -1,18 +1,19 @@
 
 import express from "express";
-import passport from "passport"; // Import passport for authentication
-import { isCustomer } from "../../middlewares/authorization.js";
+import passport from "passport";
+import validate from "../../middlewares/validate.js";
+import productController from "../../controllers/product.controller.js";
+import productValidation from "../../validations/product.validation.js";
 
 
 const router = express.Router();
 
-// No authentication required
+router.get(
+    "/:productId",
+    validate(productValidation.getProductDetail),
+    productController.getProductDetailForCustomer
+);
 
-
-// Protect all routes
 router.use(passport.authenticate("jwt", { session: false }));
-router.use(isCustomer); // check if the user is a customer
-
-// after this line, all routes are protected
 
 export default router;

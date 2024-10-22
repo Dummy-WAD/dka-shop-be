@@ -28,16 +28,16 @@ export default (sequelize, DataTypes) => {
       targetKey: 'id',
     });
     product.hasMany(db.productVariant, {
-      foreignKey: 'product_id',
+      foreignKey: 'productId',
       constraints: false
     });
     product.belongsToMany(db.discountOffer, { 
       through: db.productDiscountOffer,
-      foreignKey: 'product_id',
+      foreignKey: 'productId',
       constraints: false
     });
     product.hasMany(db.productImage, {
-      foreignKey: 'product_id',
+      foreignKey: 'productId',
       constraints: false
     });
   }
