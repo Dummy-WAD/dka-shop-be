@@ -11,6 +11,32 @@ const getProducts = {
     })
 };
 
+const createProduct = {
+    body: Joi.object().keys({
+        name: Joi.string().trim().max(50).required(),
+        price: Joi.number().precision(2).positive().required(),
+        categoryId: Joi.number().integer().positive().required(),  
+        description: Joi.string().trim().max(16000).optional(),
+        productImages: Joi.array().items(
+            Joi.object({
+                filename: Joi.string().trim().max(255).required(),
+                isPrimary: Joi.boolean().required()
+            })
+        ).min(1).required().custom((value, helpers) => {
+            const primaryCount = value.filter(image => image.isPrimary).length;
+            if (primaryCount !== 1) {
+                return helpers.message('One and only one image must have isPrimary set to true');
+            }
+            return value;
+        }),
+        productVariants: Joi.array().items(Joi.object({
+            size: Joi.string().trim().max(10).required(),
+            color: Joi.string().trim().max(20).required(),
+            quantity: Joi.number().integer().positive().required()
+        })).optional()
+    })
+};
+
 const deleteProduct = {
     params: Joi.object().keys({
         productId: Joi.number().integer().positive().required()
@@ -43,6 +69,7 @@ const getProductsForCustomer = {
 
 export default {
     getProducts,
+    createProduct,
     deleteProduct,
     getProductDetail,
     getProductsForCustomer

@@ -10,6 +10,12 @@ router.get(
     productController.getAllProducts
   );
 
+router.post(
+    "/",
+    validate(productValidation.createProduct),
+    productController.createProduct
+);
+
 router.delete(
     "/:productId",
     validate(productValidation.deleteProduct),
