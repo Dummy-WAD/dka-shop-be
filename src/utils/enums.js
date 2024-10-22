@@ -11,4 +11,9 @@ export const UserRole = Object.freeze({
 export const Gender = Object.freeze({
     MALE: 'MALE',
     FEMALE: 'FEMALE'
-})
+});
+
+export const DiscountType = Object.freeze({
+    PRICE: 'PRICE',
+    PERCENTAGE: 'PERCENTAGE'
+});

@@ -5,14 +5,17 @@
     "database": "$DB_NAME",
     "host": "$DB_HOST",
     "port": "$DB_PORT",
-    "dialect": "mysql"
+    "dialect": "mysql",
+    "dialectOptions": {
+      "useUTC": false
+    },
+    "timezone": "+07:00"
   },
   "test": {
     "username": "$DB_USER",
     "password": "$DB_PASSWORD",
     "database": "$DB_NAME",
     "host": "$DB_HOST",
-    "port": "$DB_PORT",
     "dialect": "mysql"
   },
   "production": {
@@ -20,7 +23,6 @@
     "password": "$DB_PASSWORD",
     "database": "$DB_NAME",
     "host": "$DB_HOST",
-    "port": "$DB_PORT",
     "dialect": "mysql"
   }
 }
