@@ -27,6 +27,11 @@ const getProductDetailForCustomer = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(product);
 });
 
+const createProduct = catchAsync(async (req, res) => {
+  const product = await productServices.createProduct(req.body);
+  res.status(httpStatus.CREATED).send(product);
+});
+
 const getProductsForCustomer = catchAsync(async (req, res) => {
   const filter = pick(req.query, ['categoryId', 'priceStart', 'priceEnd']);
   const search = pick(req.query, ['name']);
@@ -37,6 +42,7 @@ const getProductsForCustomer = catchAsync(async (req, res) => {
 
 export default {
   getAllProducts,
+  createProduct,
   deleteProduct,
   getProductDetail,
   getProductDetailForCustomer,
