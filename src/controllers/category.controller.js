@@ -39,9 +39,15 @@ const editCategory = catchAsync(async (req, res) => {
   });
 });
 
+const getAllCategoriesForCustomer = catchAsync(async (req, res) => {
+  const categories = await categoryService.getAllCategoriesForCustomer();
+  res.status(httpStatus.OK).send(categories);
+});
+
 export default {
   createCategory,
   deleteCategory,
   getAllCategories,
-  editCategory
+  editCategory,
+  getAllCategoriesForCustomer
 };

@@ -1,11 +1,12 @@
 import express from "express";
 import passport from "passport"; // Import passport for authentication
 import { isCustomer } from "../../middlewares/authorization.js";
+import categoryController from "../../controllers/category.controller.js";
 
 const router = express.Router();
 
 // No authentication required
-
+router.get('/', categoryController.getAllCategoriesForCustomer)
 
 // Protect all routes
 router.use(passport.authenticate("jwt", { session: false }));
