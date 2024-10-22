@@ -17,3 +17,8 @@ export const DiscountType = Object.freeze({
     PRICE: 'PRICE',
     PERCENTAGE: 'PERCENTAGE'
 });
+
+export const DeleteStatus = Object.freeze({
+    DELETED: true,
+    NOT_DELETED: false
+});
