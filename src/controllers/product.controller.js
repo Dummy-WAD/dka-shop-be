@@ -40,6 +40,11 @@ const getProductsForCustomer = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(products);
 });
 
+const createProduct = catchAsync(async (req, res) => {
+  const product = await productServices.createProduct(req.body);
+  res.status(httpStatus.CREATED).send(product);
+});
+
 export default {
   getAllProducts,
   createProduct,
