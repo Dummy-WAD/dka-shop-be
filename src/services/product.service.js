@@ -42,7 +42,6 @@ const createProduct = async (productBody) => {
     if (!category) throw new ApiError(httpStatus.BAD_REQUEST, 'Category not found!');
 
     // Create product
-    console.log(productBody);
     const newProduct = await db.product.create({
         name: productBody.name,
         price: productBody.price,
@@ -51,61 +50,30 @@ const createProduct = async (productBody) => {
         isDeleted: DeleteStatus.NOT_DELETED,
     });
 
-
-    // const newProduct = await db.product.create({
-    //     name: productBody.name,
-    //     price: productBody.price,
-    //     description: productBody.description,
-    //     category_id: productBody.categoryId,
-    //     is_deleted: DeleteStatus.NOT_DELETED,
-    // });
-
     // Create product images
     if (productBody.productImages && productBody.productImages.length > 0) {
-        for (const image of productBody.productImages) {
-            await db.productImage.create({
-                productId: newProduct.id,
-                imageUrl: `${process.env.AWS_CLOUDFRONT_URL}/${image.filename}`,
-                isPrimary: image.isPrimary,
-            });
-        }
+        const images = productBody.productImages.map(image => ({
+            productId: newProduct.id,
+            imageUrl: `${process.env.AWS_CLOUDFRONT_URL}/${image.filename}`,
+            isPrimary: image.isPrimary,
+        }));
+        await db.productImage.bulkCreate(images);
     }
 
     // Create product variants
     if (productBody.productVariants && productBody.productVariants.length > 0) {
-        for (const variant of productBody.productVariants) {
-            await db.productVariant.create({
-                productId: newProduct.id,
-                size: variant.size,
-                color: variant.color,
-                quantity: variant.quantity,
-                isDeleted: DeleteStatus.NOT_DELETED,
-            });
-        }
+        const variants = productBody.productVariants.map(variant => ({
+            productId: newProduct.id,
+            size: variant.size,
+            color: variant.color,
+            quantity: variant.quantity,
+            isDeleted: DeleteStatus.NOT_DELETED,
+        }));
+        await db.productVariant.bulkCreate(variants);
     }
 
     // return created product with images and variants
-    return await db.product.findOne({
-        where: { id: newProduct.id, is_deleted: DeleteStatus.NOT_DELETED },
-        include: [
-            {
-                model: db.category,
-                required: false,
-                attributes: ['id', 'name'],
-                where: { is_deleted: DeleteStatus.NOT_DELETED },
-            },
-            {
-                model: db.productImage,
-                required: false,
-                attributes: ['image_url', 'is_primary'],
-            },
-            {
-                model: db.productVariant,
-                required: false,
-                attributes: ['size', 'color', 'quantity', 'is_deleted'],
-            }
-        ]
-    });
+    return {status: 'success', message: 'Product created successfully!'};
 }
 
 const deleteProduct = async (productId) => {
