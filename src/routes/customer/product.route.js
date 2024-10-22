@@ -9,6 +9,12 @@ import productValidation from "../../validations/product.validation.js";
 const router = express.Router();
 
 router.get(
+    "/",
+    validate(productValidation.getProductsForCustomer),
+    productController.getProductsForCustomer
+);
+
+router.get(
     "/:productId",
     validate(productValidation.getProductDetail),
     productController.getProductDetailForCustomer

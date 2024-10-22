@@ -27,9 +27,18 @@ const getProductDetailForCustomer = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(product);
 });
 
+const getProductsForCustomer = catchAsync(async (req, res) => {
+  const filter = pick(req.query, ['categoryId', 'priceStart', 'priceEnd']);
+  const search = pick(req.query, ['name']);
+  const options = pick(req.query, ['sortBy', 'order', 'limit', 'page']);
+  const products = await productServices.getProductsForCustomer(filter, search, options);
+  res.status(httpStatus.OK).send(products);
+});
+
 export default {
   getAllProducts,
   deleteProduct,
   getProductDetail,
-  getProductDetailForCustomer
+  getProductDetailForCustomer,
+  getProductsForCustomer
 };
