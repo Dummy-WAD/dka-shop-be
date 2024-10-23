@@ -23,8 +23,15 @@ const editCategory = {
   })
 };
 
+const getBestSellerCategories = {
+  query: Joi.object().keys({
+    limit: Joi.number().integer().positive().optional().default(6)
+  })
+};
+
 export default {
     createCategory,
     deleteCategory,
-    editCategory
+    editCategory,
+    getBestSellerCategories
 }
