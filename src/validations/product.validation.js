@@ -67,10 +67,18 @@ const getProductsForCustomer = {
     })
 };
 
+const getBestSellerProducts = {
+    query: Joi.object().keys({
+        categoryId: Joi.number().integer().positive().optional(),
+        limit: Joi.number().integer().positive().optional().default(16)
+    })
+};
+
 export default {
     getProducts,
     createProduct,
     deleteProduct,
     getProductDetail,
-    getProductsForCustomer
+    getProductsForCustomer,
+    getBestSellerProducts
 }
