@@ -282,6 +282,63 @@ const getProductsForCustomer = async (filter, search, options) => {
     };
 };
 
+async function getBestSellerProducts(bestSellerRequest) {
+    const { categoryId, limit } = bestSellerRequest;
+
+    if (categoryId && !await db.category.findOne({ where: { id: categoryId, is_deleted: false }})) throw new ApiError(httpStatus.NOT_FOUND, 'Category not found');
+
+    const bestSellingProducts = await db.product.findAll({
+        attributes: ['id', 'name', 'price'],
+        include: [
+            {
+                model: db.productImage,
+                attributes: ['imageUrl'],
+                where: { isPrimary: true },
+                required: false
+            },
+            {
+                model: db.discountOffer,
+                through: { attributes: [] },
+                required: false,
+                attributes: {
+                    include: [
+                        [
+                            db.sequelize.literal(`CASE 
+                                WHEN NOW() BETWEEN discountOffers.start_date AND discountOffers.expiration_date
+                                AND discountOffers.discount_type = 'PRICE' THEN product.price - discountOffers.discount_value
+                                WHEN NOW() BETWEEN discountOffers.start_date AND discountOffers.expiration_date
+                                AND discountOffers.discount_type = 'PERCENTAGE' THEN product.price - (product.price * discountOffers.discount_value / 100)
+                                ELSE product.price
+                            END`),
+                            'priceDiscounted'
+                        ]
+                    ],
+                    exclude: ['createdAt', 'updatedAt', 'isDeleted', 'startDate', 'expirationDate']
+                },
+                where: { isDeleted: false }
+            }
+        ],
+        where: { isDeleted: false, ...(categoryId ? { categoryId } : {}) },
+        order: [[db.sequelize.literal(`
+            (SELECT SUM(order_items.quantity) 
+             FROM order_items 
+             JOIN product_variants ON order_items.product_variant_id = product_variants.id 
+             WHERE product_variants.product_id = product.id)
+        `), 'DESC']],
+        limit: limit,
+        raw: true,
+        nest: true
+    });
+
+    return bestSellingProducts.map(product => {
+        const { discountOffers, productImages, ...basicInfo } = product;
+        return {
+            ...basicInfo,
+            priceDiscounted: discountOffers?.priceDiscounted ?? basicInfo.price,
+            imageUrl: productImages.imageUrl
+        };
+    });
+};
 
 export default { 
     getAllProductsByCondition,
@@ -289,5 +346,6 @@ export default {
     deleteProduct,
     getProductDetail,
     getProductDetailForCustomer,
-    getProductsForCustomer 
+    getProductsForCustomer,
+    getBestSellerProducts
 };

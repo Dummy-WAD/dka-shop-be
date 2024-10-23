@@ -15,6 +15,12 @@ router.get(
 );
 
 router.get(
+    "/best-seller",
+    validate(productValidation.getBestSellerProducts),
+    productController.getBestSellerProducts
+);
+
+router.get(
     "/:productId",
     validate(productValidation.getProductDetail),
     productController.getProductDetailForCustomer
