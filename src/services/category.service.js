@@ -76,11 +76,29 @@ const editCategory = async (req) => {
     );
 };
 
+async function getBestSellerCategories(limit) {
+    const topCategories = await db.category.findAll({
+        attributes: ['id','name'],
+        where: { is_deleted: false },
+        order: [[db.sequelize.literal(`
+            (SELECT COALESCE(SUM(order_items.quantity), 0) 
+             FROM order_items 
+             JOIN product_variants ON order_items.product_variant_id = product_variants.id 
+             JOIN products ON product_variants.product_id = products.id 
+             WHERE products.category_id = category.id)
+        `), 'DESC']],
+        limit: limit
+    });
+
+    return topCategories;
+}
+
 
 export default { 
     createCategory, 
     deleteCategory,
     getAllCategories,
     getAllCategoriesForCustomer,
-    editCategory
+    editCategory,
+    getBestSellerCategories
 }

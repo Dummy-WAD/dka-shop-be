@@ -39,6 +39,11 @@ const editCategory = catchAsync(async (req, res) => {
   });
 });
 
+const getBestSellerCategories = catchAsync(async (req, res) => {
+  const categories = await categoryService.getBestSellerCategories(req.query.limit);
+  res.status(httpStatus.OK).send(categories);
+});
+
 const getAllCategoriesForCustomer = catchAsync(async (req, res) => {
   const categories = await categoryService.getAllCategoriesForCustomer();
   res.status(httpStatus.OK).send(categories);
@@ -49,5 +54,6 @@ export default {
   deleteCategory,
   getAllCategories,
   editCategory,
+  getBestSellerCategories,
   getAllCategoriesForCustomer
 };
