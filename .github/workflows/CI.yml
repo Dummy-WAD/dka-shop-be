@@ -7,6 +7,12 @@ on:
         required: true
       AWS_SECRET_ACCESS_KEY:
         required: true
+      AWS_REGION:
+        required: true
+      AWS_CLOUDFRONT_URL:
+        required: true
+      AWS_IMAGE_BUCKET_NAME:
+        required: true
       ECR_URL:
         required: true
       ECR_SERVER_URL:
@@ -80,6 +86,9 @@ jobs:
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       IP_HOST: ${{ secrets.IP_HOST }}
       AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_CLOUDFRONT_URL: ${{ secrets.AWS_CLOUDFRONT_URL }}
+      AWS_IMAGE_BUCKET_NAME: ${{ secrets.AWS_IMAGE_BUCKET_NAME }}
 
     steps:
       - uses: actions/checkout@v4
