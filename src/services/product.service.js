@@ -71,9 +71,6 @@ const createProduct = async (productBody) => {
         }));
         await db.productVariant.bulkCreate(variants);
     }
-
-    // return created product with images and variants
-    return {status: 'success', message: 'Product created successfully!'};
 }
 
 const updateProduct = async (productId, productBody) => {
@@ -130,8 +127,6 @@ const updateProduct = async (productId, productBody) => {
         }));
         await db.productVariant.bulkCreate(variants);
     }
-
-    return {status: 'success', message: 'Product updated successfully!'};
 };
 
 const deleteProduct = async (productId) => {
