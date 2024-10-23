@@ -1,9 +1,10 @@
 import httpStatus from "http-status";
 import db from "../models/models/index.js"; 
-import { userServices, tokenServices } from "../services/index.js";
+import { userServices, tokenServices, confirmationTokenService } from "../services/index.js";
 import bcrypt from 'bcryptjs';
 import ApiError from "../utils/ApiError.js";
 import dotenv from 'dotenv';
+import { AccountStatus, ConfirmationTokenStatus } from "../utils/enums.js";
 dotenv.config();
 
 const isPasswordMatch = async function (password, hashPassword) {
@@ -26,6 +27,28 @@ const createUser = async (userData) => {
   });
 
   return savedUser;
+}
+
+const confirmRegisterByToken = async (token) => {
+  const confirmationToken = await db.confirmationToken.findOne({
+    where: {
+      confirmationToken: token,
+      status: ConfirmationTokenStatus.PENDING,
+    },
+  });
+
+  if (!confirmationToken) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Confirmation token not found");
+  }
+
+  const user = await db.user.findByPk(confirmationToken.userId);
+  user.status = AccountStatus.ACTIVE;
+  await user.save();
+
+  confirmationToken.status = ConfirmationTokenStatus.CONFIRMED;
+  await confirmationToken.save();
+
+  return { email: user.email, status: user.status };
 }
 
 const login = async (userData) => {
@@ -51,6 +74,25 @@ const login = async (userData) => {
   return user;
 };
 
+const recreateConfirmationToken = async (email) => {
+  const user = await db.user.findOne({
+    where: { email },
+  });
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+  }
+
+  if (user.status === AccountStatus.ACTIVE) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "User already activated");
+  }
+
+  // Invalidate old confirmation tokens
+  confirmationTokenService.invalidateConfirmationTokenOfUser(user.id);
+
+  return await confirmationTokenService.createConfirmationToken(user.id);
+}
+
 const logout = async (refresh_token) => {
   const refreshTokenDoc = await db.token.findOne({
     where: {
@@ -74,4 +116,4 @@ const refreshAuth = async (refresh_token) => {
     return tokenServices.generateAuthTokens(user);
 };
 
-export default { createUser, login, logout, refreshAuth };
+export default { createUser, confirmRegisterByToken, login, recreateConfirmationToken, logout, refreshAuth };

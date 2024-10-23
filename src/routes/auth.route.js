@@ -26,6 +26,12 @@ router.get(
 );
 
 router.post(
+  "/resend-confirmation-email",
+  validate(authValidation.resendConfirmationEmail),
+  authController.resendConfirmationEmail
+)
+
+router.post(
   "/refresh-token",
   validate(authValidation.refreshTokens),
   authController.refreshTokens

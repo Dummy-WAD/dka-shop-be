@@ -14,6 +14,12 @@ const register = {
   }),
 }
 
+const resendConfirmationEmail = {
+  body: Joi.object().keys({
+    email: Joi.string().email().required(),
+  }),
+};
+
 const login = {
   body: Joi.object().keys({
     email: Joi.string().email().required(),
@@ -35,6 +41,7 @@ const logout = {
 
 export default {
   register,
+  resendConfirmationEmail,
   login,
   refreshTokens,
   logout

@@ -20,7 +20,8 @@ export const DiscountType = Object.freeze({
 
 export const ConfirmationTokenStatus = Object.freeze({
     PENDING: 'PENDING',
-    CONFIRMED: 'CONFIRMED'
+    CONFIRMED: 'CONFIRMED',
+    CANCELLED: 'CANCELLED'
 });
 
 export const DeleteStatus = Object.freeze({

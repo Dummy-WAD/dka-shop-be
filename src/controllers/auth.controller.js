@@ -9,7 +9,7 @@ const register = catchAsync(async (req, res) => {
   const user = await authServices.createUser(req.body);
 
   const confirmationToken = await confirmationTokenService.createConfirmationToken(user.id);
-  emailService.sendConfirmationEmail(user.email, confirmationToken).catch((err) => {
+  emailService.sendConfirmationEmail(user.email, confirmationToken.confirmationToken).catch((err) => {
     console.error('Failed to send confirmation email:', err);
   });
 
@@ -25,7 +25,7 @@ const register = catchAsync(async (req, res) => {
 
 const confirmRegister = catchAsync(async (req, res) => {
   const { token } = req.query;
-  const user = await confirmationTokenService.confirmRegisterByToken(token);
+  const user = await authServices.confirmRegisterByToken(token);
   res.status(httpStatus.OK).send({ user });
 });
 
@@ -49,6 +49,17 @@ const login = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ user, tokens });
 });
 
+const resendConfirmationEmail = catchAsync(async (req, res) => {
+  const { email } = req.body;
+  const newToken = await authServices.recreateConfirmationToken(email);
+
+  emailService.sendConfirmationEmail(email, newToken.confirmationToken).catch((err) => {
+    console.error('Failed to send confirmation email:', err);
+  });
+
+  res.status(httpStatus.OK).send({ message: 'Confirmation email sent' });
+});
+
 const getCurrentUser = catchAsync(async (req, res) => {
   const userInfo = pick(req.user.dataValues, ['id', 'email', 'firstName', 'lastName', 'role', 'status']);
   res.status(httpStatus.OK).send(userInfo);
@@ -70,5 +81,6 @@ export default {
   getCurrentUser,
   logout,
   refreshTokens,
-  confirmRegister
+  confirmRegister,
+  resendConfirmationEmail
 };
