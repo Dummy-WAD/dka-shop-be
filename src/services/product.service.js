@@ -76,6 +76,64 @@ const createProduct = async (productBody) => {
     return {status: 'success', message: 'Product created successfully!'};
 }
 
+const updateProduct = async (productId, productBody) => {
+    const product = await db.product.findByPk(productId);
+    if (!product) throw new ApiError(httpStatus.NOT_FOUND, 'Product not found!');
+    if (product.isDeleted) throw new ApiError(httpStatus.BAD_REQUEST, 'Product already deleted!');
+
+    if (productBody.name) {
+        const existingProduct = await db.product.findOne({
+            where: { name: productBody.name, isDeleted: DeleteStatus.NOT_DELETED }
+        });
+        if (existingProduct && existingProduct.id !== productId) {
+            throw new ApiError(httpStatus.BAD_REQUEST, 'Product name already exists!');
+        }
+    }
+
+    if (productBody.categoryId) {
+        const category = await db.category.findOne({
+            where: { id: productBody.categoryId, is_deleted: DeleteStatus.NOT_DELETED }
+        });
+        if (!category) throw new ApiError(httpStatus.BAD_REQUEST, 'Category not found!');
+    }
+
+    // Update product
+    product.name = productBody.name;
+    product.price = productBody.price;
+    product.description = productBody.description;
+    product.categoryId = productBody.categoryId;
+    await product.save();
+
+    // Update product images
+    if (productBody.productImages && productBody.productImages.length > 0) {
+        await db.productImage.destroy({ where: { productId } });
+        const images = productBody.productImages.map(image => ({
+            productId,
+            imageUrl: `${process.env.AWS_CLOUDFRONT_URL}/${image.filename}`,
+            isPrimary: image.isPrimary,
+        }));
+        await db.productImage.bulkCreate(images);
+    }
+
+    // Update product variants
+    if (productBody.productVariants && productBody.productVariants.length > 0) {
+        await db.productVariant.update(
+            { isDeleted: DeleteStatus.DELETED },
+            { where: { productId } }
+        );
+        const variants = productBody.productVariants.map(variant => ({
+            productId,
+            size: variant.size,
+            color: variant.color,
+            quantity: variant.quantity,
+            isDeleted: DeleteStatus.NOT_DELETED,
+        }));
+        await db.productVariant.bulkCreate(variants);
+    }
+
+    return {status: 'success', message: 'Product updated successfully!'};
+};
+
 const deleteProduct = async (productId) => {
     const product = await db.product.findByPk(productId);
     
@@ -286,6 +344,7 @@ const getProductsForCustomer = async (filter, search, options) => {
 export default { 
     getAllProductsByCondition,
     createProduct,
+    updateProduct,
     deleteProduct,
     getProductDetail,
     getProductDetailForCustomer,
