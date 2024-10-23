@@ -10,9 +10,12 @@ jobs:
   dev-CI:
     if: github.ref == 'refs/heads/develop'
     uses: Dummy-WAD/dka-shop-be/.github/workflows/CI.yml@DEK-63-Implement-CI-CD-pipeline
-    secrets: 
+    secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_CLOUDFRONT_URL: ${{ secrets.AWS_CLOUDFRONT_URL }}
+      AWS_IMAGE_BUCKET_NAME: ${{ secrets.AWS_IMAGE_BUCKET_NAME }}
       ECR_URL: ${{ secrets.ECR_URL }}
       ECR_SERVER_URL: ${{ secrets.ECR_SERVER_URL }}
       PORT: ${{ secrets.PORT_DEV }}
@@ -44,9 +47,12 @@ jobs:
   staging-CI:
     if: github.ref == 'refs/heads/staging'
     uses: Dummy-WAD/dka-shop-be/.github/workflows/CI.yml@DEK-63-Implement-CI-CD-pipeline
-    secrets: 
+    secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_CLOUDFRONT_URL: ${{ secrets.AWS_CLOUDFRONT_URL }}
+      AWS_IMAGE_BUCKET_NAME: ${{ secrets.AWS_IMAGE_BUCKET_NAME }}
       ECR_URL: ${{ secrets.ECR_URL }}
       ECR_SERVER_URL: ${{ secrets.ECR_SERVER_URL }}
       PORT: ${{ secrets.PORT_STAGING }}
@@ -78,9 +84,12 @@ jobs:
   prod-CI:
     if: github.ref == 'refs/heads/main'
     uses: Dummy-WAD/dka-shop-be/.github/workflows/CI.yml@DEK-63-Implement-CI-CD-pipeline
-    secrets: 
+    secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_CLOUDFRONT_URL: ${{ secrets.AWS_CLOUDFRONT_URL }}
+      AWS_IMAGE_BUCKET_NAME: ${{ secrets.AWS_IMAGE_BUCKET_NAME }}
       ECR_URL: ${{ secrets.ECR_URL }}
       ECR_SERVER_URL: ${{ secrets.ECR_SERVER_URL }}
       PORT: ${{ secrets.PORT }}
