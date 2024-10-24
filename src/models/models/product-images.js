@@ -16,7 +16,7 @@ export default (sequelize, DataTypes) => {
       type: DataTypes.TEXT,
       field: 'image_url'
     },
-    type: DataTypes.TEXT('medium'),
+    // type: DataTypes.TEXT('medium'),
     isPrimary: {
       type: DataTypes.BOOLEAN,
       field: 'is_primary'
