@@ -82,7 +82,7 @@ jobs:
     secrets: inherit
 
   prod-CI:
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/tags/migrate_db_testing'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/migrate_db_testing'
     uses: Dummy-WAD/dka-shop-be/.github/workflows/CI.yml@DEK-63-Implement-CI-CD-pipeline
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
