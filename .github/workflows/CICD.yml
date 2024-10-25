@@ -31,7 +31,7 @@ jobs:
       SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
       SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
       EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
-      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_HOST: ${{ secrets.DB_HOST_DEV }}
       DB_PORT: ${{ secrets.DB_PORT_DEV }}
       DB_NAME: ${{ secrets.DB_NAME }}
       DB_USER: ${{ secrets.DB_USER }}
@@ -62,13 +62,13 @@ jobs:
       JWT_REFRESH_EXPIRATION_DAYS: ${{ secrets.JWT_REFRESH_EXPIRATION_DAYS }}
       JWT_RESET_PASSWORD_EXPIRATION_MINUTES: ${{ secrets.JWT_RESET_PASSWORD_EXPIRATION_MINUTES }}
       JWT_VERIFY_EMAIL_EXPIRATION_MINUTES: ${{ secrets.JWT_VERIFY_EMAIL_EXPIRATION_MINUTES }}
-      NODE_ENV: ${{ secrets.NODE_ENV_STAGING }}
+      NODE_ENV: ${{ secrets.NODE_ENV_DEV }}
       SMTP_HOST: ${{ secrets.SMTP_HOST }}
       SMTP_PORT: ${{ secrets.SMTP_PORT }}
       SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
       SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
       EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
-      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_HOST: ${{ secrets.DB_HOST_DEV }}
       DB_PORT: ${{ secrets.DB_PORT_STAGING }}
       DB_NAME: ${{ secrets.DB_NAME }}
       DB_USER: ${{ secrets.DB_USER }}
@@ -82,7 +82,7 @@ jobs:
     secrets: inherit
 
   prod-CI:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/migrate_db_testing'
     uses: Dummy-WAD/dka-shop-be/.github/workflows/CI.yml@DEK-63-Implement-CI-CD-pipeline
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
@@ -99,13 +99,13 @@ jobs:
       JWT_REFRESH_EXPIRATION_DAYS: ${{ secrets.JWT_REFRESH_EXPIRATION_DAYS }}
       JWT_RESET_PASSWORD_EXPIRATION_MINUTES: ${{ secrets.JWT_RESET_PASSWORD_EXPIRATION_MINUTES }}
       JWT_VERIFY_EMAIL_EXPIRATION_MINUTES: ${{ secrets.JWT_VERIFY_EMAIL_EXPIRATION_MINUTES }}
-      NODE_ENV: ${{ secrets.NODE_ENV }}
+      NODE_ENV: ${{ secrets.NODE_ENV_DEV }}
       SMTP_HOST: ${{ secrets.SMTP_HOST }}
       SMTP_PORT: ${{ secrets.SMTP_PORT }}
       SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
       SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
       EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
-      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_HOST: ${{ secrets.DB_HOST_DEV }}
       DB_PORT: ${{ secrets.DB_PORT }}
       DB_NAME: ${{ secrets.DB_NAME }}
       DB_USER: ${{ secrets.DB_USER }}
