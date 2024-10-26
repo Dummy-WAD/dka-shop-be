@@ -62,7 +62,7 @@ const updateProduct = {
                 filename: Joi.string().trim().max(255).required(),
                 isPrimary: Joi.boolean().required()
             })
-        ).min(1).optional().custom((value, helpers) => {
+        ).min(1).required().custom((value, helpers) => {
             const primaryCount = value.filter(image => image.isPrimary).length;
             if (primaryCount !== 1) {
                 return helpers.message('One and only one image must have isPrimary set to true');
@@ -73,7 +73,7 @@ const updateProduct = {
             size: Joi.string().trim().max(10).required(),
             color: Joi.string().trim().max(20).required(),
             quantity: Joi.number().integer().positive().required()
-        })).optional().custom((value, helpers) => {
+        })).min(1).required().custom((value, helpers) => {
             // check the uniqueness of size and color in lower case
             const uniqueVariants = new Set();
             for (const variant of value) {
