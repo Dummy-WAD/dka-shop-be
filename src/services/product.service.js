@@ -103,12 +103,10 @@ const updateProduct = async (productId, productBody) => {
     // Update product images
     if (productBody.productImages && productBody.productImages.length > 0) {
         const all_images = await db.productImage.findAll({ where: { productId } });
-        for (const image of all_images) {
-            if (image.isPrimary) {
-                image.isPrimary = false;
-                await image.save();
-            }
-        }
+        await db.productImage.update(
+            { isPrimary: false },
+            { where: { productId, isPrimary: true } }
+        );
 
         // check new images
         const request_images = productBody.productImages.map(image => image.filename);  
