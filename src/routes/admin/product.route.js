@@ -16,6 +16,12 @@ router.post(
     productController.createProduct
 );
 
+router.put(
+    "/:productId",
+    validate(productValidation.updateProduct),
+    productController.updateProduct
+  );
+
 router.delete(
     "/:productId",
     validate(productValidation.deleteProduct),
