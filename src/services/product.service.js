@@ -229,19 +229,7 @@ const getProductDetail = async (productId) => {
 
     const { productImages, isDeleted, categoryId, ...basicInfo } = productDetail.get();
 
-    const primaryImageUrl = productImages.find(img => img.isPrimary)?.imageUrl || null;
-
-    const primaryImage = primaryImageUrl ? {
-        url: primaryImageUrl,
-        filename: (new URL(primaryImageUrl)).pathname.slice(1)
-    } : null;
-
-    const otherImages = productDetail.productImages
-        .filter(img => !img.isPrimary)
-        .map(img => ({
-            url: img.imageUrl || null,
-            filename: img ? (new URL(img.imageUrl)).pathname.slice(1) : null
-        }));
+    const { primaryImage, otherImages } = separateProductImages(productImages);
 
     return {
         ...basicInfo,
@@ -305,9 +293,8 @@ const getProductDetailForCustomer = async (productId) => {
 
     const { productImages, isDeleted, categoryId, category, discountOffers, ...basicInfo } = productPlain;
     const priceDiscounted = productPlain.discountOffers[0]?.priceDiscounted || basicInfo.price;
-    
-    const primaryImage = productPlain.productImages.find(img => img.isPrimary)?.imageUrl || null;
-    const otherImages = productPlain.productImages.filter(img => !img.isPrimary).map(img => img?.imageUrl || null);
+
+    const { primaryImage, otherImages } = separateProductImages(productImages);
 
     return {
         ...basicInfo,
@@ -317,6 +304,24 @@ const getProductDetailForCustomer = async (productId) => {
         otherImages
     };
 };
+
+const separateProductImages = (productImages) => {
+    const primaryImageUrl = productImages.find(img => img.isPrimary)?.imageUrl || null;
+
+    const primaryImage = primaryImageUrl ? {
+        url: primaryImageUrl,
+        filename: (new URL(primaryImageUrl)).pathname.slice(1)
+    } : null;
+
+    const otherImages = productImages
+        .filter(img => !img.isPrimary)
+        .map(img => ({
+            url: img.imageUrl || null,
+            filename: img ? (new URL(img.imageUrl)).pathname.slice(1) : null
+        }));
+
+    return { primaryImage, otherImages };
+}
 
 const getProductsForCustomer = async (filter, search, options) => {
     const { categoryId, priceStart, priceEnd } = filter;
