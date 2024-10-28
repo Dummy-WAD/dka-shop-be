@@ -75,6 +75,12 @@ const refreshTokens = catchAsync(async (req, res) => {
   res.send({ ...tokens });
 });
 
+const updateProfile = catchAsync(async (req, res) => {
+  const { id } = pick(req.user.dataValues, ['id']);
+  await authServices.updateProfile(id, req.body)
+  res.status(httpStatus.OK).send({ message: 'Update profile success' });
+});
+
 export default {
   register,
   login,
@@ -82,5 +88,6 @@ export default {
   logout,
   refreshTokens,
   confirmRegister,
-  resendConfirmationEmail
+  resendConfirmationEmail,
+  updateProfile
 };

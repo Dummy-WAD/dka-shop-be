@@ -51,4 +51,10 @@ router.post(
   authController.logout
 );
 
+router.patch(
+  "/profile",
+  validate(authValidation.updateProfile),
+  authController.updateProfile
+);
+
 export default router;
