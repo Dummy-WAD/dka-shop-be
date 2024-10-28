@@ -72,8 +72,16 @@ const updateProduct = {
         productVariants: Joi.array().items(Joi.object({
             size: Joi.string().trim().max(10).required(),
             color: Joi.string().trim().max(20).required(),
-            quantity: Joi.number().integer().positive().required()
+            quantity: Joi.number().integer().required()
         })).min(1).required().custom((value, helpers) => {
+
+            // check quantity is positive
+            for (const variant of value) {
+                if (variant.quantity < 0) {
+                    return helpers.message('Quantity must be positive');
+                }
+            }
+
             // check the uniqueness of size and color in lower case
             const uniqueVariants = new Set();
             for (const variant of value) {
