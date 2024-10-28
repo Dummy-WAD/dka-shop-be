@@ -10,8 +10,12 @@ cat > config/config.json <<EOF
         "password": "$password",
         "database": "dka_shop",
         "host": "127.0.0.1",
+        "port": 3306,
         "dialect": "mysql",
-        "port": 3306
+        "dialectOptions": {
+        "useUTC": false
+        },
+        "timezone": "+07:00"
     },
     "test": {
         "username": "$user",

@@ -175,12 +175,13 @@ const updateProduct = async (productId, productBody) => {
             await db.productVariant.bulkCreate(variants, { transaction });
 
             // update variants
-            for (const variant of update_variants_raw) {
-                const variant_db = await db.productVariant.findOne({ where: { productId, size: variant.size, color: variant.color }, transaction });
-                variant_db.quantity = variant.quantity;
-                variant_db.isDeleted = DeleteStatus.NOT_DELETED;
-                await variant_db.save({ transaction });
-            }
+            const updatePromises = update_variants_raw.map(async (variant) => {
+                return db.productVariant.update(
+                    { quantity: variant.quantity, isDeleted: DeleteStatus.NOT_DELETED },
+                    { where: { productId, size: variant.size, color: variant.color }, transaction }
+                );
+            });
+            await Promise.all(updatePromises);
         }
 
         await transaction.commit();
