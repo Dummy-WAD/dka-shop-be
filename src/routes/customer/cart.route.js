@@ -3,7 +3,7 @@ import passport from "passport";
 import { isCustomer } from "../../middlewares/authorization.js";
 import cartController from "../../controllers/cart.controller.js";
 import validate from "../../middlewares/validate.js";
-import cartValidation from "../../validations/cart.validation.js";
+import { cartValidation } from "../../validations/index.js";
 
 const router = express.Router();
 
@@ -16,6 +16,11 @@ router.use(isCustomer);
 router.get('/', 
     validate(cartValidation.getAllCartItems),
     cartController.getAllCartItems
+);
+
+router.post('/', 
+    validate(cartValidation.addProductToCart),
+    cartController.addProductToCart
 );
 
 export default router;

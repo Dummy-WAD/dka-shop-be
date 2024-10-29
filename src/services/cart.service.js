@@ -4,9 +4,12 @@ import ApiError from '../utils/ApiError.js';
 import paginate from './plugins/paginate.plugin.js';
 import { DiscountType, UserRole } from '../utils/enums.js';
 
+const checkCustomerExist = async (id) => {
+    return await db.user.findOne({ where: { id, role: UserRole.CUSTOMER } });
+};
+
 const getAllCartItems = async (filter, options) => {
-    const customer = await db.user.findOne({ where: { id: filter.id, role: UserRole.CUSTOMER } });
-    if (!customer) throw new ApiError(httpStatus.NOT_FOUND, 'Customer not found');
+    if (!await checkCustomerExist(filter.id)) throw new ApiError(httpStatus.NOT_FOUND, 'Customer not found');
 
     const include = [
         {
@@ -30,7 +33,7 @@ const getAllCartItems = async (filter, options) => {
     const cartItems = await paginate(db.cartItem, { userId: filter.id }, { ...options, sortBy: 'createdAt', order: 'desc' }, include, [], selectedAttributes);
     const { page, limit, totalPages, totalResults, results } = cartItems;
 
-    const productIds = results.map(item => item.get({plain: true}).productVariant.productId);
+    const productIds = results.map(item => item.get({ plain: true }).productVariant.productId);
 
     const discountOffers = await db.productDiscountOffer.findAll({
         attributes: ['productId'],
@@ -72,7 +75,7 @@ const getAllCartItems = async (filter, options) => {
             color,
             orderedQuantity,
             remainingQuantity,
-            price: price === priceDiscounted ? price : priceDiscounted,
+            price: priceDiscounted,
             totalPrice: orderedQuantity * priceDiscounted,
             productName,
             productImage: productImages?.[0]?.imageUrl ?? null
@@ -82,6 +85,42 @@ const getAllCartItems = async (filter, options) => {
     return { results: formattedResults, totalCartItems: totalResults, page, limit, totalPages, totalResults };
 };
 
+
+const addProductToCart = async (userId, { productVariantId, quantity }) => {
+    if (!await checkCustomerExist(userId)) throw new ApiError(httpStatus.NOT_FOUND, 'Customer not found');
+
+    const productVariant = await db.productVariant.findOne({ where: { id: productVariantId, isDeleted: false } });
+    if (!productVariant) throw new ApiError(httpStatus.NOT_FOUND, 'Product variant not found');
+
+    const existingCartItem = await db.cartItem.findOne({
+        where: { userId, productVariantId }
+    });
+
+    if (existingCartItem) {
+        const totalQuantity = existingCartItem.quantity + quantity;
+        if (totalQuantity > productVariant.quantity) {
+            throw new ApiError(httpStatus.BAD_REQUEST, 'Quantity exceeds available stock');
+        };
+
+        existingCartItem.quantity = totalQuantity;
+        await existingCartItem.save();
+    } else {
+        if (quantity > productVariant.quantity) {
+            throw new ApiError(httpStatus.BAD_REQUEST, 'Quantity exceeds available stock');
+        };
+
+        await db.cartItem.create({
+            userId,
+            productVariantId,
+            quantity
+        });
+    };
+
+    const totalCartItems = await db.cartItem.findAll({ where: { userId } });
+    return { totalCartItems: totalCartItems.length };
+};
+
 export default {
     getAllCartItems,
+    addProductToCart
 }

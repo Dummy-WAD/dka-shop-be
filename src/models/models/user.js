@@ -55,7 +55,7 @@ export default (sequelize, DataTypes) => {
         constraints: false
     });
     user.hasMany(db.cartItem, {
-      foreignKey: 'customer_id',
+      foreignKey: 'user_id',
       constraints: false
     });
     user.hasMany(db.notification, {

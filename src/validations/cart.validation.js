@@ -7,6 +7,14 @@ const getAllCartItems = {
   })
 };
 
+const addProductToCart = {
+  body: Joi.object().keys({
+    productVariantId: Joi.number().integer().positive().required().strict(),
+    quantity: Joi.number().integer().positive().required().strict()
+  }),
+};
+
 export default {
-  getAllCartItems
+  getAllCartItems,
+  addProductToCart
 }
