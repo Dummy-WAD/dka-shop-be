@@ -59,8 +59,6 @@ const getCustomerDetail = async (customerId) => {
         order: [['isDefault', 'DESC'], ['updatedAt', 'DESC']]
     });
 
-    console.log(userAddresses);
-
     const addresses = userAddresses.map(addr => {
         const parts = [];
         if (addr.localAddress) parts.push(addr.localAddress);
