@@ -9,7 +9,7 @@ export default (sequelize, DataTypes) => {
       type: DataTypes.INTEGER
     },
     customer_id: DataTypes.INTEGER,
-    address_id: DataTypes.INTEGER,
+    address: DataTypes.STRING,
     ordered_at: DataTypes.DATE,
     total: DataTypes.DOUBLE,
     delivery_fee: DataTypes.DOUBLE,
@@ -18,10 +18,6 @@ export default (sequelize, DataTypes) => {
   order.associate = (db) => {
     order.belongsTo(db.user, {
       foreignKey: 'customer_id',
-      constraints: false
-    });
-    order.belongsTo(db.address, {
-      foreignKey: 'address_id',
       constraints: false
     });
     order.belongsToMany(db.productVariant, { 
