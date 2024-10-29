@@ -6,3 +6,4 @@ export { default as productServices } from './product.service.js';
 export { default as customerServices } from './customer.service.js';
 export { default as confirmationTokenService } from './confirmation-token.service.js';
 export { default as addressServices } from './address.service.js';
+export { default as cartServices } from './cart.service.js';
