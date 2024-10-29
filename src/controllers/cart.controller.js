@@ -10,6 +10,13 @@ const getAllCartItems = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(cartItems);
 });
 
+const addProductToCart = catchAsync(async (req, res) => {
+  const userReq = pick(req.user.dataValues, ['id']);
+  const totalCartItems = await cartServices.addProductToCart(userReq.id, req.body);
+  res.status(httpStatus.OK).send(totalCartItems);
+});
+
 export default {
   getAllCartItems,
+  addProductToCart
 };
