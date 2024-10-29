@@ -2,14 +2,9 @@ import httpStatus from 'http-status';
 import db from "../models/models/index.js";
 import ApiError from '../utils/ApiError.js';
 import paginate from './plugins/paginate.plugin.js';
-import { DiscountType, UserRole } from '../utils/enums.js';
-
-const checkCustomerExist = async (id) => {
-    return await db.user.findOne({ where: { id, role: UserRole.CUSTOMER } });
-};
+import { DiscountType } from '../utils/enums.js';
 
 const getAllCartItems = async (filter, options) => {
-    if (!await checkCustomerExist(filter.id)) throw new ApiError(httpStatus.NOT_FOUND, 'Customer not found');
 
     const include = [
         {
@@ -87,7 +82,6 @@ const getAllCartItems = async (filter, options) => {
 
 
 const addProductToCart = async (userId, { productVariantId, quantity }) => {
-    if (!await checkCustomerExist(userId)) throw new ApiError(httpStatus.NOT_FOUND, 'Customer not found');
 
     const productVariant = await db.productVariant.findOne({ where: { id: productVariantId, isDeleted: false } });
     if (!productVariant) throw new ApiError(httpStatus.NOT_FOUND, 'Product variant not found');
