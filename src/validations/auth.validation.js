@@ -39,20 +39,10 @@ const logout = {
   }),
 };
 
-const updateProfile = {
-  body: Joi.object().keys({
-    firstName: Joi.string().trim().optional(),
-    lastName: Joi.string().trim().optional(),
-    phoneNumber: Joi.string().pattern(phoneNumberPattern).optional(),
-    gender: Joi.number().min(0).optional(),
-  }),
-};
-
 export default {
   register,
   resendConfirmationEmail,
   login,
   refreshTokens,
-  logout,
-  updateProfile
+  logout
 };

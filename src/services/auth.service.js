@@ -116,23 +116,11 @@ const refreshAuth = async (refresh_token) => {
     return tokenServices.generateAuthTokens(user);
 };
 
-const updateProfile = async (id, updateBody) => {
-  const user = await db.user.findOne({
-    where: { id }
-  });
-  if (!user) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
-  }
-  Object.assign(user, updateBody);
-  await user.save();
-};
-
 export default { 
   createUser, 
   confirmRegisterByToken, 
   login, 
   recreateConfirmationToken, 
   logout, 
-  refreshAuth,
-  updateProfile
+  refreshAuth
 };
