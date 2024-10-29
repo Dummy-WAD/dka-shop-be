@@ -9,6 +9,9 @@ const updateProfile = async (id, updateBody) => {
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
+  if (updateBody.gender) {
+    updateBody.gender = updateBody.gender === 'FEMALE' ? 0 : 1;
+  }
   Object.assign(user, updateBody);
   await user.save();
 };

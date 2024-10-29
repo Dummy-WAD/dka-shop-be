@@ -7,7 +7,7 @@ const updateProfile = {
     firstName: Joi.string().trim().optional(),
     lastName: Joi.string().trim().optional(),
     phoneNumber: Joi.string().pattern(phoneNumberPattern).optional(),
-    gender: Joi.number().min(0).optional(),
+    gender: Joi.string().valid('MALE', 'FEMALE').optional(),
   }),
 };
   

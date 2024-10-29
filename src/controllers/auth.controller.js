@@ -62,6 +62,7 @@ const resendConfirmationEmail = catchAsync(async (req, res) => {
 
 const getCurrentUser = catchAsync(async (req, res) => {
   const userInfo = pick(req.user.dataValues, ['firstName', 'lastName', 'email', 'phoneNumber', 'createdAt', 'gender', 'role', 'status']);
+  userInfo.gender = userInfo.gender === 0 ? 'FEMALE' : 'MALE';
   res.status(httpStatus.OK).send(userInfo);
 });
 
