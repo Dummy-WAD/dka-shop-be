@@ -1,13 +1,12 @@
 import Joi from 'joi';
-
-const phoneNumberPattern = new RegExp(/(0[3|5|7|8|9])+([0-9]{8})\b/);
+import customValidation from './custom.validation.js'
 
 const updateProfile = {
   body: Joi.object().keys({
     firstName: Joi.string().trim().optional(),
     lastName: Joi.string().trim().optional(),
-    phoneNumber: Joi.string().pattern(phoneNumberPattern).optional(),
-    gender: Joi.string().valid('MALE', 'FEMALE').optional(),
+    phoneNumber: Joi.string().custom(customValidation.phoneNumber).optional(),
+    gender: Joi.string().trim().valid('MALE', 'FEMALE').optional(),
   }),
 };
   

@@ -1,15 +1,13 @@
 import Joi from 'joi';
-
-const phoneNumberPattern = new RegExp(/(0[3|5|7|8|9])+([0-9]{8})\b/);
-const passwordPattern = new RegExp(/^(?=.*\d)(?=.*[!@#$%^&*()_+{}|:<>?~`-])(?=.*[a-z])(?=.*[A-Z])\S{8,}$/);
+import customValidation from './custom.validation.js'
 
 const register = {
   body: Joi.object().keys({
     email: Joi.string().email().required(),
     firstName: Joi.string().trim().required(),
     lastName: Joi.string().trim().required(),
-    phoneNumber: Joi.string().pattern(phoneNumberPattern).required(),
-    password: Joi.string().pattern(passwordPattern).required(),
+    phoneNumber: Joi.string().custom(customValidation.phoneNumber).required(),
+    password: Joi.string().custom(customValidation.password).required(),    
     confirmPassword: Joi.string().valid(Joi.ref('password')).required(),
   }),
 }
