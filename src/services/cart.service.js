@@ -114,7 +114,22 @@ const addProductToCart = async (userId, { productVariantId, quantity }) => {
     return { totalCartItems: totalCartItems.length };
 };
 
+const removeProductFromCart = async (userId, productVariantId) => {
+    const existingCartItem = await db.cartItem.findOne({
+        where: { userId, productVariantId }
+    });
+
+    if (!existingCartItem) throw new ApiError(httpStatus.NOT_FOUND, 'Cart item not found');
+
+    await existingCartItem.destroy();
+
+    const totalCartItems = await db.cartItem.findAll({ where: { userId } });
+    return { totalCartItems: totalCartItems.length };
+};
+
+
 export default {
     getAllCartItems,
-    addProductToCart
+    addProductToCart,
+    removeProductFromCart
 }

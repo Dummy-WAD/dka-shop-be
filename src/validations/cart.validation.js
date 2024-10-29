@@ -14,7 +14,14 @@ const addProductToCart = {
   }),
 };
 
+const removeProductFromCart = {
+  body: Joi.object().keys({
+    productVariantId: Joi.number().integer().positive().required().strict(),
+  }),
+};
+
 export default {
   getAllCartItems,
-  addProductToCart
+  addProductToCart,
+  removeProductFromCart
 }
