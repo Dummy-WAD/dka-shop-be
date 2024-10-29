@@ -1,4 +1,6 @@
 import db from "../models/models/index.js";
+import ApiError from "../utils/ApiError.js";
+import httpStatus from "http-status";
 
 const getCustomerAddresses = async (customerId) => {
     const userAddresses = await db.address.findAll({
@@ -47,6 +49,31 @@ const getCustomerAddresses = async (customerId) => {
     return addresses;
 }
 
+const deleteAddress = async (customerId, addressId) => {
+
+    const address = await db.address.findOne({
+        where: {
+            id: addressId,
+            customerId: customerId
+        }
+    });
+
+    if (!address) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'Address not found');
+    }
+
+    if (address.isDefault) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Cannot delete default address');
+    }
+
+    await db.address.destroy({
+        where: {
+            id: addressId
+        }
+    });
+}
+
 export default {
-    getCustomerAddresses
+    getCustomerAddresses,
+    deleteAddress
 };
