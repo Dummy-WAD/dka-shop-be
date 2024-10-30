@@ -207,7 +207,8 @@ const setAddressAsDefault = async (customerId, addressId) => {
         isDefault: false
     }, {
         where: {
-            customerId: customerId
+            customerId: customerId,
+            isDefault: true
         }
     });
 
