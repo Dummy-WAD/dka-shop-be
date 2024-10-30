@@ -26,7 +26,7 @@ const updateAddressInfo = {
     body: Joi.object().keys({
         wardId: Joi.string().trim().optional(),
         localAddress: Joi.string().trim().optional(),
-        phoneNumber: Joi.string().custom(customValidation.phoneNumber).optional(),
+        phoneNumber: Joi.string().trim().custom(customValidation.phoneNumber).optional(),
         contactName: Joi.string().trim().optional(),
     })
 }
@@ -35,7 +35,7 @@ const createAddress = {
     body: Joi.object().keys({
         wardId: Joi.string().trim().required(),
         localAddress: Joi.string().trim().required(),
-        phoneNumber: Joi.string().custom(customValidation.phoneNumber).required(),
+        phoneNumber: Joi.string().trim().custom(customValidation.phoneNumber).required(),
         contactName: Joi.string().trim().required(),
     })
 }

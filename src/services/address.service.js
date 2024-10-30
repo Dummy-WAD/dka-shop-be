@@ -2,6 +2,8 @@ import db from "../models/models/index.js";
 import ApiError from "../utils/ApiError.js";
 import httpStatus from "http-status";
 
+const LIMIT_ADDRESS_COUNT = 10;
+
 const getCustomerAddresses = async (customerId) => {
     const userAddresses = await db.address.findAll({
         where: {
@@ -125,8 +127,8 @@ const createAddress = async (customerId, addressDetails) => {
         }
     });
 
-    // Limit address count to 10
-    if (addrCount >= 10) {
+    // Limit address count to LIMIT_ADDRESS_COUNT
+    if (addrCount >= LIMIT_ADDRESS_COUNT) {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Address limit reached');
     }
 

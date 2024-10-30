@@ -5,7 +5,7 @@ const updateProfile = {
   body: Joi.object().keys({
     firstName: Joi.string().trim().optional(),
     lastName: Joi.string().trim().optional(),
-    phoneNumber: Joi.string().custom(customValidation.phoneNumber).optional(),
+    phoneNumber: Joi.string().trim().custom(customValidation.phoneNumber).optional(),
     gender: Joi.string().trim().valid('MALE', 'FEMALE').optional(),
   }),
 };
