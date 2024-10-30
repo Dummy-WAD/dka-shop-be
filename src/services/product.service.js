@@ -173,8 +173,6 @@ const updateProduct = async (productId, productBody) => {
 
             await db.productVariant.bulkCreate(variants, { transaction });
 
-            console.log('update_variants_raw', update_variants_raw);
-
             // delete variants from variants_id
             await db.productVariant.destroy({ where: { id: update_variants_id }, transaction });
 
