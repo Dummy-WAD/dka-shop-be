@@ -122,5 +122,6 @@ export default {
   login, 
   recreateConfirmationToken, 
   logout, 
-  refreshAuth
+  refreshAuth,
+  isPasswordMatch
 };

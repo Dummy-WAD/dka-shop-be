@@ -22,4 +22,10 @@ router.patch(
     personalController.updateProfile
 );
 
+router.patch(
+    "/password",
+    validate(personalValidation.changePassword),
+    personalController.changePassword
+);
+
 export default router;

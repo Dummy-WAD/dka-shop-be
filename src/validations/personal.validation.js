@@ -9,7 +9,16 @@ const updateProfile = {
     gender: Joi.string().trim().valid('MALE', 'FEMALE').optional(),
   }),
 };
-  
+
+const changePassword = {  
+  body: Joi.object().keys({
+    oldPassword: Joi.string().required(),
+    password: Joi.string().custom(customValidation.password).required(),
+    confirmPassword: Joi.string().valid(Joi.ref('password')).required(),
+  }),
+};
+
 export default {
-  updateProfile
+  updateProfile,
+  changePassword,
 };
