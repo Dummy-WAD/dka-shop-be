@@ -6,6 +6,11 @@ import { DiscountType } from '../utils/enums.js';
 
 const getAllCartItems = async (filter, options) => {
 
+    const productVariantId = filter?.productVariantId ?? null;
+    if (productVariantId && !await db.cartItem.findOne({ where: { userId: filter.id, productVariantId } })) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'Cart item not found');
+    };
+
     const include = [
         {
             model: db.productVariant,
@@ -25,7 +30,7 @@ const getAllCartItems = async (filter, options) => {
     ];
 
     const selectedAttributes = [['quantity', 'orderedQuantity'], 'createdAt'];
-    const cartItems = await paginate(db.cartItem, { userId: filter.id }, { ...options, sortBy: 'createdAt', order: 'desc' }, include, [], selectedAttributes);
+    const cartItems = await paginate(db.cartItem, { userId: filter.id, ...(productVariantId && { productVariantId }) }, { ...options, sortBy: 'createdAt', order: 'desc' }, include, [], selectedAttributes);
     const { page, limit, totalPages, totalResults, results } = cartItems;
 
     const productIds = results.map(item => item.get({ plain: true }).productVariant.productId);
@@ -77,7 +82,16 @@ const getAllCartItems = async (filter, options) => {
         };
     });
 
-    return { results: formattedResults, totalCartItems: totalResults, page, limit, totalPages, totalResults };
+    return productVariantId 
+    ? formattedResults?.[0] 
+    : {
+        results: formattedResults,
+        totalCartItems: totalResults,
+        page,
+        limit,
+        totalPages,
+        totalResults
+    };
 };
 
 
@@ -114,7 +128,66 @@ const addProductToCart = async (userId, { productVariantId, quantity }) => {
     return { totalCartItems: totalCartItems.length };
 };
 
+const editCartItemQuantity = async (userId, { productVariantId, quantity, currentPrice }) => {
+
+    const existingCartItem = await db.cartItem.findOne({
+        where: { userId, productVariantId }
+    });
+
+    if (!existingCartItem) throw new ApiError(httpStatus.NOT_FOUND, 'Cart item not found');
+
+    const productVariant = await db.productVariant.findByPk(productVariantId);
+    if (quantity > productVariant.quantity) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Quantity exceeds available stock');
+    };
+
+    const productDiscountOffer = await db.product.findOne({
+        attributes: [['id', 'productId'], 'price'],
+        include: [
+            {
+                model: db.discountOffer,
+                attributes: ['discountType', 'discountValue'],
+                where: {
+                    startDate: { [db.Sequelize.Op.lte]: new Date() },
+                    expirationDate: { [db.Sequelize.Op.gte]: new Date() },
+                    isDeleted: false,
+                },
+                required: false,
+                through: {
+                    model: db.productDiscountOffer,
+                    attributes: [],
+                    required: false,
+                }
+            },
+            {
+                model: db.productVariant,
+                attributes: [],
+                where: { id: productVariantId }
+            }
+        ],
+        raw: true,
+        nest: true
+    });
+
+    if (productDiscountOffer) {
+        const { price } = productDiscountOffer;
+        const discountOffers = productDiscountOffer?.discountOffers ?? null;
+
+        const priceDiscounted = discountOffers ?
+            discountOffers.discountType === DiscountType.PRICE ?
+                price - discountOffers.discountValue :
+                price - (price * discountOffers.discountValue / 100) :
+            price;
+
+        if (priceDiscounted !== currentPrice) throw new ApiError(httpStatus.BAD_REQUEST, 'The price of this product has been updated. Please check the new price')
+    };
+
+    existingCartItem.quantity = quantity;
+    await existingCartItem.save();
+};
+
 export default {
     getAllCartItems,
-    addProductToCart
+    addProductToCart,
+    editCartItemQuantity
 }

@@ -23,4 +23,9 @@ router.post('/',
     cartController.addProductToCart
 );
 
+router.patch('/', 
+    validate(cartValidation.editCartItemQuantity),
+    cartController.editCartItemQuantity
+);
+
 export default router;
