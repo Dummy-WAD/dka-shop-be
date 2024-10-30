@@ -79,30 +79,30 @@ const updateProduct = async (productId, productBody) => {
         const product = await db.product.findByPk(productId, { transaction });
         if (!product) throw new ApiError(httpStatus.NOT_FOUND, 'Product not found!');
         if (product.isDeleted) throw new ApiError(httpStatus.BAD_REQUEST, 'Product already deleted!');
-
+        
+        // Update product name
         if (productBody.name) {
             const existingProduct = await db.product.findOne({
                 where: { name: productBody.name, isDeleted: DeleteStatus.NOT_DELETED },
                 transaction
             });
-            if (existingProduct && existingProduct.id !== productId) {
-                throw new ApiError(httpStatus.BAD_REQUEST, 'Product name already exists!');
-            }
+            if (existingProduct && existingProduct.id !== productId) throw new ApiError(httpStatus.BAD_REQUEST, 'Product name already exists!');
+            product.name = productBody.name;
         }
 
+        // Update category
         if (productBody.categoryId) {
             const category = await db.category.findOne({
                 where: { id: productBody.categoryId, is_deleted: DeleteStatus.NOT_DELETED },
                 transaction
             });
             if (!category) throw new ApiError(httpStatus.BAD_REQUEST, 'Category not found!');
+            product.categoryId = productBody.categoryId;
         }
 
-        // Update product
-        product.name = productBody.name;
-        product.price = productBody.price;
-        product.description = productBody.description;
-        product.categoryId = productBody.categoryId;
+        // Update price and description
+        if (productBody.price) product.price = productBody.price;
+        if (productBody.description) product.description = productBody.description;
         await product.save({ transaction });
 
         // Update product images
@@ -145,65 +145,62 @@ const updateProduct = async (productId, productBody) => {
 
         // Update product variants
         if (productBody.productVariants && productBody.productVariants.length > 0) {
-            const all_variants = await db.productVariant.findAll({ where: { productId }, transaction });
-            const request_variants = productBody.productVariants.map(variant => `${variant.size.toLowerCase()}-${variant.color.toLowerCase()}`);
-            const current_variants = all_variants.map(variant => `${variant.size.toLowerCase()}-${variant.color.toLowerCase()}`);
-            const new_variants = request_variants.filter(variant => !current_variants.includes(variant));
+            const all_variants = await db.productVariant.findAll({ where: { productId, isDeleted: DeleteStatus.NOT_DELETED }, transaction });
+            
+            const request_variants = productBody.productVariants.map(variant => variant.id);
+            const current_variants = all_variants.map(variant => variant.id);
+
+            const new_variants = productBody.productVariants.filter(variant => variant.id === null);
             const delete_variants = current_variants.filter(variant => !request_variants.includes(variant));
-            const update_variants = request_variants.filter(variant => current_variants.includes(variant));
-            // filter raw variants
-            const new_variants_raw = productBody.productVariants.filter(variant => new_variants.includes(`${variant.size.toLowerCase()}-${variant.color.toLowerCase()}`));
-            const update_variants_raw = productBody.productVariants.filter(variant => update_variants.includes(`${variant.size.toLowerCase()}-${variant.color.toLowerCase()}`));
-            // const update_variants_id = all_variants.filter(variant => update_variants.includes(`${variant.size.toLowerCase()}-${variant.color.toLowerCase()}`)).map(variant => variant.id);
+            const update_variants = current_variants.filter(variant => !delete_variants.includes(variant));
+
+            // IT IS IMPORTANT TO CHECK THE QUANTITY OF THE VARIANT BEFORE UPDATING ON THE DEBUG MODE
+            // console.log('request_variants', request_variants);
+            // console.log('current_variants', current_variants);
+            // console.log('new_variants', new_variants);
+            // console.log('delete_variants', delete_variants);
+            // console.log('update_variants', update_variants);
+
             // delete variants
-            const delete_variants_id = all_variants.filter(variant => delete_variants.includes(`${variant.size.toLowerCase()}-${variant.color.toLowerCase()}`)).map(variant => variant.id);
             await db.productVariant.update(
                 { isDeleted: DeleteStatus.DELETED },
-                { where: { id: delete_variants_id }, transaction }
+                { where: { id: delete_variants }, transaction }
             );
 
             // create new variants
-            const variants = new_variants_raw.map(variant => ({
+            const variants = new_variants.map(variant => ({
                 productId,
                 size: variant.size,
                 color: variant.color,
                 quantity: variant.quantity,
                 isDeleted: DeleteStatus.NOT_DELETED,
             }));
-
             await db.productVariant.bulkCreate(variants, { transaction });
 
-            // // delete variants from variants_id
-            // await db.productVariant.destroy({ where: { id: update_variants_id }, transaction });
+            // update variants
+            const updatePromises = update_variants.map(async variant => {
+                const request_variant = productBody.productVariants.find(v => v.id === variant);
+                const current_variant = await db.productVariant.findByPk(variant, { transaction });
+                current_variant.size = request_variant.size;
+                current_variant.color = request_variant.color;
+                current_variant.is_deleted = DeleteStatus.NOT_DELETED;
 
-            // // create new variants
-            // const variants_update = update_variants_raw.map(variant => ({
-            //     productId,
-            //     size: variant.size,
-            //     color: variant.color,
-            //     quantity: variant.quantity,
-            //     isDeleted: DeleteStatus.NOT_DELETED,
-            // }));
-
-            // await db.productVariant.bulkCreate(variants_update, { transaction });
-
-            // update variants with variants_id (promise all)
-            
-            // Mapping and updating variants in a single step
-            const update_variants_promise = update_variants_raw.map(async variant => {
-                const variant_db = all_variants.find(v => 
-                    v.size.toLowerCase() === variant.size.toLowerCase() && 
-                    v.color.toLowerCase() === variant.color.toLowerCase()
-                );
-                if (variant_db) {
-                    variant_db.size = variant.size;
-                    variant_db.color = variant.color;
-                    variant_db.quantity = variant.quantity;
-                    await variant_db.save({ transaction });
+                // update quantity
+                if (request_variant.changeValue > 0) {
+                    current_variant.quantity += request_variant.changeValue;
                 }
+
+                if (request_variant.changeValue < 0) {
+                    if (current_variant.quantity + request_variant.changeValue < 0) {
+                        throw new ApiError(httpStatus.BAD_REQUEST, 'Quantity must be greater than or equal to 0');
+                    }
+                    current_variant.quantity += request_variant.changeValue;
+                }
+
+                await current_variant.save({ transaction });
             });
 
-            await Promise.all(update_variants_promise);
+            await Promise.all(updatePromises);
         }
 
         await transaction.commit();
@@ -241,7 +238,7 @@ const getProductDetail = async (productId) => {
             {
                 model: db.productVariant,
                 where: { isDeleted: false },
-                attributes: ['size', 'color', 'quantity', 'isDeleted'],
+                attributes: ['id', 'size', 'color', 'quantity', 'isDeleted'],
                 required: false
             }
         ],
