@@ -8,13 +8,13 @@ const getAddressDetails = {
 
 const getAllDistrictsInProvince = {
     query: Joi.object().keys({
-        provinceId: Joi.number().integer().positive().required()
+        provinceId: Joi.string().trim().required()
     })
 };
 
 const getAllWardsInDistrict = {
     query: Joi.object().keys({
-        districtId: Joi.number().integer().positive().required()
+        districtId: Joi.string().trim().required()
     })
 }
 
