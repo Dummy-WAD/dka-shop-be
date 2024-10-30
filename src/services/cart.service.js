@@ -124,11 +124,15 @@ const addProductToCart = async (userId, { productVariantId, quantity }) => {
         });
     };
 
-    const totalCartItems = await db.cartItem.count({ where: { userId } });
-    return { totalCartItems };
+    return { totalCartItems: await getTotalCartItemQuantity(userId) };
 };
 
 const removeProductFromCart = async (userId, productVariantId) => {
+
+    if (!await db.productVariant.findOne({ where: { id: productVariantId, isDeleted: false } })) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'Product variant not found');
+    };
+
     const existingCartItem = await db.cartItem.findOne({
         where: { userId, productVariantId }
     });
@@ -137,18 +141,21 @@ const removeProductFromCart = async (userId, productVariantId) => {
 
     await existingCartItem.destroy();
 
-    const totalCartItems = await db.cartItem.count({ where: { userId } });
-    return { totalCartItems };
+    return { totalCartItems: await getTotalCartItemQuantity(userId) };
 };
 
 const editCartItemQuantity = async (userId, { productVariantId, quantity, currentPrice }) => {
+
+    const productVariant = await db.productVariant.findOne({ where: { id: productVariantId, isDeleted: false } });
+    if (!productVariant) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'Product variant not found');
+    };
 
     const existingCartItem = await db.cartItem.findOne({
         where: { userId, productVariantId }
     });
 
     if (!existingCartItem) throw new ApiError(httpStatus.NOT_FOUND, 'Cart item not found');
-    const productVariant = await db.productVariant.findByPk(productVariantId);
     if (quantity > productVariant.quantity) {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Quantity exceeds available stock');
     };
@@ -196,6 +203,17 @@ const editCartItemQuantity = async (userId, { productVariantId, quantity, curren
 
     existingCartItem.quantity = quantity;
     await existingCartItem.save();
+};
+
+const getTotalCartItemQuantity = async (userId) => {
+    return await db.cartItem.count({
+        where: { userId },
+        include: [{
+            model: db.productVariant,
+            required: true,
+            where: { isDeleted: false }
+        }]
+    });
 };
 
 export default {

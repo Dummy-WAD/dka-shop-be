@@ -192,13 +192,25 @@ const updateProduct = async (productId, productBody) => {
 };
 
 const deleteProduct = async (productId) => {
-    const product = await db.product.findByPk(productId);
-    
-    if (!product) throw new ApiError(httpStatus.NOT_FOUND, 'Product not found!');
-    if (product.isDeleted) throw new ApiError(httpStatus.BAD_REQUEST, 'Product already deleted!');
-    
-    product.isDeleted = true;
-    await product.save();
+    const transaction = await db.sequelize.transaction();
+    try {
+        const product = await db.product.findByPk(productId, { transaction });
+        
+        if (!product) throw new ApiError(httpStatus.NOT_FOUND, 'Product not found!');
+        if (product.isDeleted) throw new ApiError(httpStatus.BAD_REQUEST, 'Product already deleted!');
+
+        await product.update({ isDeleted: true }, { transaction });
+        
+        await db.productVariant.update(
+            { isDeleted: true },
+            { where: { productId }, transaction }
+        );
+
+        await transaction.commit();
+    } catch (error) {
+        await transaction.rollback();
+        throw error;
+    }
 };
 
 const getProductDetail = async (productId) => {
