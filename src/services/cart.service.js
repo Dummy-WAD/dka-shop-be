@@ -110,8 +110,8 @@ const addProductToCart = async (userId, { productVariantId, quantity }) => {
         });
     };
 
-    const totalCartItems = await db.cartItem.findAll({ where: { userId } });
-    return { totalCartItems: totalCartItems.length };
+    const totalCartItems = await db.cartItem.count({ where: { userId } });
+    return { totalCartItems };
 };
 
 const removeProductFromCart = async (userId, productVariantId) => {
@@ -123,13 +123,14 @@ const removeProductFromCart = async (userId, productVariantId) => {
 
     await existingCartItem.destroy();
 
-    const totalCartItems = await db.cartItem.findAll({ where: { userId } });
-    return { totalCartItems: totalCartItems.length };
+    const totalCartItems = await db.cartItem.count({ where: { userId } });
+    return { totalCartItems };
 };
 
 
 export default {
     getAllCartItems,
     addProductToCart,
+    editCartItemQuantity,
     removeProductFromCart
 }

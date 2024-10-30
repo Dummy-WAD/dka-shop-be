@@ -23,5 +23,6 @@ const removeProductFromCart = {
 export default {
   getAllCartItems,
   addProductToCart,
+  editCartItemQuantity,
   removeProductFromCart
 }

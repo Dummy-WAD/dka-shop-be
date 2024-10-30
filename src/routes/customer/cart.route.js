@@ -23,6 +23,11 @@ router.post('/',
     cartController.addProductToCart
 );
 
+router.patch('/', 
+    validate(cartValidation.editCartItemQuantity),
+    cartController.editCartItemQuantity
+);
+
 router.delete('/', 
     validate(cartValidation.removeProductFromCart),
     cartController.removeProductFromCart
