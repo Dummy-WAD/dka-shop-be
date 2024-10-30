@@ -103,6 +103,32 @@ const getAddressDetails = async (customerId, addressId) => {
     return addressDetails;
 }
 
+const createAddress = async (customerId, addressDetails) => {
+    const ward = await db.ward.findOne({
+        where: {
+            id: addressDetails.wardId
+        },
+        attributes: ['id']
+    });
+
+    if (!ward) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'Ward not found');
+    }
+
+    const isDefault = await db.address.findOne({
+        where: {
+            customerId: customerId,
+        }
+    }) == null;
+
+    return await db.address.create({
+        customerId: customerId,
+        localAddress: addressDetails.localAddress,
+        wardId: addressDetails.wardId,
+        isDefault: isDefault
+    });
+}
+
 const deleteAddress = async (customerId, addressId) => {
 
     const address = await db.address.findOne({
@@ -229,5 +255,6 @@ export default {
     getAllWardsInDistrict,
     deleteAddress,
     updateAddressInfo,
-    setAddressAsDefault
+    setAddressAsDefault,
+    createAddress
 };

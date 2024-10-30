@@ -28,9 +28,17 @@ const updateAddressInfo = {
     })
 }
 
+const createAddress = {
+    body: Joi.object().keys({
+        wardId: Joi.string().trim().required(),
+        localAddress: Joi.string().trim().required()
+    })
+}
+
 export default {
     getAddressDetails,
     getAllDistrictsInProvince,
     getAllWardsInDistrict,
-    updateAddressInfo
+    updateAddressInfo,
+    createAddress
 }
