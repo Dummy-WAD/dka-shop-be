@@ -70,9 +70,11 @@ const updateProduct = {
             return value;
         }),
         productVariants: Joi.array().items(Joi.object({
+            id: Joi.number().integer().positive().allow(null).optional(),
             size: Joi.string().trim().max(10).required(),
             color: Joi.string().trim().max(20).required(),
-            quantity: Joi.number().integer().required()
+            quantity: Joi.number().integer().required(),
+            changeValue: Joi.number().integer().required()
         })).min(1).required().custom((value, helpers) => {
 
             // check quantity is positive

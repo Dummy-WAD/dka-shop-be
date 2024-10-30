@@ -3,7 +3,6 @@ import db from "../models/models/index.js";
 import ApiError from '../utils/ApiError.js';
 import paginate from './plugins/paginate.plugin.js';
 
-
 const createCategory = async (categoryPayload) => {
     const category = await db.category.findOne({
         where: {
@@ -22,6 +21,10 @@ const createCategory = async (categoryPayload) => {
 const deleteCategory = async (categoryId) => {
     const category = await db.category.findByPk(categoryId);
     if (!category) throw new ApiError(httpStatus.NOT_FOUND, "Category not found");
+
+    const product = await db.product.findOne({ where : { category_id: categoryId, is_deleted: false } });
+    if (product) throw new ApiError(httpStatus.BAD_REQUEST, "Category has product, cannot delete");
+
     if (category.is_deleted) throw new ApiError(httpStatus.BAD_REQUEST, "Category already deleted");
     // change isDeleted to true
     category.is_deleted = true;
