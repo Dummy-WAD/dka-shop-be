@@ -33,6 +33,5 @@ export default {
   getAllCartItems,
   addProductToCart,
   editCartItemQuantity,
-  editCartItemQuantity,
   removeProductFromCart
 }

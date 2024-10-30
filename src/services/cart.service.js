@@ -148,6 +148,7 @@ const editCartItemQuantity = async (userId, { productVariantId, quantity, curren
     });
 
     if (!existingCartItem) throw new ApiError(httpStatus.NOT_FOUND, 'Cart item not found');
+    const productVariant = await db.productVariant.findByPk(productVariantId);
     if (quantity > productVariant.quantity) {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Quantity exceeds available stock');
     };
