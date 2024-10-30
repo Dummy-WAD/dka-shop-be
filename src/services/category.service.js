@@ -2,8 +2,6 @@ import httpStatus from 'http-status';
 import db from "../models/models/index.js";
 import ApiError from '../utils/ApiError.js';
 import paginate from './plugins/paginate.plugin.js';
-import { where } from 'sequelize';
-
 
 const createCategory = async (categoryPayload) => {
     const category = await db.category.findOne({
