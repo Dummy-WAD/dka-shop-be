@@ -1,4 +1,5 @@
 import Joi from 'joi';
+import customValidation from "./custom.validation.js";
 
 const getAddressDetails = {
     params: Joi.object().keys({
@@ -23,15 +24,19 @@ const updateAddressInfo = {
         addrId: Joi.number().integer().positive().required()
     }),
     body: Joi.object().keys({
-        wardId: Joi.string().trim().required(),
-        localAddress: Joi.string().trim().required()
+        wardId: Joi.string().trim().optional(),
+        localAddress: Joi.string().trim().optional(),
+        phoneNumber: Joi.string().custom(customValidation.phoneNumber).optional(),
+        contactName: Joi.string().trim().optional(),
     })
 }
 
 const createAddress = {
     body: Joi.object().keys({
         wardId: Joi.string().trim().required(),
-        localAddress: Joi.string().trim().required()
+        localAddress: Joi.string().trim().required(),
+        phoneNumber: Joi.string().custom(customValidation.phoneNumber).required(),
+        contactName: Joi.string().trim().required(),
     })
 }
 

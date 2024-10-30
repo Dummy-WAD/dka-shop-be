@@ -31,8 +31,10 @@ const getCustomerAddresses = async (customerId) => {
         order: [['isDefault', 'DESC'], ['updatedAt', 'DESC']]
     });
 
-    const addresses = userAddresses.map(({ id, localAddress, ward, isDefault }) => ({
+    const addresses = userAddresses.map(({ id, phoneNumber, contactName, localAddress, ward, isDefault }) => ({
         id,
+        phoneNumber: phoneNumber || null,
+        contactName: contactName || null,
         localAddress: localAddress || null,
         ward: {
             nameEn: ward?.nameEn,
@@ -84,6 +86,8 @@ const getAddressDetails = async (customerId, addressId) => {
 
     const addressDetails = {
         id: address.id,
+        phoneNumber: address.phoneNumber || null,
+        contactName: address.contactName || null,
         localAddress: address.localAddress || null,
         ward: {
             id: address.wardId,
@@ -115,16 +119,30 @@ const createAddress = async (customerId, addressDetails) => {
         throw new ApiError(httpStatus.NOT_FOUND, 'Ward not found');
     }
 
+    const addrCount = await db.address.count({
+        where: {
+            customerId: customerId
+        }
+    });
+
+    // Limit address count to 10
+    if (addrCount >= 10) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Address limit reached');
+    }
+
     const isDefault = await db.address.findOne({
         where: {
             customerId: customerId,
+            isDefault: true
         }
     }) == null;
 
-    return await db.address.create({
+    await db.address.create({
         customerId: customerId,
         localAddress: addressDetails.localAddress,
         wardId: addressDetails.wardId,
+        phoneNumber: addressDetails.phoneNumber,
+        contactName: addressDetails.contactName,
         isDefault: isDefault
     });
 }
@@ -206,6 +224,8 @@ const updateAddressInfo = async (customerId, addressId, addressDetails) => {
     await db.address.update({
         localAddress: addressDetails.localAddress,
         wardId: addressDetails.wardId,
+        phoneNumber: addressDetails.phoneNumber,
+        contactName: addressDetails.contactName
     }, {
         where: {
             id: addressId
