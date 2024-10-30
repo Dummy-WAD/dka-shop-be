@@ -154,7 +154,7 @@ const updateProduct = async (productId, productBody) => {
             // filter raw variants
             const new_variants_raw = productBody.productVariants.filter(variant => new_variants.includes(`${variant.size.toLowerCase()}-${variant.color.toLowerCase()}`));
             const update_variants_raw = productBody.productVariants.filter(variant => update_variants.includes(`${variant.size.toLowerCase()}-${variant.color.toLowerCase()}`));
-            const update_variants_id = all_variants.filter(variant => update_variants.includes(`${variant.size.toLowerCase()}-${variant.color.toLowerCase()}`)).map(variant => variant.id);
+            // const update_variants_id = all_variants.filter(variant => update_variants.includes(`${variant.size.toLowerCase()}-${variant.color.toLowerCase()}`)).map(variant => variant.id);
             // delete variants
             const delete_variants_id = all_variants.filter(variant => delete_variants.includes(`${variant.size.toLowerCase()}-${variant.color.toLowerCase()}`)).map(variant => variant.id);
             await db.productVariant.update(
@@ -173,21 +173,37 @@ const updateProduct = async (productId, productBody) => {
 
             await db.productVariant.bulkCreate(variants, { transaction });
 
-            console.log('update_variants_raw', update_variants_raw);
+            // // delete variants from variants_id
+            // await db.productVariant.destroy({ where: { id: update_variants_id }, transaction });
 
-            // delete variants from variants_id
-            await db.productVariant.destroy({ where: { id: update_variants_id }, transaction });
+            // // create new variants
+            // const variants_update = update_variants_raw.map(variant => ({
+            //     productId,
+            //     size: variant.size,
+            //     color: variant.color,
+            //     quantity: variant.quantity,
+            //     isDeleted: DeleteStatus.NOT_DELETED,
+            // }));
 
-            // create new variants
-            const variants_update = update_variants_raw.map(variant => ({
-                productId,
-                size: variant.size,
-                color: variant.color,
-                quantity: variant.quantity,
-                isDeleted: DeleteStatus.NOT_DELETED,
-            }));
+            // await db.productVariant.bulkCreate(variants_update, { transaction });
 
-            await db.productVariant.bulkCreate(variants_update, { transaction });
+            // update variants with variants_id (promise all)
+            
+            // Mapping and updating variants in a single step
+            const update_variants_promise = update_variants_raw.map(async variant => {
+                const variant_db = all_variants.find(v => 
+                    v.size.toLowerCase() === variant.size.toLowerCase() && 
+                    v.color.toLowerCase() === variant.color.toLowerCase()
+                );
+                if (variant_db) {
+                    variant_db.size = variant.size;
+                    variant_db.color = variant.color;
+                    variant_db.quantity = variant.quantity;
+                    await variant_db.save({ transaction });
+                }
+            });
+
+            await Promise.all(update_variants_promise);
         }
 
         await transaction.commit();
