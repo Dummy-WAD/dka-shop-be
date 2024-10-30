@@ -151,11 +151,10 @@ const updateProduct = async (productId, productBody) => {
             const new_variants = request_variants.filter(variant => !current_variants.includes(variant));
             const delete_variants = current_variants.filter(variant => !request_variants.includes(variant));
             const update_variants = request_variants.filter(variant => current_variants.includes(variant));
-
             // filter raw variants
             const new_variants_raw = productBody.productVariants.filter(variant => new_variants.includes(`${variant.size.toLowerCase()}-${variant.color.toLowerCase()}`));
             const update_variants_raw = productBody.productVariants.filter(variant => update_variants.includes(`${variant.size.toLowerCase()}-${variant.color.toLowerCase()}`));
-
+            const update_variants_id = all_variants.filter(variant => update_variants.includes(`${variant.size.toLowerCase()}-${variant.color.toLowerCase()}`)).map(variant => variant.id);
             // delete variants
             const delete_variants_id = all_variants.filter(variant => delete_variants.includes(`${variant.size.toLowerCase()}-${variant.color.toLowerCase()}`)).map(variant => variant.id);
             await db.productVariant.update(
@@ -174,14 +173,21 @@ const updateProduct = async (productId, productBody) => {
 
             await db.productVariant.bulkCreate(variants, { transaction });
 
-            // update variants
-            const updatePromises = update_variants_raw.map(async (variant) => {
-                return db.productVariant.update(
-                    { quantity: variant.quantity, isDeleted: DeleteStatus.NOT_DELETED },
-                    { where: { productId, size: variant.size, color: variant.color }, transaction }
-                );
-            });
-            await Promise.all(updatePromises);
+            console.log('update_variants_raw', update_variants_raw);
+
+            // delete variants from variants_id
+            await db.productVariant.destroy({ where: { id: update_variants_id }, transaction });
+
+            // create new variants
+            const variants_update = update_variants_raw.map(variant => ({
+                productId,
+                size: variant.size,
+                color: variant.color,
+                quantity: variant.quantity,
+                isDeleted: DeleteStatus.NOT_DELETED,
+            }));
+
+            await db.productVariant.bulkCreate(variants_update, { transaction });
         }
 
         await transaction.commit();

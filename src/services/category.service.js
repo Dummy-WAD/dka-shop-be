@@ -2,6 +2,7 @@ import httpStatus from 'http-status';
 import db from "../models/models/index.js";
 import ApiError from '../utils/ApiError.js';
 import paginate from './plugins/paginate.plugin.js';
+import { where } from 'sequelize';
 
 
 const createCategory = async (categoryPayload) => {
@@ -22,6 +23,10 @@ const createCategory = async (categoryPayload) => {
 const deleteCategory = async (categoryId) => {
     const category = await db.category.findByPk(categoryId);
     if (!category) throw new ApiError(httpStatus.NOT_FOUND, "Category not found");
+
+    const products = await db.product.findOne({ where : { category_id: categoryId } });
+    if (products) throw new ApiError(httpStatus.BAD_REQUEST, "Category has products");
+
     if (category.is_deleted) throw new ApiError(httpStatus.BAD_REQUEST, "Category already deleted");
     // change isDeleted to true
     category.is_deleted = true;
