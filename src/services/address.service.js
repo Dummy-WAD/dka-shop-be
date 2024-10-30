@@ -2,6 +2,8 @@ import db from "../models/models/index.js";
 import ApiError from "../utils/ApiError.js";
 import httpStatus from "http-status";
 
+const LIMIT_ADDRESS_COUNT = 10;
+
 const getCustomerAddresses = async (customerId) => {
     const userAddresses = await db.address.findAll({
         where: {
@@ -31,8 +33,10 @@ const getCustomerAddresses = async (customerId) => {
         order: [['isDefault', 'DESC'], ['updatedAt', 'DESC']]
     });
 
-    const addresses = userAddresses.map(({ id, localAddress, ward, isDefault }) => ({
+    const addresses = userAddresses.map(({ id, phoneNumber, contactName, localAddress, ward, isDefault }) => ({
         id,
+        phoneNumber: phoneNumber || null,
+        contactName: contactName || null,
         localAddress: localAddress || null,
         ward: {
             nameEn: ward?.nameEn,
@@ -84,6 +88,8 @@ const getAddressDetails = async (customerId, addressId) => {
 
     const addressDetails = {
         id: address.id,
+        phoneNumber: address.phoneNumber || null,
+        contactName: address.contactName || null,
         localAddress: address.localAddress || null,
         ward: {
             id: address.wardId,
@@ -101,6 +107,46 @@ const getAddressDetails = async (customerId, addressId) => {
     };
 
     return addressDetails;
+}
+
+const createAddress = async (customerId, addressDetails) => {
+    const ward = await db.ward.findOne({
+        where: {
+            id: addressDetails.wardId
+        },
+        attributes: ['id']
+    });
+
+    if (!ward) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'Ward not found');
+    }
+
+    const addrCount = await db.address.count({
+        where: {
+            customerId: customerId
+        }
+    });
+
+    // Limit address count to LIMIT_ADDRESS_COUNT
+    if (addrCount >= LIMIT_ADDRESS_COUNT) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Address limit reached');
+    }
+
+    const isDefault = await db.address.findOne({
+        where: {
+            customerId: customerId,
+            isDefault: true
+        }
+    }) == null;
+
+    await db.address.create({
+        customerId: customerId,
+        localAddress: addressDetails.localAddress,
+        wardId: addressDetails.wardId,
+        phoneNumber: addressDetails.phoneNumber,
+        contactName: addressDetails.contactName,
+        isDefault: isDefault
+    });
 }
 
 const deleteAddress = async (customerId, addressId) => {
@@ -180,6 +226,8 @@ const updateAddressInfo = async (customerId, addressId, addressDetails) => {
     await db.address.update({
         localAddress: addressDetails.localAddress,
         wardId: addressDetails.wardId,
+        phoneNumber: addressDetails.phoneNumber,
+        contactName: addressDetails.contactName
     }, {
         where: {
             id: addressId
@@ -229,5 +277,6 @@ export default {
     getAllWardsInDistrict,
     deleteAddress,
     updateAddressInfo,
-    setAddressAsDefault
+    setAddressAsDefault,
+    createAddress
 };

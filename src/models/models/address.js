@@ -20,6 +20,14 @@ export default (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       field: 'ward_id'
     },
+    phoneNumber: {
+        type: DataTypes.STRING,
+        field: 'phone_number'
+    },
+    contactName: {
+        type: DataTypes.STRING,
+        field: 'contact_name'
+    },
     isDefault: {
       type: DataTypes.BOOLEAN,
         field: 'is_default'

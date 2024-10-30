@@ -38,6 +38,11 @@ router.get("/:addrId",
     addressController.getAddressDetails
 );
 
+router.post("/",
+    validate(addressValidation.createAddress),
+    addressController.createAddress
+);
+
 router.delete("/:addrId",
     validate(addressValidation.getAddressDetails),
     addressController.deleteAddress

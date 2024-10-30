@@ -12,6 +12,12 @@ const getAddressDetails = catchAsync(async (req, res) => {
     res.status(httpStatus.OK).send(address);
 });
 
+const createAddress = catchAsync(async (req, res) => {
+    const { wardId, localAddress, phoneNumber, contactName } = req.body;
+    await addressServices.createAddress(req.user.id, { wardId, localAddress, phoneNumber, contactName });
+    res.status(httpStatus.CREATED).send("Address created");
+});
+
 const deleteAddress = catchAsync(async (req, res) => {
     await addressServices.deleteAddress(req.user.id, req.params.addrId);
     res.status(httpStatus.OK).send("Address deleted");
@@ -33,8 +39,8 @@ const getAllWardsInDistrict = catchAsync(async (req, res) => {
 });
 
 const updateAddressInfo = catchAsync(async (req, res) => {
-    const { wardId, localAddress } = req.body;
-    await addressServices.updateAddressInfo(req.user.id, req.params.addrId, { wardId, localAddress });
+    const { wardId, localAddress, phoneNumber, contactName } = req.body;
+    await addressServices.updateAddressInfo(req.user.id, req.params.addrId, { wardId, localAddress, phoneNumber, contactName });
     res.status(httpStatus.OK).send("Address updated");
 });
 
@@ -51,5 +57,6 @@ export default {
     getAllDistrictsInProvince,
     getAllWardsInDistrict,
     updateAddressInfo,
-    setDefaultAddress
+    setDefaultAddress,
+    createAddress
 };
