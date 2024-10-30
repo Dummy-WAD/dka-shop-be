@@ -18,8 +18,19 @@ const getAllWardsInDistrict = {
     })
 }
 
+const updateAddressInfo = {
+    params: Joi.object().keys({
+        addrId: Joi.number().integer().positive().required()
+    }),
+    body: Joi.object().keys({
+        wardId: Joi.string().trim().required(),
+        localAddress: Joi.string().trim().required()
+    })
+}
+
 export default {
     getAddressDetails,
     getAllDistrictsInProvince,
-    getAllWardsInDistrict
+    getAllWardsInDistrict,
+    updateAddressInfo
 }

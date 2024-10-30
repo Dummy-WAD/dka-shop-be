@@ -44,7 +44,7 @@ router.delete("/:addrId",
 );
 
 router.patch("/:addrId",
-    validate(addressValidation.getAddressDetails),
+    validate(addressValidation.updateAddressInfo),
     addressController.updateAddressInfo
 );
 
