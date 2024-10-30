@@ -22,8 +22,15 @@ const editCartItemQuantity = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ message: 'The quantity of this product variant updated successfully'});
 });
 
+const removeProductFromCart = catchAsync(async (req, res) => {
+  const userReq = pick(req.user.dataValues, ['id']);
+  const totalCartItems =await cartServices.removeProductFromCart(userReq.id, req.body.productVariantId);
+  res.status(httpStatus.OK).send(totalCartItems);
+});
+
 export default {
   getAllCartItems,
   addProductToCart,
-  editCartItemQuantity
+  editCartItemQuantity,
+  removeProductFromCart
 };

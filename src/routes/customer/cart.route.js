@@ -28,4 +28,9 @@ router.patch('/',
     cartController.editCartItemQuantity
 );
 
+router.delete('/', 
+    validate(cartValidation.removeProductFromCart),
+    cartController.removeProductFromCart
+);
+
 export default router;

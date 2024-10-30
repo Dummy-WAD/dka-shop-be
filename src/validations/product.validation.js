@@ -2,7 +2,7 @@ import Joi from 'joi';
 
 const getProducts = {
     query: Joi.object().keys({
-        name: Joi.string().trim().allow('').max(30).optional(),
+        name: Joi.string().trim().allow('').max(100).optional(),
         categoryId: Joi.number().integer().positive().optional(),
         sortBy: Joi.string().valid('name', 'price', 'createdAt', 'updatedAt').optional(),
         order: Joi.string().valid('asc', 'desc').optional(),
@@ -13,10 +13,10 @@ const getProducts = {
 
 const createProduct = {
     body: Joi.object().keys({
-        name: Joi.string().trim().max(30).required(),
+        name: Joi.string().trim().max(100).required(),
         price: Joi.number().precision(2).positive().required(),
         categoryId: Joi.number().integer().positive().required(),  
-        description: Joi.string().trim().max(16000).optional(),
+        description: Joi.string().trim().max(1000).optional(),
         productImages: Joi.array().items(
             Joi.object({
                 filename: Joi.string().trim().max(255).required(),
@@ -53,10 +53,10 @@ const updateProduct = {
         productId: Joi.number().integer().positive().required()
     }),
     body: Joi.object().keys({
-        name: Joi.string().trim().max(30).optional(),
+        name: Joi.string().trim().max(100).optional(),
         price: Joi.number().precision(2).positive().optional(),
         categoryId: Joi.number().integer().positive().optional(),
-        description: Joi.string().trim().max(16000).optional(),
+        description: Joi.string().trim().max(1000).optional(),
         productImages: Joi.array().items(
             Joi.object({
                 filename: Joi.string().trim().max(255).required(),
@@ -110,7 +110,7 @@ const getProductDetail = {
 
 const getProductsForCustomer = {
     query: Joi.object().keys({
-        name: Joi.string().trim().allow('').max(30).optional(),
+        name: Joi.string().trim().allow('').max(100).optional(),
         categoryId: Joi.number().integer().positive().optional(),
         sortBy: Joi.string().valid('price', 'updatedAt').default('updatedAt'),
         order: Joi.string().valid('asc', 'desc').default('desc'),

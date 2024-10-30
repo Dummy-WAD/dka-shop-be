@@ -82,16 +82,16 @@ const getAllCartItems = async (filter, options) => {
         };
     });
 
-    return productVariantId 
-    ? formattedResults?.[0] 
-    : {
-        results: formattedResults,
-        totalCartItems: totalResults,
-        page,
-        limit,
-        totalPages,
-        totalResults
-    };
+    return productVariantId
+        ? formattedResults?.[0]
+        : {
+            results: formattedResults,
+            totalCartItems: totalResults,
+            page,
+            limit,
+            totalPages,
+            totalResults
+        };
 };
 
 
@@ -124,8 +124,21 @@ const addProductToCart = async (userId, { productVariantId, quantity }) => {
         });
     };
 
-    const totalCartItems = await db.cartItem.findAll({ where: { userId } });
-    return { totalCartItems: totalCartItems.length };
+    const totalCartItems = await db.cartItem.count({ where: { userId } });
+    return { totalCartItems };
+};
+
+const removeProductFromCart = async (userId, productVariantId) => {
+    const existingCartItem = await db.cartItem.findOne({
+        where: { userId, productVariantId }
+    });
+
+    if (!existingCartItem) throw new ApiError(httpStatus.NOT_FOUND, 'Cart item not found');
+
+    await existingCartItem.destroy();
+
+    const totalCartItems = await db.cartItem.count({ where: { userId } });
+    return { totalCartItems };
 };
 
 const editCartItemQuantity = async (userId, { productVariantId, quantity, currentPrice }) => {
@@ -135,7 +148,6 @@ const editCartItemQuantity = async (userId, { productVariantId, quantity, curren
     });
 
     if (!existingCartItem) throw new ApiError(httpStatus.NOT_FOUND, 'Cart item not found');
-
     const productVariant = await db.productVariant.findByPk(productVariantId);
     if (quantity > productVariant.quantity) {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Quantity exceeds available stock');
@@ -189,5 +201,6 @@ const editCartItemQuantity = async (userId, { productVariantId, quantity, curren
 export default {
     getAllCartItems,
     addProductToCart,
-    editCartItemQuantity
+    editCartItemQuantity,
+    removeProductFromCart
 }
