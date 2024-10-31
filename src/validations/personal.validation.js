@@ -13,7 +13,10 @@ const updateProfile = {
 const changePassword = {  
   body: Joi.object().keys({
     oldPassword: Joi.string().required(),
-    password: Joi.string().custom(customValidation.password).required(),
+    password: Joi.string()
+        .custom(customValidation.password)
+        .disallow(Joi.ref('oldPassword'))
+        .required(),
     confirmPassword: Joi.string().valid(Joi.ref('password')).required(),
   }),
 };
