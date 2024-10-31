@@ -61,7 +61,7 @@ const resendConfirmationEmail = catchAsync(async (req, res) => {
 });
 
 const getCurrentUser = catchAsync(async (req, res) => {
-  const userInfo = pick(req.user.dataValues, ['id', 'email', 'firstName', 'lastName', 'role', 'status']);
+  const userInfo = pick(req.user.dataValues, ['firstName', 'lastName', 'email', 'phoneNumber', 'createdAt', 'gender', 'role', 'status']);
   res.status(httpStatus.OK).send(userInfo);
 });
 
