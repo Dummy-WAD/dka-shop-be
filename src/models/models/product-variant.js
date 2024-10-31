@@ -36,6 +36,10 @@ export default (sequelize, DataTypes) => {
 			foreignKey: 'product_variant_id',
       constraints: false
     });
+    productVariant.hasMany(db.cartItem, { 
+			foreignKey: 'product_variant_id',
+      constraints: false
+    });
   };
   return productVariant;
 };

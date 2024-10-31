@@ -33,19 +33,43 @@ const getCustomerDetail = async (customerId) => {
 
     const userAddresses = await db.address.findAll({
         where: {
-            customer_id: customerId
-        }
+            customerId: customerId
+        },
+        include: [
+            {
+                model: db.ward,
+                as: 'ward',
+                attributes: ['nameEn'],
+                include: [
+                    {
+                        model: db.district,
+                        as: 'district',
+                        attributes: ['nameEn'],
+                        include: [
+                            {
+                                model: db.province,
+                                as: 'province',
+                                attributes: ['nameEn']
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        order: [['isDefault', 'DESC'], ['updatedAt', 'DESC']]
     });
 
     const addresses = userAddresses.map(addr => {
         const parts = [];
-        if (addr.local_address) parts.push(addr.local_address);
-        if (addr.commune) parts.push(addr.commune);
-        if (addr.district) parts.push(addr.district);
-        if (addr.province) parts.push(addr.province);
+        if (addr.localAddress) parts.push(addr.localAddress);
+        if (addr.ward) {
+            parts.push(addr.ward.nameEn);
+            parts.push(addr.ward.district.nameEn);
+            parts.push(addr.ward.district.province.nameEn);
+        }
         return {
-            full_address: parts.join(', '),
-            is_default: addr.is_default,
+            fullAddress: parts.join(', '),
+            isDefault: addr.isDefault,
         };
     });
 

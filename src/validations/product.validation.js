@@ -2,7 +2,7 @@ import Joi from 'joi';
 
 const getProducts = {
     query: Joi.object().keys({
-        name: Joi.string().trim().allow('').max(30).optional(),
+        name: Joi.string().trim().allow('').max(100).optional(),
         categoryId: Joi.number().integer().positive().optional(),
         sortBy: Joi.string().valid('name', 'price', 'createdAt', 'updatedAt').optional(),
         order: Joi.string().valid('asc', 'desc').optional(),
@@ -13,10 +13,10 @@ const getProducts = {
 
 const createProduct = {
     body: Joi.object().keys({
-        name: Joi.string().trim().max(30).required(),
+        name: Joi.string().trim().max(100).required(),
         price: Joi.number().precision(2).positive().required(),
         categoryId: Joi.number().integer().positive().required(),  
-        description: Joi.string().trim().max(16000).optional(),
+        description: Joi.string().trim().max(1000).optional(),
         productImages: Joi.array().items(
             Joi.object({
                 filename: Joi.string().trim().max(255).required(),
@@ -33,7 +33,68 @@ const createProduct = {
             size: Joi.string().trim().max(10).required(),
             color: Joi.string().trim().max(20).required(),
             quantity: Joi.number().integer().positive().required()
-        })).optional()
+        })).optional().custom((value, helpers) => {
+            // check the uniqueness of size and color in lower case
+            const uniqueVariants = new Set();
+            for (const variant of value) {
+                const key = `${variant.size.toLowerCase()}-${variant.color.toLowerCase()}`;
+                if (uniqueVariants.has(key)) {
+                    return helpers.message('Size and color combination must be unique');
+                }
+                uniqueVariants.add(key);
+            }  
+            return value;
+        })
+    })
+};
+
+const updateProduct = {
+    params: Joi.object().keys({
+        productId: Joi.number().integer().positive().required()
+    }),
+    body: Joi.object().keys({
+        name: Joi.string().trim().max(100).optional(),
+        price: Joi.number().precision(2).positive().optional(),
+        categoryId: Joi.number().integer().positive().optional(),
+        description: Joi.string().trim().max(1000).optional(),
+        productImages: Joi.array().items(
+            Joi.object({
+                filename: Joi.string().trim().max(255).required(),
+                isPrimary: Joi.boolean().required()
+            })
+        ).min(1).required().custom((value, helpers) => {
+            const primaryCount = value.filter(image => image.isPrimary).length;
+            if (primaryCount !== 1) {
+                return helpers.message('One and only one image must have isPrimary set to true');
+            }
+            return value;
+        }),
+        productVariants: Joi.array().items(Joi.object({
+            id: Joi.number().integer().positive().allow(null).optional(),
+            size: Joi.string().trim().max(10).required(),
+            color: Joi.string().trim().max(20).required(),
+            quantity: Joi.number().integer().required(),
+            changeValue: Joi.number().integer().required()
+        })).min(1).required().custom((value, helpers) => {
+
+            // check quantity is positive
+            for (const variant of value) {
+                if (variant.quantity < 0) {
+                    return helpers.message('Quantity must be positive');
+                }
+            }
+
+            // check the uniqueness of size and color in lower case
+            const uniqueVariants = new Set();
+            for (const variant of value) {
+                const key = `${variant.size.toLowerCase()}-${variant.color.toLowerCase()}`;
+                if (uniqueVariants.has(key)) {
+                    return helpers.message('Size and color combination must be unique');
+                }
+                uniqueVariants.add(key);
+            }  
+            return value;
+        }) 
     })
 };
 
@@ -51,7 +112,7 @@ const getProductDetail = {
 
 const getProductsForCustomer = {
     query: Joi.object().keys({
-        name: Joi.string().trim().allow('').max(30).optional(),
+        name: Joi.string().trim().allow('').max(100).optional(),
         categoryId: Joi.number().integer().positive().optional(),
         sortBy: Joi.string().valid('price', 'updatedAt').default('updatedAt'),
         order: Joi.string().valid('asc', 'desc').default('desc'),
@@ -77,6 +138,7 @@ const getBestSellerProducts = {
 export default {
     getProducts,
     createProduct,
+    updateProduct,
     deleteProduct,
     getProductDetail,
     getProductsForCustomer,

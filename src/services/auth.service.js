@@ -116,4 +116,12 @@ const refreshAuth = async (refresh_token) => {
     return tokenServices.generateAuthTokens(user);
 };
 
-export default { createUser, confirmRegisterByToken, login, recreateConfirmationToken, logout, refreshAuth };
+export default { 
+  createUser, 
+  confirmRegisterByToken, 
+  login, 
+  recreateConfirmationToken, 
+  logout, 
+  refreshAuth,
+  isPasswordMatch
+};
