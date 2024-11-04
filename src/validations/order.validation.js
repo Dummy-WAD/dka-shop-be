@@ -1,4 +1,5 @@
 import Joi from 'joi';
+import { OrderStatus } from '../utils/enums.js';
 
 const getOrdersByCustomer = {
     params: Joi.object().keys({
@@ -12,6 +13,15 @@ const getOrdersByCustomer = {
     })
 };
 
+const getMyOrders = {
+    query: Joi.object().keys({
+        status: Joi.string().valid(...Object.values(OrderStatus)),
+        page: Joi.number().integer().min(1).default(1),
+        limit: Joi.number().integer().min(1).max(100).default(5)
+    })
+};
+
 export default {
-    getOrdersByCustomer
+    getOrdersByCustomer,
+    getMyOrders
 }
