@@ -11,8 +11,8 @@ const getOrdersByCustomer = async (filter, options, id) => {
         }
     });
     if (!customer) throw new ApiError(httpStatus.NOT_FOUND, 'Customer not found!');
-    const selectedAttributes = ['id', 'ordered_at', 'total', 'delivery_fee', 'status', 'createdAt', 'updatedAt'];
-    return await paginate(db.order, { ...filter, customer_id: id.customerId }, options, [], [], selectedAttributes);
+    const selectedAttributes = ['id', 'total', 'deliveryFee', 'status', 'createdAt', 'updatedAt'];
+    return await paginate(db.order, { ...filter, customerId: id.customerId }, options, [], [], selectedAttributes);
 };
 
 export default { 
