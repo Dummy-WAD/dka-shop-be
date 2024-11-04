@@ -10,6 +10,14 @@ const getOrdersByCustomer = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(orders);
 });
 
+const getMyOrders = catchAsync(async (req, res) => {
+  const filter = pick(req.user.dataValues, ['id']);
+  const options = pick(req.query, ['limit', 'page']);
+  const orders = await orderService.getMyOrders({ ...filter, status: req.query.status }, options);
+  res.status(httpStatus.OK).send(orders);
+});
+
 export default {
-    getOrdersByCustomer
+    getOrdersByCustomer,
+    getMyOrders
 };
