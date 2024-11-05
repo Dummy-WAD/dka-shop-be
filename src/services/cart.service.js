@@ -15,10 +15,7 @@ const getAllCartItems = async (filter, options) => {
         {
             model: db.productVariant,
             attributes: [['id', 'productVariantId'], 'productId', 'size', 'color', ['quantity', 'remainingQuantity']],
-            where: { 
-                isDeleted: false,
-                quantity: { [db.Sequelize.Op.gt]: 0 }
-            },
+            where: { isDeleted: false },
             include: {
                 model: db.product,
                 attributes: [['name', 'productName'], 'price'],
@@ -224,5 +221,6 @@ export default {
     getAllCartItems,
     addProductToCart,
     editCartItemQuantity,
-    removeProductFromCart
+    removeProductFromCart,
+    getTotalCartItemQuantity
 }

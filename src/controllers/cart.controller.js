@@ -24,13 +24,20 @@ const editCartItemQuantity = catchAsync(async (req, res) => {
 
 const removeProductFromCart = catchAsync(async (req, res) => {
   const userReq = pick(req.user.dataValues, ['id']);
-  const totalCartItems =await cartServices.removeProductFromCart(userReq.id, req.body.productVariantId);
+  const totalCartItems = await cartServices.removeProductFromCart(userReq.id, req.body.productVariantId);
   res.status(httpStatus.OK).send(totalCartItems);
+});
+
+const getTotalCartItemQuantity = catchAsync(async (req, res) => {
+  const userReq = pick(req.user.dataValues, ['id']);
+  const totalCartItems = await cartServices.getTotalCartItemQuantity(userReq.id);
+  res.status(httpStatus.OK).send({ totalCartItems });
 });
 
 export default {
   getAllCartItems,
   addProductToCart,
   editCartItemQuantity,
-  removeProductFromCart
+  removeProductFromCart,
+  getTotalCartItemQuantity
 };
