@@ -288,7 +288,7 @@ const getProductDetailForCustomer = async (productId) => {
             {
                 model: db.productVariant,
                 where: { isDeleted: false },
-                attributes: ['size', 'color', 'quantity'],
+                attributes: ['id', 'size', 'color', 'quantity'],
                 required: false
             },
             {
