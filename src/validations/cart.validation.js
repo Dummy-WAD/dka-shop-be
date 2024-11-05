@@ -18,7 +18,7 @@ const addProductToCart = {
 const editCartItemQuantity = {
   body: Joi.object().keys({
     productVariantId: Joi.number().integer().positive().required().strict(),
-    quantity: Joi.number().integer().positive().required().strict(),
+    quantity: Joi.number().integer().required().strict(),
     currentPrice: Joi.number().min(0).required().strict()
   })
 };
