@@ -13,6 +13,17 @@ const getOrdersByCustomer = {
     })
 };
 
+const getOrdersByAdmin = {
+    query: Joi.object().keys({
+        keyword: Joi.string().max(50).optional(),
+        status: Joi.string().valid(...Object.values(OrderStatus)),
+        sortBy: Joi.string().valid('orderId', 'email', 'totalPrice', 'createdAt', 'updatedAt').default('createdAt'),
+        order: Joi.string().valid('asc', 'desc').default('desc'),
+        page: Joi.number().integer().min(1).default(1),
+        limit: Joi.number().integer().min(1).max(100).default(10)
+    })
+};
+
 const getMyOrders = {
     query: Joi.object().keys({
         status: Joi.string().valid(...Object.values(OrderStatus)),
@@ -23,5 +34,6 @@ const getMyOrders = {
 
 export default {
     getOrdersByCustomer,
+    getOrdersByAdmin,
     getMyOrders
 }
