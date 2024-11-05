@@ -5,6 +5,12 @@ import validate from '../../middlewares/validate.js';
 const router = express.Router();
 
 router.get(
+  '/',
+  validate(orderValidation.getOrdersByAdmin),
+  orderController.getOrdersByAdmin
+);
+
+router.get(
     '/customers/:customerId',
     validate(orderValidation.getOrdersByCustomer),
     orderController.getOrdersByCustomer

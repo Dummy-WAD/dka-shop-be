@@ -10,6 +10,13 @@ const getOrdersByCustomer = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(orders);
 });
 
+const getOrdersByAdmin = catchAsync(async (req, res) => {
+  const filter = pick(req.query, ['keyword', 'status']);
+  const options = pick(req.query, ['sortBy', 'order', 'limit', 'page']);
+  const orders = await orderService.getOrdersByAdmin(filter, options);
+  res.status(httpStatus.OK).send(orders);
+});
+
 const getMyOrders = catchAsync(async (req, res) => {
   const filter = pick(req.user.dataValues, ['id']);
   const options = pick(req.query, ['limit', 'page']);
@@ -19,5 +26,6 @@ const getMyOrders = catchAsync(async (req, res) => {
 
 export default {
     getOrdersByCustomer,
+    getOrdersByAdmin,
     getMyOrders
 };
