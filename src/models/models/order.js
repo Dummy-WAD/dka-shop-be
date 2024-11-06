@@ -12,6 +12,14 @@ export default (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       field: 'customer_id'
     },
+    contactName: {
+      type: DataTypes.STRING,
+      field: 'contact_name'
+    },
+    phoneNumber: {
+      type: DataTypes.STRING,
+      field: 'phone_number'
+    },
     address: DataTypes.STRING,
     total: DataTypes.DOUBLE,
     deliveryFee: {
