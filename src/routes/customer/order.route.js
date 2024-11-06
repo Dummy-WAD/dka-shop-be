@@ -15,4 +15,11 @@ router.get(
     orderController.getMyOrders
   );
 
+// get order detail by id
+router.get(
+  '/:orderId',
+  validate(orderValidation.getCustomerOrderById),
+  orderController.getCustomerOrderById
+);
+
 export default router;

@@ -32,8 +32,22 @@ const getMyOrders = {
     })
 };
 
+const getOrderById = {
+    params: Joi.object().keys({
+        orderId: Joi.number().integer().positive().required()
+    })
+};
+
+const getCustomerOrderById = {
+    params: Joi.object().keys({
+        orderId: Joi.number().integer().positive().required()
+    })
+};
+
 export default {
     getOrdersByCustomer,
     getOrdersByAdmin,
-    getMyOrders
+    getMyOrders,
+    getOrderById,
+    getCustomerOrderById
 }
