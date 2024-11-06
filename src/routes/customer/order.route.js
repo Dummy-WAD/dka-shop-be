@@ -28,4 +28,10 @@ router.post(
     orderController.prepareOrder
   );
 
+router.post(
+    '/',
+    validate(orderValidation.placeOrder),
+    orderController.placeOrder
+  );
+
 export default router;

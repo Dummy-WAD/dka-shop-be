@@ -5,6 +5,7 @@ import ApiError from '../utils/ApiError.js';
 import { UserRole } from '../utils/enums.js';
 import { Op } from 'sequelize';
 import productService from "./product.service.js";
+import addressService from "./address.service.js";
 
 const getOrdersByCustomer = async (filter, options, id) => {
     const customer = await db.user.findOne({
@@ -349,6 +350,7 @@ const prepareOrder = async (customerId, cartItemsParams, deliveryServiceParams) 
         }
 
         return {
+            cartItemId: id,
             productVariantId: item.productVariant.id,
             name: item.productVariant.product.name,
             image: item.productVariant.product.productImages[0].imageUrl,
@@ -388,11 +390,111 @@ const prepareOrder = async (customerId, cartItemsParams, deliveryServiceParams) 
     }
 };
 
+const placeOrder = async (customerId, orderItemsParams, deliveryServiceParams, addressId) => {
+
+    let costChange = false;
+
+    const transaction = await db.sequelize.transaction();
+
+    try {
+        const productVariantEntities = await db.productVariant.findAll({
+            where: {
+                id: orderItemsParams.map(item => item.productVariantId),
+                isDeleted: false
+            },
+            include: {
+                model: db.product,
+                attributes: ['id', 'name'],
+                where: { isDeleted: false }
+            },
+            lock: transaction.LOCK.UPDATE,
+            transaction
+        });
+
+        const productIds = productVariantEntities.map(item => item.productId);
+        const productPrices = await productService.getDiscountedPriceOfProducts(productIds);
+
+        let orderItems = orderItemsParams.map(itemParams => {
+            const { productVariantId } = itemParams;
+            const variant = productVariantEntities.find(variant => variant.id === productVariantId);
+
+            if (!variant) throw new ApiError(httpStatus.NOT_FOUND, 'Product variant not found!');
+
+            if (variant.quantity < itemParams.quantity) {
+                throw new ApiError(httpStatus.BAD_REQUEST, 'Quantity of product is not enough!');
+            }
+
+            if (itemParams.currentPrice !== productPrices[variant.productId]) {
+                costChange = true;
+            }
+
+            variant.quantity -= itemParams.quantity;
+
+            return {
+                product_variant_id: productVariantId,
+                productName: variant.product.name,
+                size: variant.size,
+                color: variant.color,
+                quantity: itemParams.quantity,
+                price: productPrices[variant.productId],
+            };
+        });
+
+        await Promise.all(productVariantEntities.map(entity => entity.save({ transaction })));
+
+        const deliveryServiceEntity = await db.deliveryService.findOne({
+            where: {
+                id: deliveryServiceParams.id,
+                isActive: true
+            },
+            attributes: ['id', 'name', 'deliveryFee']
+        });
+
+        if (!deliveryServiceEntity) throw new ApiError(httpStatus.NOT_FOUND, 'Delivery service not found!');
+
+        if (deliveryServiceEntity.deliveryFee !== deliveryServiceParams.deliveryFee) {
+            costChange = true;
+        }
+
+        const addressDetails = await addressService.getAddressDetails(customerId, addressId);
+
+        const orderEntity = await db.order.create({
+            customerId,
+            contactName: addressDetails.contactName,
+            phoneNumber: addressDetails.phoneNumber,
+            address: addressDetails.localAddress + ', ' + addressDetails.ward.nameEn + ', ' + addressDetails.district.nameEn + ', ' + addressDetails.province.nameEn,
+            deliveryServiceId: deliveryServiceEntity.id,
+            deliveryFee: deliveryServiceEntity.deliveryFee,
+            total: orderItems.reduce((acc, { price, quantity }) => acc + (price * quantity), 0),
+            status: 'Pending',
+        }, { transaction });
+
+        orderItems = orderItems.map(item => ({ ...item, order_id: orderEntity.id }));
+        await db.orderItem.bulkCreate(orderItems, { transaction });
+
+        await transaction.commit();
+
+        return {
+            orderInformation: {
+                orderId: orderEntity.id,
+                total: orderEntity.total + orderEntity.deliveryFee,
+                status: orderEntity.status,
+                createdAt: orderEntity.createdAt,
+            },
+            costChange
+        }
+    } catch (error) {
+        if (transaction) await transaction.rollback();
+        throw error;
+    }
+}
+
 export default {
     getOrdersByCustomer,
     getOrdersByAdmin,
     getMyOrders,
     getOrderById,
     getCustomerOrderById,
-    prepareOrder
+    prepareOrder,
+    placeOrder
 };

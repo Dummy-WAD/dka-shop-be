@@ -58,11 +58,28 @@ const prepareOrder = {
     })
 }
 
+const placeOrder = {
+    body: Joi.object().keys({
+        orderItems: Joi.array().items(
+          Joi.object().keys({
+            productVariantId: Joi.number().integer().positive().required(),
+            quantity: Joi.number().integer().positive().required(),
+            currentPrice: Joi.number().positive().required()
+        })).min(1).required(),
+        deliveryService: Joi.object().keys({
+            id: Joi.number().integer().positive().required(),
+            deliveryFee: Joi.number().positive().required()
+        }).required(),
+        addressId: Joi.number().integer().positive().required()
+    })
+}
+
 export default {
     getOrdersByCustomer,
     getOrdersByAdmin,
     getMyOrders,
     getOrderById,
     getCustomerOrderById,
-    prepareOrder
+    prepareOrder,
+    placeOrder
 }
