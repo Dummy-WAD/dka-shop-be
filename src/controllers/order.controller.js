@@ -34,10 +34,17 @@ const getCustomerOrderById = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(order);
 });
 
+const prepareOrder = catchAsync(async (req, res) => {
+  const { cartItems, deliveryService } = req.body;
+  const preparedOrder = await orderService.prepareOrder(req.user.id, cartItems, deliveryService);
+  res.status(httpStatus.OK).send(preparedOrder);
+});
+
 export default {
     getOrdersByCustomer,
     getOrdersByAdmin,
     getMyOrders,
     getOrderById,
-    getCustomerOrderById
+    getCustomerOrderById,
+    prepareOrder,
 };

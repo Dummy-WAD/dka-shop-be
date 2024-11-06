@@ -4,6 +4,7 @@ import httpStatus from 'http-status';
 import ApiError from '../utils/ApiError.js';
 import { UserRole } from '../utils/enums.js';
 import { Op } from 'sequelize';
+import productService from "./product.service.js";
 
 const getOrdersByCustomer = async (filter, options, id) => {
     const customer = await db.user.findOne({
@@ -303,10 +304,95 @@ const getCustomerOrderById = async (orderId, customerId) => {
     return orderDetailResponse;
 };
 
+const prepareOrder = async (customerId, cartItemsParams, deliveryServiceParams) => {
+
+    let costChange = false;
+
+    const cartItemEntities = await db.cartItem.findAll({
+        where: {
+            id: cartItemsParams.map(item => item.id)
+        },
+        include: {
+            model: db.productVariant,
+            attributes: ['id', 'quantity', 'color', 'size', 'productId'],
+            where: { isDeleted: false },
+            include: {
+                model: db.product,
+                attributes: ['name'],
+                where: { isDeleted: false },
+                include: {
+                    model: db.productImage,
+                    attributes: ['imageUrl'],
+                    where: { isPrimary: true }
+                }
+            }
+        }
+    });
+
+    const productIds = cartItemEntities.map(item => item.productVariant.productId);
+    const productPrices = await productService.getDiscountedPriceOfProducts(productIds);
+
+    const preparedOrderItems = cartItemsParams.map(itemParams => {
+        const { id } = itemParams;
+        const item = cartItemEntities.find(item => item.id === id);
+
+        if (!item) throw new ApiError(httpStatus.NOT_FOUND, 'Cart item not found!');
+
+        if (item.quantity > item.productVariant.quantity) {
+            throw new ApiError(httpStatus.BAD_REQUEST, 'Quantity of product is not enough!');
+        }
+
+        const isPriceChange = itemParams.currentPrice !== productPrices[item.productVariant.productId];
+
+        if (isPriceChange) {
+            costChange = true;
+        }
+
+        return {
+            productVariantId: item.productVariant.id,
+            name: item.productVariant.product.name,
+            image: item.productVariant.product.productImages[0].imageUrl,
+            color: item.productVariant.color,
+            size: item.productVariant.size,
+            quantity: item.quantity,
+            price: productPrices[item.productVariant.productId],
+            isPriceChange
+        };
+    });
+
+    const deliveryServiceEntity = await db.deliveryService.findOne({
+        where: {
+            id: deliveryServiceParams.id,
+            isActive: true
+        },
+        attributes: ['id', 'name', 'deliveryFee']
+    });
+
+    if (!deliveryServiceEntity) throw new ApiError(httpStatus.NOT_FOUND, 'Delivery service not found!');
+
+    const deliveryService = deliveryServiceEntity.get({ plain: true });
+    if (deliveryService.deliveryFee !== deliveryServiceParams.deliveryFee) {
+        costChange = true;
+        deliveryService.isPriceChange = true;
+    }
+
+    const productCost = preparedOrderItems.reduce((acc, { price, quantity }) => acc + (price * quantity), 0);
+    const totalCost = productCost + deliveryService.deliveryFee;
+
+    return {
+        preparedOrderItems,     // Item will be added to the order
+        deliveryService,        // Delivery service will be used for the order
+        productCost,            // Total cost of products
+        totalCost,              // Total cost of the order (product cost + delivery fee)
+        costChange              // Flag to indicate if there is a change in the cost
+    }
+};
+
 export default {
     getOrdersByCustomer,
     getOrdersByAdmin,
     getMyOrders,
     getOrderById,
-    getCustomerOrderById
+    getCustomerOrderById,
+    prepareOrder
 };

@@ -44,10 +44,25 @@ const getCustomerOrderById = {
     })
 };
 
+const prepareOrder = {
+    body: Joi.object().keys({
+        cartItems: Joi.array().items(
+          Joi.object().keys({
+            id: Joi.number().integer().positive().required(),
+            currentPrice: Joi.number().positive().required()
+        })).min(1).required(),
+        deliveryService: Joi.object().keys({
+            id: Joi.number().integer().positive().required(),
+            deliveryFee: Joi.number().positive().required()
+        }).required(),
+    })
+}
+
 export default {
     getOrdersByCustomer,
     getOrdersByAdmin,
     getMyOrders,
     getOrderById,
-    getCustomerOrderById
+    getCustomerOrderById,
+    prepareOrder
 }
