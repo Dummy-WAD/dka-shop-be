@@ -2,7 +2,7 @@ import paginate from './plugins/paginate.plugin.js';
 import db from '../models/models/index.js';
 import httpStatus from 'http-status';
 import ApiError from '../utils/ApiError.js';
-import { UserRole } from '../utils/enums.js';
+import {OrderStatus, UserRole} from '../utils/enums.js';
 import { Op } from 'sequelize';
 import productService from "./product.service.js";
 import addressService from "./address.service.js";
@@ -440,8 +440,6 @@ const placeOrder = async (customerId, orderItemsParams, deliveryServiceParams, a
             };
         });
 
-        await Promise.all(productVariantEntities.map(entity => entity.save({ transaction })));
-
         const deliveryServiceEntity = await db.deliveryService.findOne({
             where: {
                 id: deliveryServiceParams.id,
@@ -466,11 +464,21 @@ const placeOrder = async (customerId, orderItemsParams, deliveryServiceParams, a
             deliveryServiceId: deliveryServiceEntity.id,
             deliveryFee: deliveryServiceEntity.deliveryFee,
             total: orderItems.reduce((acc, { price, quantity }) => acc + (price * quantity), 0),
-            status: 'Pending',
+            status: OrderStatus.PENDING,
         }, { transaction });
 
         orderItems = orderItems.map(item => ({ ...item, order_id: orderEntity.id }));
         await db.orderItem.bulkCreate(orderItems, { transaction });
+
+        await Promise.all(productVariantEntities.map(entity => entity.save({ transaction })));
+
+        await db.cartItem.destroy({
+            where: {
+                productVariantId: orderItemsParams.map(item => item.productVariantId),
+                userId: customerId
+            },
+            transaction
+        });
 
         await transaction.commit();
 
