@@ -22,4 +22,16 @@ router.get(
   orderController.getCustomerOrderById
 );
 
+router.post(
+    '/prepare',
+    validate(orderValidation.prepareOrder),
+    orderController.prepareOrder
+  );
+
+router.post(
+    '/',
+    validate(orderValidation.placeOrder),
+    orderController.placeOrder
+  );
+
 export default router;
