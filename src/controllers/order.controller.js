@@ -24,8 +24,20 @@ const getMyOrders = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(orders);
 });
 
+const getOrderById = catchAsync(async (req, res) => {
+  const order = await orderService.getOrderById(req.params.orderId);
+  res.status(httpStatus.OK).send(order);
+});
+
+const getCustomerOrderById = catchAsync(async (req, res) => {
+  const order = await orderService.getCustomerOrderById(req.params.orderId, req.user.dataValues.id);
+  res.status(httpStatus.OK).send(order);
+});
+
 export default {
     getOrdersByCustomer,
     getOrdersByAdmin,
-    getMyOrders
+    getMyOrders,
+    getOrderById,
+    getCustomerOrderById
 };

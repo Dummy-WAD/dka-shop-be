@@ -156,8 +156,157 @@ const getMyOrders = async (filter, options) => {
     };
 };
 
+const getOrderById = async (orderId) => {
+    // Find order by id
+
+    const order = await db.order.findByPk(orderId, {
+        attributes: ['id', 'customer_id', 'total', 'delivery_fee', 'status', 'created_at', 'updated_at', 'address', 'contact_name', 'phone_number', "packaged_at", "delivered_at", "completed_at", "delivery_service_id"],
+        include: {
+                model: db.productVariant,
+                attributes: ['product_id'],
+                include: {
+                    model: db.product,
+                    attributes: ['name'],
+                    include: {
+                        model: db.productImage,
+                        attributes: ['image_url'],
+                        where: { is_primary: true }
+                    }
+                },
+                through: {
+                    attributes: ['product_name', 'price', 'quantity', 'size', 'color']
+                }
+            }
+    });
+
+
+    if (!order) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'Order not found');
+    }
+
+    // find delivery service
+    const deliveryService = await db.deliveryService.findByPk(order.dataValues.delivery_service_id, {
+        attributes: ['name', 'description']
+    });
+
+    order.dataValues.deliveryService = deliveryService;
+
+    const {
+        id, customer_id, total, delivery_fee, status, created_at, updated_at,
+        address, contact_name, phone_number, packaged_at, delivered_at, completed_at, deliveryService: deliveryServiceData
+    } = order.dataValues;
+
+    const orderDetailResponse = {
+        id,
+        customerId: customer_id,
+        total,
+        deliveryFee: delivery_fee,
+        status,
+        createdAt: created_at,
+        updatedAt: updated_at,
+        address,
+        contactName: contact_name,
+        phoneNumber: phone_number,
+        history: {
+            packaged: {
+                name: "Packaged",
+                at: packaged_at,
+            },
+            delivered: {
+                name: "Delivered",
+                at: delivered_at,
+            },
+            completed: {
+                name: "Completed",
+                at: completed_at,
+            }
+        },
+        deliveryService: deliveryServiceData,
+        orderItems: order.productVariants,
+    };
+
+    return orderDetailResponse;
+};
+
+const getCustomerOrderById = async (orderId, customerId) => {
+    // Find order by id
+    const order = await db.order.findByPk(orderId, {
+        attributes: ['id', 'customer_id', 'total', 'delivery_fee', 'status', 'created_at', 'updated_at', 'address', 'contact_name', 'phone_number', "packaged_at", "delivered_at", "completed_at", "delivery_service_id"],
+        include: {
+                model: db.productVariant,
+                attributes: ['product_id'],
+                include: {
+                    model: db.product,
+                    attributes: ['name'],
+                    include: {
+                        model: db.productImage,
+                        attributes: ['image_url'],
+                        where: { is_primary: true }
+                    }
+                },
+                through: {
+                    attributes: ['product_name', 'price', 'quantity', 'size', 'color']
+                }
+            }
+    });
+
+
+    if (!order) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'Order not found');
+    }
+
+    if (order.dataValues.customer_id !== customerId) {
+        throw new ApiError(httpStatus.FORBIDDEN, 'You do not have permission to access this order');
+    }
+
+    // find delivery service
+    const deliveryService = await db.deliveryService.findByPk(order.dataValues.delivery_service_id, {
+        attributes: ['name', 'description']
+    });
+
+    order.dataValues.deliveryService = deliveryService;
+
+    const {
+        id, customer_id, total, delivery_fee, status, created_at, updated_at,
+        address, contact_name, phone_number, packaged_at, delivered_at, completed_at, deliveryService: deliveryServiceData
+    } = order.dataValues;
+
+    const orderDetailResponse = {
+        id,
+        customerId: customer_id,
+        total,
+        deliveryFee: delivery_fee,
+        status,
+        createdAt: created_at,
+        updatedAt: updated_at,
+        address,
+        contactName: contact_name,
+        phoneNumber: phone_number,
+        history: {
+            packaged: {
+                name: "Packaged",
+                at: packaged_at,
+            },
+            delivered: {
+                name: "Delivered",
+                at: delivered_at,
+            },
+            completed: {
+                name: "Completed",
+                at: completed_at,
+            }
+        },
+        deliveryService: deliveryServiceData,
+        orderItems: order.productVariants,
+    };
+
+    return orderDetailResponse;
+};
+
 export default {
     getOrdersByCustomer,
     getOrdersByAdmin,
-    getMyOrders
+    getMyOrders,
+    getOrderById,
+    getCustomerOrderById
 };
