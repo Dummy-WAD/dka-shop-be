@@ -18,6 +18,10 @@ router.get('/',
     cartController.getAllCartItems
 );
 
+router.get('/count', 
+    cartController.getTotalCartItemQuantity
+);
+
 router.post('/', 
     validate(cartValidation.addProductToCart),
     cartController.addProductToCart

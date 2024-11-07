@@ -10,6 +10,48 @@ const getOrdersByCustomer = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(orders);
 });
 
+const getOrdersByAdmin = catchAsync(async (req, res) => {
+  const filter = pick(req.query, ['keyword', 'status']);
+  const options = pick(req.query, ['sortBy', 'order', 'limit', 'page']);
+  const orders = await orderService.getOrdersByAdmin(filter, options);
+  res.status(httpStatus.OK).send(orders);
+});
+
+const getMyOrders = catchAsync(async (req, res) => {
+  const filter = pick(req.user.dataValues, ['id']);
+  const options = pick(req.query, ['limit', 'page']);
+  const orders = await orderService.getMyOrders({ ...filter, status: req.query.status }, options);
+  res.status(httpStatus.OK).send(orders);
+});
+
+const getOrderById = catchAsync(async (req, res) => {
+  const order = await orderService.getOrderById(req.params.orderId);
+  res.status(httpStatus.OK).send(order);
+});
+
+const getCustomerOrderById = catchAsync(async (req, res) => {
+  const order = await orderService.getCustomerOrderById(req.params.orderId, req.user.dataValues.id);
+  res.status(httpStatus.OK).send(order);
+});
+
+const prepareOrder = catchAsync(async (req, res) => {
+  const { cartItems, deliveryService } = req.body;
+  const preparedOrder = await orderService.prepareOrder(req.user.id, cartItems, deliveryService);
+  res.status(httpStatus.OK).send(preparedOrder);
+});
+
+const placeOrder = catchAsync(async (req, res) => {
+  const { orderItems, deliveryService, addressId } = req.body;
+  const order = await orderService.placeOrder(req.user.id, orderItems, deliveryService, addressId);
+  res.status(httpStatus.CREATED).send(order);
+});
+
 export default {
-    getOrdersByCustomer
+    getOrdersByCustomer,
+    getOrdersByAdmin,
+    getMyOrders,
+    getOrderById,
+    getCustomerOrderById,
+    prepareOrder,
+    placeOrder
 };

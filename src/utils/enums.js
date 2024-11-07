@@ -28,3 +28,11 @@ export const DeleteStatus = Object.freeze({
     DELETED: true,
     NOT_DELETED: false
 });
+
+export const OrderStatus = Object.freeze({
+    PENDING: 'PENDING',
+    PACKAGED: 'PACKAGED',
+    DELIVERING: 'DELIVERING',
+    COMPLETED: 'COMPLETED',
+    CANCELLED: 'CANCELLED'
+});

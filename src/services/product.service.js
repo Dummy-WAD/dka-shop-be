@@ -288,7 +288,7 @@ const getProductDetailForCustomer = async (productId) => {
             {
                 model: db.productVariant,
                 where: { isDeleted: false },
-                attributes: ['size', 'color', 'quantity'],
+                attributes: ['id', 'size', 'color', 'quantity'],
                 required: false
             },
             {
@@ -502,6 +502,43 @@ async function getBestSellerProducts(bestSellerRequest) {
     });
 };
 
+const getDiscountedPriceOfProducts = async (productIds) => {
+    const discountedPrices = await db.product.findAll({
+        attributes: ['id'],
+        where: { id: productIds },
+        include: [
+            {
+                model: db.discountOffer,
+                through: { attributes: [] },
+                required: false,
+                attributes: {
+                    include: [
+                        [
+                            db.sequelize.literal(`CASE 
+                                WHEN NOW() BETWEEN discountOffers.start_date AND discountOffers.expiration_date
+                                AND discountOffers.discount_type = 'PRICE' THEN product.price - discountOffers.discount_value
+                                WHEN NOW() BETWEEN discountOffers.start_date AND discountOffers.expiration_date
+                                AND discountOffers.discount_type = 'PERCENTAGE' THEN product.price - (product.price * discountOffers.discount_value / 100)
+                                ELSE product.price
+                            END`),
+                            'priceDiscounted'
+                        ]
+                    ],
+                    exclude: ['createdAt', 'updatedAt', 'isDeleted', 'startDate', 'expirationDate']
+                },
+                where: { isDeleted: false }
+            }
+        ],
+        raw: true,
+        nest: true
+    });
+
+    return discountedPrices.reduce((prices, product) => {
+        prices[product.id] = product.discountOffers?.priceDiscounted || product.price;
+        return prices;
+    }, {});
+}
+
 export default { 
     getAllProductsByCondition,
     createProduct,
@@ -510,5 +547,6 @@ export default {
     getProductDetail,
     getProductDetailForCustomer,
     getProductsForCustomer,
-    getBestSellerProducts
+    getBestSellerProducts,
+    getDiscountedPriceOfProducts
 };

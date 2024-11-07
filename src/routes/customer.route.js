@@ -4,13 +4,17 @@ import productRoute from "./customer/product.route.js";
 import personalRoute from "./customer/personal.route.js";
 import addressRoute from "./customer/address.route.js";
 import cartRoute from "./customer/cart.route.js";
+import orderRoute from "./customer/order.route.js";
+import deliveryServiceRoute from "./customer/delivery-service.route.js";
 
 const router = express.Router();
 
+router.use("/orders", orderRoute);
 router.use("/carts", cartRoute);
 router.use("/categories", categoryRoute);
 router.use("/products", productRoute);
 router.use("/personal", personalRoute);
 router.use("/addresses", addressRoute);
+router.use("/delivery-services", deliveryServiceRoute);
 
 export default router;
