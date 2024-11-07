@@ -8,16 +8,57 @@ export default (sequelize, DataTypes) => {
       primaryKey: true,
       type: DataTypes.INTEGER
     },
-    customer_id: DataTypes.INTEGER,
+    customerId: {
+      type: DataTypes.INTEGER,
+      field: 'customer_id'
+    },
+    contactName: {
+      type: DataTypes.STRING,
+      field: 'contact_name'
+    },
+    phoneNumber: {
+      type: DataTypes.STRING,
+      field: 'phone_number'
+    },
     address: DataTypes.STRING,
-    ordered_at: DataTypes.DATE,
     total: DataTypes.DOUBLE,
-    delivery_fee: DataTypes.DOUBLE,
-    status: DataTypes.STRING
+    deliveryFee: {
+      type: DataTypes.DOUBLE,
+      field: 'delivery_fee'
+    },
+    status: DataTypes.STRING,
+    createdAt: {
+      type: DataTypes.DATE,
+      field: 'created_at'
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      field: 'updated_at'
+    },
+    packagedAt: {
+      type: DataTypes.DATE,
+      field: 'packaged_at'
+    },
+    deliveredAt: {
+      type: DataTypes.DATE,
+      field: 'delivered_at'
+    },
+    completedAt: {
+      type: DataTypes.DATE,
+      field: 'completed_at'
+    },
+    deliveryServiceId: {
+      type: DataTypes.INTEGER,
+      field: 'delivery_service_id',
+    }
   });
   order.associate = (db) => {
     order.belongsTo(db.user, {
-      foreignKey: 'customer_id',
+      foreignKey: 'customerId',
+      constraints: false
+    });
+    order.belongsTo(db.deliveryService, {
+      foreignKey: 'deliveryServiceId',
       constraints: false
     });
     order.belongsToMany(db.productVariant, { 

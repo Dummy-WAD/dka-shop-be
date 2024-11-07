@@ -29,7 +29,7 @@ const getAllCartItems = async (filter, options) => {
         }
     ];
 
-    const selectedAttributes = [['quantity', 'orderedQuantity'], 'createdAt'];
+    const selectedAttributes = [['id', 'cartItemId'], ['quantity', 'orderedQuantity'], 'createdAt'];
     const cartItems = await paginate(db.cartItem, { userId: filter.id, ...(productVariantId && { productVariantId }) }, { ...options, sortBy: 'createdAt', order: 'desc' }, include, [], selectedAttributes);
     const { page, limit, totalPages, totalResults, results } = cartItems;
 
@@ -58,7 +58,7 @@ const getAllCartItems = async (filter, options) => {
     });
 
     const formattedResults = results.map(item => {
-        const { productVariant, orderedQuantity } = item.get({ plain: true });
+        const { cartItemId, productVariant, orderedQuantity } = item.get({ plain: true });
         const { productVariantId, productId, size, color, remainingQuantity, product: { productName, price, productImages } = {} } = productVariant;
 
         const discountOffer = discountOfferMap[productId]?.discountOffer ?? null;
@@ -69,6 +69,7 @@ const getAllCartItems = async (filter, options) => {
             price;
 
         return {
+            cartItemId,
             productId,
             productVariantId,
             size,
@@ -220,5 +221,6 @@ export default {
     getAllCartItems,
     addProductToCart,
     editCartItemQuantity,
-    removeProductFromCart
+    removeProductFromCart,
+    getTotalCartItemQuantity
 }

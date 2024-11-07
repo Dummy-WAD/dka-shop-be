@@ -1,9 +1,13 @@
 import { Op } from 'sequelize';
 
 const paginate = async function (model, filter = {}, options = {}, include = [], searchFields = [], selectedAttributes = []) {
-  const limit = options.limit && parseInt(options.limit, 10) > 0 ? parseInt(options.limit, 10) : 10;
-  const page = options.page && parseInt(options.page, 10) > 0 ? parseInt(options.page, 10) : 1;
-  const offset = (page - 1) * limit;
+  const { limit: optionsLimit, page: optionsPage } = options;
+
+  const isPaginationNeeded = optionsLimit && optionsPage;
+
+  const limit = isPaginationNeeded ? parseInt(optionsLimit, 10) : undefined;
+  const page = isPaginationNeeded ? parseInt(optionsPage, 10) : 1;
+  const offset = isPaginationNeeded ? (page - 1) * limit : undefined;
 
   const whereClause = {};
 
