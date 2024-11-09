@@ -392,8 +392,6 @@ const prepareOrder = async (customerId, cartItemsParams, deliveryServiceParams) 
 
 const placeOrder = async (customerId, orderItemsParams, deliveryServiceParams, addressId) => {
 
-    let costChange = false;
-
     const transaction = await db.sequelize.transaction();
 
     try {
@@ -425,7 +423,7 @@ const placeOrder = async (customerId, orderItemsParams, deliveryServiceParams, a
             }
 
             if (itemParams.currentPrice !== productPrices[variant.productId]) {
-                costChange = true;
+                throw new ApiError(httpStatus.BAD_REQUEST, 'Price of product has changed!');
             }
 
             variant.quantity -= itemParams.quantity;
@@ -448,10 +446,12 @@ const placeOrder = async (customerId, orderItemsParams, deliveryServiceParams, a
             attributes: ['id', 'name', 'deliveryFee']
         });
 
-        if (!deliveryServiceEntity) throw new ApiError(httpStatus.NOT_FOUND, 'Delivery service not found!');
+        if (!deliveryServiceEntity) {
+            throw new ApiError(httpStatus.NOT_FOUND, 'Delivery service not found!');
+        }
 
         if (deliveryServiceEntity.deliveryFee !== deliveryServiceParams.deliveryFee) {
-            costChange = true;
+            throw new ApiError(httpStatus.BAD_REQUEST, 'Delivery fee has changed!');
         }
 
         const addressDetails = await addressService.getAddressDetails(customerId, addressId);
@@ -489,7 +489,6 @@ const placeOrder = async (customerId, orderItemsParams, deliveryServiceParams, a
                 status: orderEntity.status,
                 createdAt: orderEntity.createdAt,
             },
-            costChange
         }
     } catch (error) {
         if (transaction) await transaction.rollback();
