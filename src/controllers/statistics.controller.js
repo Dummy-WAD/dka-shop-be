@@ -8,6 +8,13 @@ const getNewCustomerStatistics = catchAsync(async (req, res) => {
     res.status(httpStatus.OK).send(numberOfNewCustomers);
 });
 
+const getOrderStatistics = catchAsync(async (req, res) => {
+    const { type, limit } = req.query;
+    const numberOfOrders = await statisticsServices.getOrderStatistics(type, limit);
+    res.status(httpStatus.OK).send(numberOfOrders);
+});
+
 export default {
-    getNewCustomerStatistics
+    getNewCustomerStatistics,
+    getOrderStatistics
 };

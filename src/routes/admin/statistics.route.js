@@ -10,4 +10,10 @@ router.get(
     statisticsController.getNewCustomerStatistics
 );
 
+router.get(
+    "/orders",
+    validate(statisticsValidation.getOrderStatistics),
+    statisticsController.getOrderStatistics
+);
+
 export default router;

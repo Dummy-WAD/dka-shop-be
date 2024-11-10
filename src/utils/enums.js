@@ -31,7 +31,7 @@ export const DeleteStatus = Object.freeze({
 
 export const OrderStatus = Object.freeze({
     PENDING: 'PENDING',
-    PACKAGED: 'PACKAGED',
+    PACKAGING: 'PACKAGING',
     DELIVERING: 'DELIVERING',
     COMPLETED: 'COMPLETED',
     CANCELLED: 'CANCELLED'
