@@ -1,53 +1,49 @@
 import db from '../models/models/index.js';
 import { Op, fn, col, literal } from 'sequelize';
-import { AccountStatus, UserRole } from '../utils/enums.js';
+import { AccountStatus, OrderStatus, UserRole } from '../utils/enums.js';
 import { generatePeriodForType } from '../utils/statistics.js'; 
 
-const getNewCustomerStatistics = async (type, limit) => {
+const getStatistics = async (model, type, limit, conditions = {}) => {
     const { dateFormat, interval, allPeriods } = generatePeriodForType(type, limit);
 
-    const todayCustomerStatistics = await db.user.findOne({
+    const todayStatistics = await model.findOne({
         attributes: [
             [literal("DATE(created_at)"), 'period'],
             [fn('COUNT', col('id')), 'count']
         ],
-        where: {
-            createdAt: {
-                [Op.gte]: fn('CURDATE')
-            },
-            status: AccountStatus.ACTIVE,
-            role: UserRole.CUSTOMER
+        where: { 
+            ...conditions, 
+            createdAt: { [Op.gte]: fn('CURDATE') } 
         },
         group: [literal("DATE(created_at)")],
         nest: true
     });
 
-    const customers = await db.user.findAll({
+    const records = await model.findAll({
         attributes: [
             [literal(dateFormat), interval],
             [fn('COUNT', col('id')), 'count']
         ],
         where: {
+            ...conditions,
             createdAt: {
                 [Op.gte]: fn('DATE_SUB', fn('CURDATE'), literal(`INTERVAL ${limit} ${interval}`))
-            },
-            status: AccountStatus.ACTIVE,
-            role: UserRole.CUSTOMER
+            }
         },
         group: [literal(dateFormat)],
         nest: true
     });
 
-    const customerData = customers.map(customer => {
-        const customerPlain = customer.get({ plain: true });
+    const recordData = records.map(record => {
+        const recordPlain = record.get({ plain: true });
         return {
-            period: customerPlain[interval],
-            count: customerPlain.count
+            period: recordPlain[interval],
+            count: recordPlain.count
         };
     });
 
     const results = allPeriods.map(period => {
-        const dataForPeriod = customerData.find(item => item?.period == period);
+        const dataForPeriod = recordData.find(item => item?.period == period);
         return {
             period: period,
             count: dataForPeriod?.count ?? 0
@@ -55,11 +51,25 @@ const getNewCustomerStatistics = async (type, limit) => {
     });
 
     return {
-        todayCount: todayCustomerStatistics?.get({ plain: true })?.count ?? 0,
+        todayCount: todayStatistics?.get({ plain: true })?.count ?? 0,
         results: results.reverse()
     };
 };
 
+const getNewCustomerStatistics = async (type, limit) => {
+    return getStatistics(db.user, type, limit, {
+        status: AccountStatus.ACTIVE,
+        role: UserRole.CUSTOMER
+    });
+};
+
+const getOrderStatistics = async (type, limit) => {
+    return getStatistics(db.order, type, limit, {
+        status: { [Op.ne]: OrderStatus.CANCELLED }
+    });
+};
+
 export default {
-    getNewCustomerStatistics
+    getNewCustomerStatistics,
+    getOrderStatistics
 };
