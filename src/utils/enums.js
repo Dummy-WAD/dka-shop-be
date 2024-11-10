@@ -36,3 +36,10 @@ export const OrderStatus = Object.freeze({
     COMPLETED: 'COMPLETED',
     CANCELLED: 'CANCELLED'
 });
+
+export const StatisticsPeriod = Object.freeze({
+    YEAR: 'year',
+    QUARTER: 'quarter',
+    MONTH: 'month',
+    WEEK: 'week'
+});
