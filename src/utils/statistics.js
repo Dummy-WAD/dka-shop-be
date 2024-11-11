@@ -1,4 +1,5 @@
 import { StatisticsPeriod } from "./enums.js";
+import { getYear, getMonth, getWeek } from 'date-fns';
 
 const generatePeriods = (startPeriod, unit, limit) => {
     let periods = [];
@@ -39,13 +40,6 @@ const generatePeriods = (startPeriod, unit, limit) => {
     return periods;
 };
 
-const getWeekNumber = (date) => {
-    const startDate = new Date(date.getFullYear(), 0, 1);
-    const diff = date - startDate;
-    const oneDay = 24 * 60 * 60 * 1000;
-    const dayOfYear = Math.floor(diff / oneDay);
-    return Math.ceil(dayOfYear / 7);
-};
 
 export const generatePeriodForType = (type, limit) => {
     let dateFormat;
@@ -53,10 +47,10 @@ export const generatePeriodForType = (type, limit) => {
     let allPeriods = [];
 
     const currentDate = new Date();
-    const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth() + 1;
+    const currentYear = getYear(currentDate);
+    const currentMonth = getMonth(currentDate) + 1;
     const currentQuarter = Math.ceil(currentMonth / 3);
-    const currentWeek = getWeekNumber(currentDate);
+    const currentWeek = getWeek(currentDate);
 
     switch (type) {
         case StatisticsPeriod.YEAR:
