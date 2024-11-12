@@ -47,6 +47,10 @@ export default (sequelize, DataTypes) => {
       type: DataTypes.DATE,
       field: 'completed_at'
     },
+    cancelledAt: {
+      type: DataTypes.DATE,
+      field: 'cancelled_at'
+    },
     deliveryServiceId: {
       type: DataTypes.INTEGER,
       field: 'delivery_service_id',

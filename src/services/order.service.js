@@ -496,6 +496,61 @@ const placeOrder = async (customerId, orderItemsParams, deliveryServiceParams, a
     }
 }
 
+const orderStatusConditions = {
+    [OrderStatus.PENDING]: [],
+    [OrderStatus.PACKAGING]: [OrderStatus.PENDING],
+    [OrderStatus.DELIVERING]: [OrderStatus.PACKAGING],
+    [OrderStatus.COMPLETED]: [OrderStatus.DELIVERING],
+    [OrderStatus.CANCELLED]: [OrderStatus.PENDING, OrderStatus.PACKAGING]
+}
+
+const updateOrderStatus = async (orderId, newStatus) => {
+    const order = await db.order.findByPk(orderId);
+
+    if (!order) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'Order not found');
+    }
+
+    if (order.status === newStatus) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Order status is already ' + newStatus);
+    }
+
+    if (!orderStatusConditions[newStatus].includes(order.status)) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Order cannot be updated to ' + newStatus);
+    }
+
+    // Update order's status
+    order.status = newStatus;
+    // Update order's status time
+    await updateOrderStatusTime(order, newStatus);
+
+    await order.save();
+    return {
+        orderId: order.id,
+        status: order.status,
+        updatedAt: order.updatedAt
+    };
+};
+
+const updateOrderStatusTime = async (order, newStatus) => {
+    switch (newStatus) {
+        case OrderStatus.CANCELLED:
+            order.cancelledAt = new Date();
+            break;
+        case OrderStatus.PACKAGING:
+            order.packagedAt = new Date();
+            break;
+        case OrderStatus.DELIVERING:
+            order.deliveredAt = new Date();
+            break;
+        case OrderStatus.COMPLETED:
+            order.completedAt = new Date();
+            break;
+        default:
+            break;
+    }
+}
+
 export default {
     getOrdersByCustomer,
     getOrdersByAdmin,
@@ -503,5 +558,6 @@ export default {
     getOrderById,
     getCustomerOrderById,
     prepareOrder,
-    placeOrder
+    placeOrder,
+    updateOrderStatus
 };
