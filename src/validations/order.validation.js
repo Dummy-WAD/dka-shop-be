@@ -74,6 +74,15 @@ const placeOrder = {
     })
 }
 
+const updateOrderStatus = {
+    params: Joi.object().keys({
+        orderId: Joi.number().integer().positive().required()
+    }),
+    body: Joi.object().keys({
+        status: Joi.string().valid(...Object.values(OrderStatus)).required()
+    })
+}
+
 export default {
     getOrdersByCustomer,
     getOrdersByAdmin,
@@ -81,5 +90,6 @@ export default {
     getOrderById,
     getCustomerOrderById,
     prepareOrder,
-    placeOrder
+    placeOrder,
+    updateOrderStatus
 }
