@@ -27,9 +27,10 @@ const getOrdersByAdmin = async (filter, options) => {
         where: {
             ...(status && { status }),
             ...(keyword && {
-                '$user.email$': {
-                    [Op.like]: `%${keyword}%`
-                }
+                [Op.or]: [
+                    { '$user.email$': { [Op.like]: `%${keyword}%` } },
+                    { id: keyword }
+                ]
             })
         },
         attributes: [

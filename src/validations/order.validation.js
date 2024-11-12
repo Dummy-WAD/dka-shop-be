@@ -15,7 +15,7 @@ const getOrdersByCustomer = {
 
 const getOrdersByAdmin = {
     query: Joi.object().keys({
-        keyword: Joi.string().max(50).optional(),
+        keyword: Joi.string().trim().max(50).optional(),
         status: Joi.string().valid(...Object.values(OrderStatus)),
         sortBy: Joi.string().valid('orderId', 'email', 'totalPrice', 'createdAt', 'updatedAt').default('createdAt'),
         order: Joi.string().valid('asc', 'desc').default('desc'),
