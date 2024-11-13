@@ -78,10 +78,10 @@ const getProductRevenueStatistics = async (orderType, limit) => {
                 SUM(oi.quantity) AS totalQuantity,
                 SUM(oi.price * oi.quantity) AS totalPrice
         FROM order_items oi
-        LEFT JOIN orders o ON oi.order_id = o.id and o.status = '${OrderStatus.COMPLETED}'
+        INNER JOIN orders o ON oi.order_id = o.id and o.status = '${OrderStatus.COMPLETED}'
         INNER JOIN product_variants pv ON pv.id = oi.product_variant_id
         INNER JOIN products p ON p.id = pv.product_id
-        LEFT JOIN product_images pi ON pi.product_id = p.id AND pi.is_primary = 1
+        INNER JOIN product_images pi ON pi.product_id = p.id AND pi.is_primary = 1
         GROUP BY pv.product_id, pi.image_url
     `;
 
@@ -99,10 +99,10 @@ const getProductSoldStatistics = async (orderType, limit) => {
                 SUM(oi.quantity) AS totalQuantity,
                 SUM(oi.price * oi.quantity) AS totalPrice
         FROM order_items oi
-        LEFT JOIN orders o ON oi.order_id = o.id and o.status = '${OrderStatus.COMPLETED}'
+        INNER JOIN orders o ON oi.order_id = o.id and o.status = '${OrderStatus.COMPLETED}'
         INNER JOIN product_variants pv ON pv.id = oi.product_variant_id
         INNER JOIN products p ON p.id = pv.product_id
-        LEFT JOIN product_images pi ON pi.product_id = p.id and pi.is_primary = 1
+        INNER JOIN product_images pi ON pi.product_id = p.id and pi.is_primary = 1
         GROUP BY pv.product_id, pi.image_url
     `;
     
@@ -119,10 +119,10 @@ const getCategoryRevenueStatistics = async (orderType, limit) => {
                 SUM(oi.quantity) AS totalQuantity,
                 SUM(oi.price * oi.quantity) AS totalPrice
         FROM order_items oi
-        LEFT JOIN orders o ON oi.order_id = o.id and o.status = '${OrderStatus.COMPLETED}'
+        INNER JOIN orders o ON oi.order_id = o.id and o.status = '${OrderStatus.COMPLETED}'
         INNER JOIN product_variants pv ON pv.id = oi.product_variant_id
         INNER JOIN products p ON p.id = pv.product_id
-        LEFT JOIN categories as c ON c.id = p.category_id
+        INNER JOIN categories as c ON c.id = p.category_id
         GROUP BY p.category_id, c.name
     `;
 
@@ -139,10 +139,10 @@ const getCategorySoldStatistics = async (orderType, limit) => {
             SUM(oi.quantity) AS totalQuantity,
             SUM(oi.price * oi.quantity) AS totalPrice
         FROM order_items oi
-        LEFT JOIN orders o ON oi.order_id = o.id and o.status = '${OrderStatus.COMPLETED}'
+        INNER JOIN orders o ON oi.order_id = o.id and o.status = '${OrderStatus.COMPLETED}'
         INNER JOIN product_variants pv ON pv.id = oi.product_variant_id
         INNER JOIN products p ON p.id = pv.product_id
-        LEFT JOIN categories as c ON c.id = p.category_id
+        INNER JOIN categories as c ON c.id = p.category_id
         GROUP BY p.category_id, c.name
     `;
 
