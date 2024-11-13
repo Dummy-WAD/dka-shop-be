@@ -14,7 +14,22 @@ const getOrderStatistics = catchAsync(async (req, res) => {
     res.status(httpStatus.OK).send(numberOfOrders);
 });
 
+const getProductRevenueStatistics = catchAsync(async (req, res) => {
+    const { orderType, limit } = req.query;
+    const productRevenue = await statisticsServices.getProductRevenueStatistics(orderType, limit);
+    res.status(httpStatus.OK).send(productRevenue);
+});
+
+const getProductSoldStatistics = catchAsync(async (req, res) => {
+    const { orderType, limit } = req.query;
+    const productSold = await statisticsServices.getProductSoldStatistics(orderType, limit);
+    res.status(httpStatus.OK).send(productSold);
+});
+
+
 export default {
     getNewCustomerStatistics,
-    getOrderStatistics
+    getOrderStatistics,
+    getProductRevenueStatistics,
+    getProductSoldStatistics
 };

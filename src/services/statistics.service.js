@@ -69,7 +69,49 @@ const getOrderStatistics = async (type, limit) => {
     });
 };
 
+
+const getProductRevenueStatistics = async (orderType, limit) => {
+    let sqlQuery = `
+        SELECT pv.product_id,
+            p.name AS product_name,
+            pi.image_url AS product_image,
+            SUM(oi.quantity) AS total_quantity,
+            SUM(oi.price * oi.quantity) AS total_price
+        FROM order_items oi
+        INNER JOIN product_variants pv ON pv.id = oi.product_variant_id
+        INNER JOIN products p ON p.id = pv.product_id
+        LEFT JOIN product_images pi ON pi.product_id = p.id AND pi.is_primary = 1
+        GROUP BY pv.product_id, pi.image_url
+    `;
+
+    sqlQuery += ` ORDER BY total_price ${orderType}`;
+    sqlQuery += ` LIMIT ${limit}`;
+    const records = await db.sequelize.query(sqlQuery, { type: db.sequelize.QueryTypes.SELECT });
+    return records;
+}
+
+const getProductSoldStatistics = async (orderType, limit) => {
+    let sqlQuery = `
+        SELECT pv.product_id,
+        p.name AS product_name,
+        pi.image_url AS product_image,
+        SUM(oi.quantity) AS total_quantity
+        FROM order_items oi
+        INNER JOIN product_variants pv ON pv.id = oi.product_variant_id
+        INNER JOIN products p ON p.id = pv.product_id
+        LEFT JOIN product_images pi ON pi.product_id = p.id and pi.is_primary = 1
+        GROUP BY pv.product_id, pi.image_url
+    `;
+    
+    sqlQuery += ` ORDER BY total_quantity ${orderType}`;
+    sqlQuery += ` LIMIT ${limit}`;
+    const records = await db.sequelize.query(sqlQuery, { type: db.sequelize.QueryTypes.SELECT });
+    return records;
+}
+
 export default {
     getNewCustomerStatistics,
-    getOrderStatistics
+    getOrderStatistics,
+    getProductRevenueStatistics,
+    getProductSoldStatistics
 };

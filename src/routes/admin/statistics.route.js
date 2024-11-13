@@ -16,4 +16,16 @@ router.get(
     statisticsController.getOrderStatistics
 );
 
+router.get(
+    "/products/revenue",
+    validate(statisticsValidation.getProductRevenueStatistics),
+    statisticsController.getProductRevenueStatistics
+);
+
+router.get(
+    "/products/sold",
+    validate(statisticsValidation.getProductSoldStatistics),
+    statisticsController.getProductSoldStatistics
+);
+
 export default router;
