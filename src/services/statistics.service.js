@@ -78,6 +78,7 @@ const getProductRevenueStatistics = async (orderType, limit) => {
             SUM(oi.quantity) AS total_quantity,
             SUM(oi.price * oi.quantity) AS total_price
         FROM order_items oi
+        LEFT JOIN orders o ON oi.order_id = o.id and o.status = '${OrderStatus.COMPLETED}'
         INNER JOIN product_variants pv ON pv.id = oi.product_variant_id
         INNER JOIN products p ON p.id = pv.product_id
         LEFT JOIN product_images pi ON pi.product_id = p.id AND pi.is_primary = 1
@@ -97,6 +98,7 @@ const getProductSoldStatistics = async (orderType, limit) => {
         pi.image_url AS product_image,
         SUM(oi.quantity) AS total_quantity
         FROM order_items oi
+        LEFT JOIN orders o ON oi.order_id = o.id and o.status = '${OrderStatus.COMPLETED}'
         INNER JOIN product_variants pv ON pv.id = oi.product_variant_id
         INNER JOIN products p ON p.id = pv.product_id
         LEFT JOIN product_images pi ON pi.product_id = p.id and pi.is_primary = 1
