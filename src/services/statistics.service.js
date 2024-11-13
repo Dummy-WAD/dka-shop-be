@@ -3,13 +3,13 @@ import { Op, fn, col, literal } from 'sequelize';
 import { AccountStatus, OrderStatus, UserRole } from '../utils/enums.js';
 import { generatePeriodForType } from '../utils/statistics.js'; 
 
-const getStatistics = async (model, type, limit, conditions = {}) => {
+const getStatistics = async (model, type, limit, conditions = {}, calculate = false) => {
     const { dateFormat, interval, allPeriods } = generatePeriodForType(type, limit);
 
     const todayStatistics = await model.findOne({
         attributes: [
             [literal("DATE(created_at)"), 'period'],
-            [fn('COUNT', col('id')), 'count']
+            ...(calculate ? [[literal("SUM(total + delivery_fee)"), 'totalRevenue']] : [[fn('COUNT', col('id')), 'count']])
         ],
         where: { 
             ...conditions, 
@@ -22,7 +22,7 @@ const getStatistics = async (model, type, limit, conditions = {}) => {
     const records = await model.findAll({
         attributes: [
             [literal(dateFormat), interval],
-            [fn('COUNT', col('id')), 'count']
+            ...(calculate ? [[literal("SUM(total + delivery_fee)"), 'totalRevenue']] : [[fn('COUNT', col('id')), 'count']])
         ],
         where: {
             ...conditions,
@@ -38,7 +38,7 @@ const getStatistics = async (model, type, limit, conditions = {}) => {
         const recordPlain = record.get({ plain: true });
         return {
             period: recordPlain[interval],
-            count: recordPlain.count
+            ...(calculate ? { totalRevenue: recordPlain.totalRevenue } : { count: recordPlain.count })
         };
     });
 
@@ -46,12 +46,12 @@ const getStatistics = async (model, type, limit, conditions = {}) => {
         const dataForPeriod = recordData.find(item => item?.period == period);
         return {
             period: period,
-            count: dataForPeriod?.count ?? 0
+            ...(calculate ? { totalRevenue: dataForPeriod?.totalRevenue ?? 0 } : { count: dataForPeriod?.count ?? 0 })
         };
     });
 
     return {
-        todayCount: todayStatistics?.get({ plain: true })?.count ?? 0,
+        todayCount: todayStatistics?.get({ plain: true })?.[calculate ? 'totalRevenue' : 'count'] ?? 0,
         results: results.reverse()
     };
 };
@@ -110,10 +110,16 @@ const getProductSoldStatistics = async (orderType, limit) => {
     const records = await db.sequelize.query(sqlQuery, { type: db.sequelize.QueryTypes.SELECT });
     return records;
 }
+const getRevenueStatistics = async (type, limit) => {
+    return getStatistics(db.order, type, limit, {
+        status: OrderStatus.COMPLETED
+    }, true);
+};
 
 export default {
     getNewCustomerStatistics,
     getOrderStatistics,
     getProductRevenueStatistics,
-    getProductSoldStatistics
+    getProductSoldStatistics,
+    getRevenueStatistics
 };

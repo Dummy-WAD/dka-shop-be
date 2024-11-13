@@ -28,4 +28,10 @@ router.get(
     statisticsController.getProductSoldStatistics
 );
 
+router.get(
+    "/revenue",
+    validate(statisticsValidation.getRevenueStatistics),
+    statisticsController.getRevenueStatistics
+);
+
 export default router;

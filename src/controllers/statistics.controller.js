@@ -26,10 +26,17 @@ const getProductSoldStatistics = catchAsync(async (req, res) => {
     res.status(httpStatus.OK).send(productSold);
 });
 
+const getRevenueStatistics = catchAsync(async (req, res) => {
+    const { type, limit } = req.query;
+    const revenue = await statisticsServices.getRevenueStatistics(type, limit);
+    res.status(httpStatus.OK).send(revenue);
+});
+
 
 export default {
     getNewCustomerStatistics,
     getOrderStatistics,
     getProductRevenueStatistics,
-    getProductSoldStatistics
+    getProductSoldStatistics,
+    getRevenueStatistics
 };
