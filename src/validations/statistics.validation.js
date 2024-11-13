@@ -36,10 +36,26 @@ const getRevenueStatistics = {
     })
 };
 
+const getCategoryRevenueStatistics = {
+    query: Joi.object().keys({
+        orderType: Joi.string().valid(...Object.values(OrderType)).required(),
+        limit: Joi.number().integer().min(1).default(5)
+    })
+};
+
+const getCategorySoldStatistics = {
+    query: Joi.object().keys({
+        orderType: Joi.string().valid(...Object.values(OrderType)).required(),
+        limit: Joi.number().integer().min(1).default(5)
+    })
+};
+
 export default {
     getNewCustomerStatistics,
     getOrderStatistics,
     getProductRevenueStatistics,
     getProductSoldStatistics,
+    getCategoryRevenueStatistics,
+    getCategorySoldStatistics,
     getRevenueStatistics
 };

@@ -72,11 +72,11 @@ const getOrderStatistics = async (type, limit) => {
 
 const getProductRevenueStatistics = async (orderType, limit) => {
     let sqlQuery = `
-        SELECT pv.product_id,
-            p.name AS product_name,
-            pi.image_url AS product_image,
-            SUM(oi.quantity) AS total_quantity,
-            SUM(oi.price * oi.quantity) AS total_price
+        SELECT pv.product_id as productId,
+                p.name AS productName,
+                pi.image_url AS productImage,
+                SUM(oi.quantity) AS totalQuantity,
+                SUM(oi.price * oi.quantity) AS totalPrice
         FROM order_items oi
         LEFT JOIN orders o ON oi.order_id = o.id and o.status = '${OrderStatus.COMPLETED}'
         INNER JOIN product_variants pv ON pv.id = oi.product_variant_id
@@ -85,7 +85,7 @@ const getProductRevenueStatistics = async (orderType, limit) => {
         GROUP BY pv.product_id, pi.image_url
     `;
 
-    sqlQuery += ` ORDER BY total_price ${orderType}`;
+    sqlQuery += ` ORDER BY totalPrice ${orderType}`;
     sqlQuery += ` LIMIT ${limit}`;
     const records = await db.sequelize.query(sqlQuery, { type: db.sequelize.QueryTypes.SELECT });
     return records;
@@ -93,10 +93,11 @@ const getProductRevenueStatistics = async (orderType, limit) => {
 
 const getProductSoldStatistics = async (orderType, limit) => {
     let sqlQuery = `
-        SELECT pv.product_id,
-        p.name AS product_name,
-        pi.image_url AS product_image,
-        SUM(oi.quantity) AS total_quantity
+         SELECT pv.product_id as productId,
+                p.name AS productName,
+                pi.image_url AS productImage,
+                SUM(oi.quantity) AS totalQuantity,
+                SUM(oi.price * oi.quantity) AS totalPrice
         FROM order_items oi
         LEFT JOIN orders o ON oi.order_id = o.id and o.status = '${OrderStatus.COMPLETED}'
         INNER JOIN product_variants pv ON pv.id = oi.product_variant_id
@@ -105,11 +106,52 @@ const getProductSoldStatistics = async (orderType, limit) => {
         GROUP BY pv.product_id, pi.image_url
     `;
     
-    sqlQuery += ` ORDER BY total_quantity ${orderType}`;
+    sqlQuery += ` ORDER BY totalQuantity ${orderType}`;
     sqlQuery += ` LIMIT ${limit}`;
     const records = await db.sequelize.query(sqlQuery, { type: db.sequelize.QueryTypes.SELECT });
     return records;
 }
+
+const getCategoryRevenueStatistics = async (orderType, limit) => {
+    let sqlQuery = `
+        SELECT  c.name as categoryName,
+                p.category_id as categoryId,
+                SUM(oi.quantity) AS totalQuantity,
+                SUM(oi.price * oi.quantity) AS totalPrice
+        FROM order_items oi
+        LEFT JOIN orders o ON oi.order_id = o.id and o.status = '${OrderStatus.COMPLETED}'
+        INNER JOIN product_variants pv ON pv.id = oi.product_variant_id
+        INNER JOIN products p ON p.id = pv.product_id
+        LEFT JOIN categories as c ON c.id = p.category_id
+        GROUP BY p.category_id, c.name
+    `;
+
+    sqlQuery += ` ORDER BY totalPrice ${orderType}`;
+    sqlQuery += ` LIMIT ${limit}`;
+    const records = await db.sequelize.query(sqlQuery, { type: db.sequelize.QueryTypes.SELECT });
+    return records;
+}
+
+const getCategorySoldStatistics = async (orderType, limit) => {
+    let sqlQuery = `
+            SELECT c.name as categoryName,
+            p.category_id as categoryId,
+            SUM(oi.quantity) AS totalQuantity,
+            SUM(oi.price * oi.quantity) AS totalPrice
+        FROM order_items oi
+        LEFT JOIN orders o ON oi.order_id = o.id and o.status = '${OrderStatus.COMPLETED}'
+        INNER JOIN product_variants pv ON pv.id = oi.product_variant_id
+        INNER JOIN products p ON p.id = pv.product_id
+        LEFT JOIN categories as c ON c.id = p.category_id
+        GROUP BY p.category_id, c.name
+    `;
+
+    sqlQuery += ` ORDER BY totalQuantity ${orderType}`;
+    sqlQuery += ` LIMIT ${limit}`;
+    const records = await db.sequelize.query(sqlQuery, { type: db.sequelize.QueryTypes.SELECT });
+    return records;
+}
+
 const getRevenueStatistics = async (type, limit) => {
     return getStatistics(db.order, type, limit, {
         status: OrderStatus.COMPLETED
@@ -121,5 +163,7 @@ export default {
     getOrderStatistics,
     getProductRevenueStatistics,
     getProductSoldStatistics,
+    getCategoryRevenueStatistics,
+    getCategorySoldStatistics,
     getRevenueStatistics
 };
