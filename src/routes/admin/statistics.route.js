@@ -17,6 +17,30 @@ router.get(
 );
 
 router.get(
+    "/products/revenue",
+    validate(statisticsValidation.getProductRevenueStatistics),
+    statisticsController.getProductRevenueStatistics
+);
+
+router.get(
+    "/products/sold",
+    validate(statisticsValidation.getProductSoldStatistics),
+    statisticsController.getProductSoldStatistics
+);
+
+router.get(
+    "/categories/revenue",
+    validate(statisticsValidation.getCategoryRevenueStatistics),
+    statisticsController.getCategoryRevenueStatistics
+);
+
+router.get(
+    "/categories/sold",
+    validate(statisticsValidation.getCategorySoldStatistics),
+    statisticsController.getCategorySoldStatistics
+);
+
+router.get(
     "/revenue",
     validate(statisticsValidation.getRevenueStatistics),
     statisticsController.getRevenueStatistics

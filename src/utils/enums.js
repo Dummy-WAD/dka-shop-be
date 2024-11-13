@@ -43,3 +43,8 @@ export const StatisticsPeriod = Object.freeze({
     MONTH: 'month',
     WEEK: 'week'
 });
+
+export const OrderType = Object.freeze({
+    DESC: 'DESC',
+    ASC: 'ASC'
+});

@@ -69,6 +69,89 @@ const getOrderStatistics = async (type, limit) => {
     });
 };
 
+
+const getProductRevenueStatistics = async (orderType, limit) => {
+    let sqlQuery = `
+        SELECT pv.product_id as productId,
+                p.name AS productName,
+                pi.image_url AS productImage,
+                SUM(oi.quantity) AS totalQuantity,
+                SUM(oi.price * oi.quantity) AS totalPrice
+        FROM order_items oi
+        INNER JOIN orders o ON oi.order_id = o.id and o.status = '${OrderStatus.COMPLETED}'
+        INNER JOIN product_variants pv ON pv.id = oi.product_variant_id
+        INNER JOIN products p ON p.id = pv.product_id
+        INNER JOIN product_images pi ON pi.product_id = p.id AND pi.is_primary = 1
+        GROUP BY pv.product_id, pi.image_url
+    `;
+
+    sqlQuery += ` ORDER BY totalPrice ${orderType}`;
+    sqlQuery += ` LIMIT ${limit}`;
+    const records = await db.sequelize.query(sqlQuery, { type: db.sequelize.QueryTypes.SELECT });
+    return records;
+}
+
+const getProductSoldStatistics = async (orderType, limit) => {
+    let sqlQuery = `
+         SELECT pv.product_id as productId,
+                p.name AS productName,
+                pi.image_url AS productImage,
+                SUM(oi.quantity) AS totalQuantity,
+                SUM(oi.price * oi.quantity) AS totalPrice
+        FROM order_items oi
+        INNER JOIN orders o ON oi.order_id = o.id and o.status = '${OrderStatus.COMPLETED}'
+        INNER JOIN product_variants pv ON pv.id = oi.product_variant_id
+        INNER JOIN products p ON p.id = pv.product_id
+        INNER JOIN product_images pi ON pi.product_id = p.id and pi.is_primary = 1
+        GROUP BY pv.product_id, pi.image_url
+    `;
+    
+    sqlQuery += ` ORDER BY totalQuantity ${orderType}`;
+    sqlQuery += ` LIMIT ${limit}`;
+    const records = await db.sequelize.query(sqlQuery, { type: db.sequelize.QueryTypes.SELECT });
+    return records;
+}
+
+const getCategoryRevenueStatistics = async (orderType, limit) => {
+    let sqlQuery = `
+        SELECT  c.name as categoryName,
+                p.category_id as categoryId,
+                SUM(oi.quantity) AS totalQuantity,
+                SUM(oi.price * oi.quantity) AS totalPrice
+        FROM order_items oi
+        INNER JOIN orders o ON oi.order_id = o.id and o.status = '${OrderStatus.COMPLETED}'
+        INNER JOIN product_variants pv ON pv.id = oi.product_variant_id
+        INNER JOIN products p ON p.id = pv.product_id
+        INNER JOIN categories as c ON c.id = p.category_id
+        GROUP BY p.category_id, c.name
+    `;
+
+    sqlQuery += ` ORDER BY totalPrice ${orderType}`;
+    sqlQuery += ` LIMIT ${limit}`;
+    const records = await db.sequelize.query(sqlQuery, { type: db.sequelize.QueryTypes.SELECT });
+    return records;
+}
+
+const getCategorySoldStatistics = async (orderType, limit) => {
+    let sqlQuery = `
+            SELECT c.name as categoryName,
+            p.category_id as categoryId,
+            SUM(oi.quantity) AS totalQuantity,
+            SUM(oi.price * oi.quantity) AS totalPrice
+        FROM order_items oi
+        INNER JOIN orders o ON oi.order_id = o.id and o.status = '${OrderStatus.COMPLETED}'
+        INNER JOIN product_variants pv ON pv.id = oi.product_variant_id
+        INNER JOIN products p ON p.id = pv.product_id
+        INNER JOIN categories as c ON c.id = p.category_id
+        GROUP BY p.category_id, c.name
+    `;
+
+    sqlQuery += ` ORDER BY totalQuantity ${orderType}`;
+    sqlQuery += ` LIMIT ${limit}`;
+    const records = await db.sequelize.query(sqlQuery, { type: db.sequelize.QueryTypes.SELECT });
+    return records;
+}
+
 const getRevenueStatistics = async (type, limit) => {
     return getStatistics(db.order, type, limit, {
         status: OrderStatus.COMPLETED
@@ -78,5 +161,9 @@ const getRevenueStatistics = async (type, limit) => {
 export default {
     getNewCustomerStatistics,
     getOrderStatistics,
+    getProductRevenueStatistics,
+    getProductSoldStatistics,
+    getCategoryRevenueStatistics,
+    getCategorySoldStatistics,
     getRevenueStatistics
 };
