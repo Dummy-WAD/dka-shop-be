@@ -8,3 +8,4 @@ export { default as confirmationTokenService } from './confirmation-token.servic
 export { default as addressServices } from './address.service.js';
 export { default as cartServices } from './cart.service.js';
 export { default as deliveryServiceService } from './delivery-service.service.js';
+export { default as statisticsServices } from './statistics.service.js';

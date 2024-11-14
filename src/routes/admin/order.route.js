@@ -23,4 +23,10 @@ router.get(
   orderController.getOrderById
 );
 
+router.patch(
+  '/:orderId',
+  validate(orderValidation.updateOrderStatus),
+  orderController.updateOrderStatus
+);
+
 export default router;
