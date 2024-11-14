@@ -3,19 +3,19 @@ import { Op, fn, col, literal } from 'sequelize';
 import { AccountStatus, OrderStatus, UserRole } from '../utils/enums.js';
 import { generatePeriodForType } from '../utils/statistics.js'; 
 
-const getStatistics = async (model, type, limit, conditions = {}, calculate = false) => {
+const getStatistics = async (model, type, limit, conditions = {}, dateField = 'created_at', calculate = false) => {
     const { dateFormat, interval, allPeriods } = generatePeriodForType(type, limit);
 
     const todayStatistics = await model.findOne({
         attributes: [
-            [literal("DATE(created_at)"), 'period'],
+            [literal(`DATE(${dateField})`), 'period'],
             ...(calculate ? [[literal("SUM(total + delivery_fee)"), 'totalRevenue']] : [[fn('COUNT', col('id')), 'count']])
         ],
         where: { 
             ...conditions, 
-            createdAt: { [Op.gte]: fn('CURDATE') } 
+            [dateField]: { [Op.gte]: fn('CURDATE') } 
         },
-        group: [literal("DATE(created_at)")],
+        group: [literal(`DATE(${dateField})`)],
         nest: true
     });
 
@@ -26,7 +26,7 @@ const getStatistics = async (model, type, limit, conditions = {}, calculate = fa
         ],
         where: {
             ...conditions,
-            createdAt: {
+            [dateField]: {
                 [Op.gte]: fn('DATE_SUB', fn('CURDATE'), literal(`INTERVAL ${limit} ${interval}`))
             }
         },
@@ -155,7 +155,7 @@ const getCategorySoldStatistics = async (orderType, limit) => {
 const getRevenueStatistics = async (type, limit) => {
     return getStatistics(db.order, type, limit, {
         status: OrderStatus.COMPLETED
-    }, true);
+    }, 'completed_at', true);
 };
 
 export default {
