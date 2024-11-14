@@ -15,7 +15,7 @@ const getOrdersByCustomer = {
 
 const getOrdersByAdmin = {
     query: Joi.object().keys({
-        keyword: Joi.string().max(50).optional(),
+        keyword: Joi.string().trim().max(50).optional(),
         status: Joi.string().valid(...Object.values(OrderStatus)),
         sortBy: Joi.string().valid('orderId', 'email', 'totalPrice', 'createdAt', 'updatedAt').default('createdAt'),
         order: Joi.string().valid('asc', 'desc').default('desc'),
@@ -74,6 +74,15 @@ const placeOrder = {
     })
 }
 
+const updateOrderStatus = {
+    params: Joi.object().keys({
+        orderId: Joi.number().integer().positive().required()
+    }),
+    body: Joi.object().keys({
+        status: Joi.string().valid(...Object.values(OrderStatus)).required()
+    })
+}
+
 export default {
     getOrdersByCustomer,
     getOrdersByAdmin,
@@ -81,5 +90,6 @@ export default {
     getOrderById,
     getCustomerOrderById,
     prepareOrder,
-    placeOrder
+    placeOrder,
+    updateOrderStatus
 }

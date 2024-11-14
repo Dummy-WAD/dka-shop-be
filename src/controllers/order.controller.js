@@ -46,6 +46,12 @@ const placeOrder = catchAsync(async (req, res) => {
   res.status(httpStatus.CREATED).send(order);
 });
 
+const updateOrderStatus = catchAsync(async (req, res) => {
+  const { status } = req.body;
+  const order = await orderService.updateOrderStatus(req.params.orderId, status);
+  res.status(httpStatus.OK).send(order);
+});
+
 export default {
     getOrdersByCustomer,
     getOrdersByAdmin,
@@ -53,5 +59,6 @@ export default {
     getOrderById,
     getCustomerOrderById,
     prepareOrder,
-    placeOrder
+    placeOrder,
+    updateOrderStatus
 };
