@@ -163,7 +163,7 @@ const getOrderById = async (orderId) => {
     // Find order by id
 
     const order = await db.order.findByPk(orderId, {
-        attributes: ['id', 'customer_id', 'total', 'delivery_fee', 'status', 'created_at', 'updated_at', 'address', 'contact_name', 'phone_number', "packaged_at", "delivered_at", "completed_at", "delivery_service_id"],
+        attributes: ['id', 'customer_id', 'total', 'delivery_fee', 'status', 'created_at', 'updated_at', 'address', 'contact_name', 'phone_number', "packaged_at", "delivered_at", "completed_at", "cancelled_at", "delivery_service_id"],
         include: {
                 model: db.productVariant,
                 attributes: ['product_id'],
@@ -196,7 +196,7 @@ const getOrderById = async (orderId) => {
 
     const {
         id, customer_id, total, delivery_fee, status, created_at, updated_at,
-        address, contact_name, phone_number, packaged_at, delivered_at, completed_at, deliveryService: deliveryServiceData
+        address, contact_name, phone_number, packaged_at, delivered_at, completed_at, cancelled_at, deliveryService: deliveryServiceData
     } = order.dataValues;
 
     const orderDetailResponse = {
@@ -211,6 +211,10 @@ const getOrderById = async (orderId) => {
         contactName: contact_name,
         phoneNumber: phone_number,
         history: {
+            cancelled: {
+                name: "Cancelled",
+                at: cancelled_at,
+            },
             packaged: {
                 name: "Packaged",
                 at: packaged_at,
@@ -234,7 +238,7 @@ const getOrderById = async (orderId) => {
 const getCustomerOrderById = async (orderId, customerId) => {
     // Find order by id
     const order = await db.order.findByPk(orderId, {
-        attributes: ['id', 'customer_id', 'total', 'delivery_fee', 'status', 'created_at', 'updated_at', 'address', 'contact_name', 'phone_number', "packaged_at", "delivered_at", "completed_at", "delivery_service_id"],
+        attributes: ['id', 'customer_id', 'total', 'delivery_fee', 'status', 'created_at', 'updated_at', 'address', 'contact_name', 'phone_number', "packaged_at", "delivered_at", "completed_at", "cancelled_at", "delivery_service_id"],
         include: {
                 model: db.productVariant,
                 attributes: ['product_id'],
@@ -271,7 +275,7 @@ const getCustomerOrderById = async (orderId, customerId) => {
 
     const {
         id, customer_id, total, delivery_fee, status, created_at, updated_at,
-        address, contact_name, phone_number, packaged_at, delivered_at, completed_at, deliveryService: deliveryServiceData
+        address, contact_name, phone_number, packaged_at, delivered_at, completed_at, cancelled_at, deliveryService: deliveryServiceData
     } = order.dataValues;
 
     const orderDetailResponse = {
@@ -286,6 +290,10 @@ const getCustomerOrderById = async (orderId, customerId) => {
         contactName: contact_name,
         phoneNumber: phone_number,
         history: {
+            cancelled: {
+                name: "Cancelled",
+                at: cancelled_at,
+            },
             packaged: {
                 name: "Packaged",
                 at: packaged_at,
