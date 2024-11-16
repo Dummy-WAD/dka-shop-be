@@ -4,7 +4,7 @@ import { AccountStatus, OrderStatus, UserRole } from '../utils/enums.js';
 import { generatePeriodForType } from '../utils/statistics.js'; 
 
 const getStatistics = async (model, type, limit, conditions = {}, dateField = 'created_at', calculate = false) => {
-    const { dateFormat, interval, allPeriods } = generatePeriodForType(type, limit);
+    const { dateFormat, interval, allPeriods } = generatePeriodForType(type, limit, dateField);
 
     const todayStatistics = await model.findOne({
         attributes: [
@@ -64,9 +64,22 @@ const getNewCustomerStatistics = async (type, limit) => {
 };
 
 const getOrderStatistics = async (type, limit) => {
-    return getStatistics(db.order, type, limit, {
-        status: { [Op.ne]: OrderStatus.CANCELLED }
+    const createdAtStatistics = await getStatistics(db.order, type, limit, {}, 'created_at');
+    const completedAtStatistics = await getStatistics(db.order, type, limit, {}, 'completed_at');
+
+    const mergedResults = createdAtStatistics.results.map((createdAtRecord) => {
+        const completedAtRecord = completedAtStatistics.results.find(item => item.period === createdAtRecord.period) || { count: 0 };
+        return {
+            period: createdAtRecord.period,
+            count: createdAtRecord.count,
+            completedOrdersCount: completedAtRecord.count
+        };
     });
+
+    return {
+        todayCount: createdAtStatistics.todayCount,
+        results: mergedResults
+    };
 };
 
 
