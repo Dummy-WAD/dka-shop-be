@@ -5,3 +5,4 @@ export { default as customValidation } from './custom.validation.js';
 export { default as imageValidation } from './image.validation.js';
 export { default as cartValidation } from './cart.validation.js';
 export { default as statisticsValidation } from './statistics.validation.js';
+export { default as discountValidation } from './discount.validation.js';

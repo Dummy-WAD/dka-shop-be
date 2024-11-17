@@ -9,3 +9,4 @@ export { default as addressServices } from './address.service.js';
 export { default as cartServices } from './cart.service.js';
 export { default as deliveryServiceService } from './delivery-service.service.js';
 export { default as statisticsServices } from './statistics.service.js';
+export { default as discountServices } from './discount.service.js';
