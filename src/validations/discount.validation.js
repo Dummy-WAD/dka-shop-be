@@ -29,7 +29,18 @@ const editDiscount = {
   }),
 };
 
+const applyDiscount = {
+    params: Joi.object().keys({
+        discountId: Joi.number().integer().positive().required()
+    }),
+    body: Joi.object().keys({
+        productIds: Joi.array().items(Joi.number().integer().positive()).required(),
+        isConfirmed: Joi.boolean().required()
+    })
+}
+
 export default {
   createDiscount,
-  editDiscount
+  editDiscount,
+  applyDiscount
 }

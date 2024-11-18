@@ -12,7 +12,15 @@ const editDiscount = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ message: 'Edit discount successfully' });
 });
 
+const applyDiscount = catchAsync(async (req, res) => {
+  const { discountId } = req.params;
+  const { productIds, isConfirmed } = req.body;
+  await discountServices.applyDiscount(discountId, productIds, isConfirmed);
+  res.status(httpStatus.OK).send("Discount applied successfully");
+});
+
 export default {
   createDiscount,
-  editDiscount
+  editDiscount,
+  applyDiscount
 };

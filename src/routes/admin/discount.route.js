@@ -17,4 +17,10 @@ router.patch(
   discountController.editDiscount
 );
 
+router.post(
+    "/:discountId/apply",
+    validate(discountValidation.applyDiscount),
+    discountController.applyDiscount
+);
+
 export default router;
