@@ -2,6 +2,16 @@ import Joi from 'joi';
 import { DiscountType } from '../utils/enums.js';
 import customValidation from './custom.validation.js'
 
+const getDiscountDetail = {
+  params: Joi.object().keys({
+    discountId: Joi.number().integer().positive().required()
+  }),
+  query: Joi.object().keys({
+    page: Joi.number().integer().min(1).default(1),
+    limit: Joi.number().integer().min(1).default(5)
+  })
+};
+
 const createDiscount = {
   body: Joi.object().keys({
     discountValue: Joi.number().positive().required().custom(customValidation.validateDiscountValue),
@@ -30,6 +40,7 @@ const editDiscount = {
 };
 
 export default {
+  getDiscountDetail,
   createDiscount,
   editDiscount
 }
