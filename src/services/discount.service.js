@@ -120,9 +120,85 @@ const editDiscount = async (discountId, payload) => {
     await db.discountOffer.update(payload, { where: { id: discountId } });
 };
 
+const applyDiscount = async (discountId, productIds, isConfirmed = false) => {
+    const transaction = await db.sequelize.transaction();
+
+    try {
+        const discount = await db.discountOffer.findOne({
+            where: { id: discountId, isDeleted: false },
+            transaction
+        });
+
+        if (!discount) {
+            throw new ApiError(httpStatus.NOT_FOUND, 'Discount not found');
+        }
+
+        const products = await db.product.findAll({
+            where: {
+                id: productIds,
+                isDeleted: false
+            },
+            transaction
+        });
+
+        if (products.length !== productIds.length) {
+            throw new ApiError(httpStatus.NOT_FOUND, 'One or more products not found');
+        }
+
+        const currentDate = new Date().setHours(0, 0, 0, 0);
+        const expirationDate = new Date(discount.expirationDate).setHours(0, 0, 0, 0);
+
+        if (currentDate > expirationDate) {
+            throw new ApiError(httpStatus.BAD_REQUEST, 'Discount has expired');
+        }
+
+        const existingDiscount = await db.productDiscountOffer.findAll({
+            where: {
+                productId: productIds
+            },
+            include: {
+                model: db.discountOffer,
+                where: {
+                    startDate: { [db.Sequelize.Op.lte]: currentDate },
+                    expirationDate: { [db.Sequelize.Op.gte]: currentDate },
+                    isDeleted: false
+                }
+            },
+            transaction
+        });
+
+        if (existingDiscount.length > 0 && !isConfirmed) {
+            throw new ApiError(httpStatus.CONFLICT, 'Discount already applied to one or more products.');
+        }
+
+        if (existingDiscount.length > 0) {
+            await db.productDiscountOffer.destroy({
+                where: {
+                    productId: existingDiscount.map(item => item.productId),
+                },
+                transaction
+            });
+        }
+
+        await db.productDiscountOffer.bulkCreate(
+            productIds.map(productId => ({
+                productId,
+                discountOfferId: discountId
+            })),
+            { transaction }
+        );
+
+        await transaction.commit();
+    } catch (error) {
+        await transaction.rollback();
+        throw error;
+    }
+};
+
 export default {
     getDiscountDetail,
     getAllProductsWithDiscount,
     createDiscount,
-    editDiscount
+    editDiscount,
+    applyDiscount
 }
