@@ -5,6 +5,18 @@ import discountController from "../../controllers/discount.controller.js";
 
 const router = express.Router();
 
+router.get(
+  "/:discountId",
+  validate(discountValidation.getDiscountDetail),
+  discountController.getDiscountDetail
+);
+
+router.get(
+  "/products/:discountId",
+  validate(discountValidation.getDiscountDetail),
+  discountController.getAllProductsWithDiscount
+);
+
 router.post(
   "/",
   validate(discountValidation.createDiscount),

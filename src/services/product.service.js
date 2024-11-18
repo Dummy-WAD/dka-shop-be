@@ -298,9 +298,9 @@ const getProductDetailForCustomer = async (productId) => {
                     include: [
                         [
                             db.sequelize.literal(`CASE 
-                                WHEN NOW() BETWEEN \`discountOffers\`.\`start_date\` AND \`discountOffers\`.\`expiration_date\`
+                                WHEN CURDATE() BETWEEN DATE(\`discountOffers\`.\`start_date\`) AND DATE(\`discountOffers\`.\`expiration_date\`)
                                 AND \`discountOffers\`.\`discount_type\` = '${DiscountType.PRICE}' THEN \`product\`.\`price\` - \`discountOffers\`.\`discount_value\`
-                                WHEN NOW() BETWEEN \`discountOffers\`.\`start_date\` AND \`discountOffers\`.\`expiration_date\`
+                                WHEN CURDATE() BETWEEN DATE(\`discountOffers\`.\`start_date\`) AND DATE(\`discountOffers\`.\`expiration_date\`)
                                 AND \`discountOffers\`.\`discount_type\` = '${DiscountType.PERCENTAGE}' THEN \`product\`.\`price\` - (\`product\`.\`price\` * \`discountOffers\`.\`discount_value\` / 100)
                                 ELSE \`product\`.\`price\`
                             END`),
@@ -389,9 +389,9 @@ const getProductsForCustomer = async (filter, search, options) => {
                     include: [
                         [
                             db.sequelize.literal(`CASE 
-                                WHEN NOW() BETWEEN discountOffers.start_date AND discountOffers.expiration_date
+                                WHEN CURDATE() BETWEEN DATE(discountOffers.start_date) AND DATE(discountOffers.expiration_date)
                                 AND discountOffers.discount_type = 'PRICE' THEN product.price - discountOffers.discount_value
-                                WHEN NOW() BETWEEN discountOffers.start_date AND discountOffers.expiration_date
+                                WHEN CURDATE() BETWEEN DATE(discountOffers.start_date) AND DATE(discountOffers.expiration_date)
                                 AND discountOffers.discount_type = 'PERCENTAGE' THEN product.price - (product.price * discountOffers.discount_value / 100)
                                 ELSE product.price
                             END`),
@@ -466,9 +466,9 @@ async function getBestSellerProducts(bestSellerRequest) {
                     include: [
                         [
                             db.sequelize.literal(`CASE 
-                                WHEN NOW() BETWEEN discountOffers.start_date AND discountOffers.expiration_date
+                                WHEN CURDATE() BETWEEN DATE(discountOffers.start_date) AND DATE(discountOffers.expiration_date)
                                 AND discountOffers.discount_type = 'PRICE' THEN product.price - discountOffers.discount_value
-                                WHEN NOW() BETWEEN discountOffers.start_date AND discountOffers.expiration_date
+                                WHEN CURDATE() BETWEEN DATE(discountOffers.start_date) AND DATE(discountOffers.expiration_date)
                                 AND discountOffers.discount_type = 'PERCENTAGE' THEN product.price - (product.price * discountOffers.discount_value / 100)
                                 ELSE product.price
                             END`),
@@ -515,9 +515,9 @@ const getDiscountedPriceOfProducts = async (productIds) => {
                     include: [
                         [
                             db.sequelize.literal(`CASE 
-                                WHEN NOW() BETWEEN discountOffers.start_date AND discountOffers.expiration_date
+                                WHEN CURDATE() BETWEEN DATE(discountOffers.start_date) AND DATE(discountOffers.expiration_date)
                                 AND discountOffers.discount_type = 'PRICE' THEN product.price - discountOffers.discount_value
-                                WHEN NOW() BETWEEN discountOffers.start_date AND discountOffers.expiration_date
+                                WHEN CURDATE() BETWEEN DATE(discountOffers.start_date) AND DATE(discountOffers.expiration_date)
                                 AND discountOffers.discount_type = 'PERCENTAGE' THEN product.price - (product.price * discountOffers.discount_value / 100)
                                 ELSE product.price
                             END`),

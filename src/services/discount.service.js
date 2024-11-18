@@ -1,6 +1,83 @@
 import db from "../models/models/index.js";
 import ApiError from "../utils/ApiError.js";
 import httpStatus from 'http-status';
+import paginate from './plugins/paginate.plugin.js';
+import { DiscountStatus } from "../utils/enums.js";
+
+const getDiscountDetail = async (discountId) => {
+    const currentDate = new Date(new Date().getTime() + (7 * 60 * 60 * 1000));
+
+    const discount = await db.discountOffer.findOne({
+        where: { id: discountId, isDeleted: false },
+        attributes: {
+            exclude: ['createdAt', 'updatedAt', 'isDeleted'],
+            include: [
+                [
+                    db.Sequelize.literal(`
+                        CASE
+                            WHEN start_date > '${currentDate.toISOString()}' THEN '${DiscountStatus.UPCOMING}'
+                            WHEN start_date <= '${currentDate.toISOString()}' AND expiration_date >= '${currentDate.toISOString()}' THEN '${DiscountStatus.ACTIVE}'
+                            ELSE '${DiscountStatus.EXPIRED}'
+                        END
+                    `),
+                    'status'
+                ]
+            ]
+        },
+        raw: true,
+        nest: true
+    });
+
+    if (!discount) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'Discount not found');
+    };
+
+    return discount;
+};
+
+const getAllProductsWithDiscount = async (filter, options) => {
+    const include = [
+        {
+            model: db.category,
+            attributes: ['id', 'name']
+        },
+        {
+            model: db.discountOffer,
+            attributes: [[
+                db.sequelize.literal(`
+                    CASE 
+                        WHEN CURDATE() BETWEEN DATE(start_date) AND DATE(expiration_date)
+                        AND discount_type = 'PRICE' THEN product.originPrice - discount_value
+                        WHEN CURDATE() BETWEEN DATE(start_date) AND DATE(expiration_date)
+                        AND discount_type = 'PERCENTAGE' THEN product.originPrice - (product.originPrice * discount_value / 100)
+                        ELSE product.originPrice
+                    END
+                `),
+                'priceDiscounted'
+            ]],
+            where: { ...filter, isDeleted: false }
+        }
+    ];
+
+    const selectedAttributes = [['id', 'productId'], ['name', 'productName'], ['price', 'originPrice']];
+
+    const productDiscountOffers = await paginate(db.product, { isDeleted: false }, options, include, [], selectedAttributes);
+    const plainResults = productDiscountOffers.results.map(item => item.get({ plain: true }));
+
+     const products = plainResults.map(product => ({
+        ...product,
+        categoryName: product.category.name,
+        categoryId: product.category.id,
+        priceDiscounted: product.discountOffers[0]?.priceDiscounted,
+        discountOffers: undefined,
+        category: undefined
+    }));
+
+    return {
+        ...productDiscountOffers,
+        results: products
+    };
+};
 
 const createDiscount = async (payload) => {
     const discountCreated = await db.discountOffer.create({ ...payload, isDeleted: false });
@@ -40,6 +117,8 @@ const editDiscount = async (discountId, payload) => {
 };
 
 export default {
+    getDiscountDetail,
+    getAllProductsWithDiscount,
     createDiscount,
     editDiscount
 }
