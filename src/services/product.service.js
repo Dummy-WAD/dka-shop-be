@@ -2,7 +2,7 @@ import paginate from './plugins/paginate.plugin.js';
 import db from '../models/models/index.js';
 import ApiError from '../utils/ApiError.js';
 import httpStatus from 'http-status';
-import { DiscountType, DeleteStatus } from '../utils/enums.js';
+import { DeleteStatus } from '../utils/enums.js';
 import { Op } from 'sequelize';
 
 const getAllProductsByCondition = async (filter, options) => {
@@ -298,11 +298,15 @@ const getProductDetailForCustomer = async (productId) => {
                     include: [
                         [
                             db.sequelize.literal(`CASE 
-                                WHEN CURDATE() BETWEEN DATE(\`discountOffers\`.\`start_date\`) AND DATE(\`discountOffers\`.\`expiration_date\`)
-                                AND \`discountOffers\`.\`discount_type\` = '${DiscountType.PRICE}' THEN \`product\`.\`price\` - \`discountOffers\`.\`discount_value\`
-                                WHEN CURDATE() BETWEEN DATE(\`discountOffers\`.\`start_date\`) AND DATE(\`discountOffers\`.\`expiration_date\`)
-                                AND \`discountOffers\`.\`discount_type\` = '${DiscountType.PERCENTAGE}' THEN \`product\`.\`price\` - (\`product\`.\`price\` * \`discountOffers\`.\`discount_value\` / 100)
-                                ELSE \`product\`.\`price\`
+                                WHEN CURDATE() BETWEEN DATE(discountOffers.start_date) AND DATE(discountOffers.expiration_date)
+                                AND discountOffers.discount_type = 'PRICE' THEN
+                                    CASE
+                                        WHEN discountOffers.discount_value >= product.price THEN 0
+                                        ELSE product.price - discountOffers.discount_value
+                                    END
+                                WHEN CURDATE() BETWEEN DATE(discountOffers.start_date) AND DATE(discountOffers.expiration_date)
+                                AND discountOffers.discount_type = 'PERCENTAGE' THEN product.price - (product.price * discountOffers.discount_value / 100)
+                                ELSE product.price
                             END`),
                             'priceDiscounted'
                         ]
@@ -323,7 +327,7 @@ const getProductDetailForCustomer = async (productId) => {
     const productPlain = productDetail.get({ plain: true });
 
     const { productImages, isDeleted, categoryId, category, discountOffers, ...basicInfo } = productPlain;
-    const priceDiscounted = productPlain.discountOffers[0]?.priceDiscounted || basicInfo.price;
+    const priceDiscounted = productPlain.discountOffers[0]?.priceDiscounted ?? basicInfo.price;
 
     const { primaryImage, otherImages } = separateProductImages(productImages);
 
@@ -390,7 +394,11 @@ const getProductsForCustomer = async (filter, search, options) => {
                         [
                             db.sequelize.literal(`CASE 
                                 WHEN CURDATE() BETWEEN DATE(discountOffers.start_date) AND DATE(discountOffers.expiration_date)
-                                AND discountOffers.discount_type = 'PRICE' THEN product.price - discountOffers.discount_value
+                                AND discountOffers.discount_type = 'PRICE' THEN
+                                    CASE
+                                        WHEN discountOffers.discount_value >= product.price THEN 0
+                                        ELSE product.price - discountOffers.discount_value
+                                    END
                                 WHEN CURDATE() BETWEEN DATE(discountOffers.start_date) AND DATE(discountOffers.expiration_date)
                                 AND discountOffers.discount_type = 'PERCENTAGE' THEN product.price - (product.price * discountOffers.discount_value / 100)
                                 ELSE product.price
@@ -467,7 +475,11 @@ async function getBestSellerProducts(bestSellerRequest) {
                         [
                             db.sequelize.literal(`CASE 
                                 WHEN CURDATE() BETWEEN DATE(discountOffers.start_date) AND DATE(discountOffers.expiration_date)
-                                AND discountOffers.discount_type = 'PRICE' THEN product.price - discountOffers.discount_value
+                                AND discountOffers.discount_type = 'PRICE' THEN
+                                    CASE
+                                        WHEN discountOffers.discount_value >= product.price THEN 0
+                                        ELSE product.price - discountOffers.discount_value
+                                    END
                                 WHEN CURDATE() BETWEEN DATE(discountOffers.start_date) AND DATE(discountOffers.expiration_date)
                                 AND discountOffers.discount_type = 'PERCENTAGE' THEN product.price - (product.price * discountOffers.discount_value / 100)
                                 ELSE product.price
@@ -516,7 +528,11 @@ const getDiscountedPriceOfProducts = async (productIds) => {
                         [
                             db.sequelize.literal(`CASE 
                                 WHEN CURDATE() BETWEEN DATE(discountOffers.start_date) AND DATE(discountOffers.expiration_date)
-                                AND discountOffers.discount_type = 'PRICE' THEN product.price - discountOffers.discount_value
+                                AND discountOffers.discount_type = 'PRICE' THEN
+                                    CASE
+                                        WHEN discountOffers.discount_value >= product.price THEN 0
+                                        ELSE product.price - discountOffers.discount_value
+                                    END
                                 WHEN CURDATE() BETWEEN DATE(discountOffers.start_date) AND DATE(discountOffers.expiration_date)
                                 AND discountOffers.discount_type = 'PERCENTAGE' THEN product.price - (product.price * discountOffers.discount_value / 100)
                                 ELSE product.price

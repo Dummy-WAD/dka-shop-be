@@ -47,7 +47,11 @@ const getAllProductsWithDiscount = async (filter, options) => {
                 db.sequelize.literal(`
                     CASE 
                         WHEN CURDATE() BETWEEN DATE(start_date) AND DATE(expiration_date)
-                        AND discount_type = 'PRICE' THEN product.originPrice - discount_value
+                        AND discount_type = 'PRICE' THEN 
+                            CASE 
+                                WHEN discount_value >= product.originPrice THEN 0
+                                ELSE product.originPrice - discount_value
+                            END
                         WHEN CURDATE() BETWEEN DATE(start_date) AND DATE(expiration_date)
                         AND discount_type = 'PERCENTAGE' THEN product.originPrice - (product.originPrice * discount_value / 100)
                         ELSE product.originPrice
