@@ -34,7 +34,7 @@ const applyDiscount = {
         discountId: Joi.number().integer().positive().required()
     }),
     body: Joi.object().keys({
-        productIds: Joi.array().items(Joi.number().integer().positive()).required(),
+        productIds: Joi.array().items(Joi.number().integer().positive().required()).required(),
         isConfirmed: Joi.boolean().required()
     })
 }
