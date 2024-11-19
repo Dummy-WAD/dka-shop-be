@@ -213,7 +213,77 @@ const deleteDiscount = async (discountId) => {
     }
 
     await db.discountOffer.update({ isDeleted: true }, { where: { id: discountId } });
-}
+};
+
+const getAllDiscounts = async (filter, options) => {
+    const currentDate = new Date(new Date().getTime() + (7 * 60 * 60 * 1000));
+
+    const whereConditions = {
+        isDeleted: false,
+    };
+
+    if (filter.keyword) {
+        whereConditions.id = filter.keyword;
+    }
+    
+    if (filter.type) {
+        whereConditions.discountType = filter.type;
+    }
+
+    if (filter.startDate && filter.expirationDate) {
+        whereConditions.startDate = {
+            [db.Sequelize.Op.gte]: filter.startDate,
+        };
+        whereConditions.expirationDate = {
+            [db.Sequelize.Op.lte]: filter.expirationDate,
+        };
+    } else if (filter.startDate) {
+        whereConditions.startDate = {
+            [db.Sequelize.Op.gte]: filter.startDate,
+        };
+    } else if (filter.expirationDate) {
+        whereConditions.expirationDate = {
+            [db.Sequelize.Op.lte]: filter.expirationDate,
+        };
+    }
+
+    const totalResults = await db.discountOffer.count({
+        where: whereConditions,
+    });
+
+    const discounts = await db.discountOffer.findAll({
+        where: whereConditions,
+        attributes: {
+            include: [
+                [
+                    db.Sequelize.literal(`
+                        CASE
+                            WHEN start_date > '${currentDate.toISOString()}' THEN '${DiscountStatus.UPCOMING}'
+                            WHEN start_date <= '${currentDate.toISOString()}' AND expiration_date >= '${currentDate.toISOString()}' THEN '${DiscountStatus.ACTIVE}'
+                            ELSE '${DiscountStatus.EXPIRED}'
+                        END
+                    `),
+                    'status'
+                ]
+            ]
+        },
+        raw: true,
+        nest: true,
+        order: options.sortBy ? [[options.sortBy, options.order || 'ASC']] : [],
+        limit: options.limit ? parseInt(options.limit) : undefined,
+        offset: options.page ? (parseInt(options.page) - 1) * (options.limit ? parseInt(options.limit) : 10) : undefined,
+    });
+
+    const totalPages = Math.ceil(totalResults / (options.limit ? parseInt(options.limit) : 10));
+
+    return {
+        results: discounts,
+        page: options.page ? parseInt(options.page) : 1,
+        limit: options.limit ? parseInt(options.limit) : 10,
+        totalPages: totalPages,
+        totalResults: totalResults,
+    };
+};
 
 export default {
     getDiscountDetail,
@@ -221,5 +291,6 @@ export default {
     createDiscount,
     editDiscount,
     applyDiscount,
-    deleteDiscount
+    deleteDiscount,
+    getAllDiscounts
 }
