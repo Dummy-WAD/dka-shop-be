@@ -45,7 +45,15 @@ const applyDiscount = {
     }),
     body: Joi.object().keys({
         productIds: Joi.array().items(Joi.number().integer().positive().required()).required(),
-        isConfirmed: Joi.boolean().required()
+    })
+}
+
+const revokeDiscount = {
+    params: Joi.object().keys({
+        discountId: Joi.number().integer().positive().required()
+    }),
+    body: Joi.object().keys({
+        productId: Joi.number().integer().positive().required()
     })
 }
 
@@ -73,6 +81,7 @@ export default {
   createDiscount,
   editDiscount,
   applyDiscount,
+  revokeDiscount,
   deleteDiscount,
   getAllDiscounts
 }

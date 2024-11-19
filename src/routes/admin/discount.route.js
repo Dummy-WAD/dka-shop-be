@@ -30,9 +30,15 @@ router.patch(
 );
 
 router.post(
-    "/:discountId/apply",
+    "/:discountId/applied-products",
     validate(discountValidation.applyDiscount),
     discountController.applyDiscount
+);
+
+router.delete(
+    "/:discountId/applied-products",
+    validate(discountValidation.revokeDiscount),
+    discountController.revokeDiscount
 );
 
 router.delete(

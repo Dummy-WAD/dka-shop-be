@@ -120,7 +120,37 @@ const editDiscount = async (discountId, payload) => {
     await db.discountOffer.update(payload, { where: { id: discountId } });
 };
 
-const applyDiscount = async (discountId, productIds, isConfirmed = false) => {
+const getAppliedDiscount = async (productId) => {
+
+    const product = await db.product.findOne({
+        where: { id: productId, isDeleted: false }
+    });
+
+    if (!product) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'Product not found');
+    }
+
+    const currentDate = new Date().setHours(0, 0, 0, 0);
+
+    const appliedDiscount = await db.productDiscountOffer.findOne({
+        where: {
+            productId,
+        },
+        include: {
+            model: db.discountOffer,
+            where: {
+                startDate: {[db.Sequelize.Op.lte]: currentDate},
+                expirationDate: {[db.Sequelize.Op.gte]: currentDate},
+                isDeleted: false,
+            },
+            attributes: ['id', 'discountValue', 'discountType', 'startDate', 'expirationDate']
+        }
+    });
+
+    return { isDiscounted: !!appliedDiscount, activeDiscount: appliedDiscount?.discountOffer};
+}
+
+const applyDiscount = async (discountId, productIds) => {
     const transaction = await db.sequelize.transaction();
 
     try {
@@ -166,10 +196,6 @@ const applyDiscount = async (discountId, productIds, isConfirmed = false) => {
             },
             transaction
         });
-
-        if (existingDiscount.length > 0 && !isConfirmed) {
-            throw new ApiError(httpStatus.CONFLICT, 'Discount already applied to one or more products.');
-        }
 
         if (existingDiscount.length > 0) {
             await db.productDiscountOffer.destroy({
@@ -225,7 +251,7 @@ const getAllDiscounts = async (filter, options) => {
     if (filter.keyword) {
         whereConditions.id = filter.keyword;
     }
-    
+
     if (filter.type) {
         whereConditions.discountType = filter.type;
     }
@@ -285,12 +311,37 @@ const getAllDiscounts = async (filter, options) => {
     };
 };
 
+const revokeDiscount = async (discountId, productId) => {
+
+    const productDiscount = await db.productDiscountOffer.findOne({
+        where: {
+            productId,
+            discountOfferId: discountId
+        }
+    });
+
+    if (!productDiscount) {
+        throw new ApiError(httpStatus.NOT_FOUND, `Discount not found, 
+                                                product not found, 
+                                                or discount not applied to the product`);
+    }
+
+    await db.productDiscountOffer.destroy({
+        where: {
+            productId,
+            discountOfferId: discountId
+        }
+    });
+};
+
 export default {
     getDiscountDetail,
     getAllProductsWithDiscount,
     createDiscount,
     editDiscount,
+    getAppliedDiscount,
     applyDiscount,
+    revokeDiscount,
     deleteDiscount,
     getAllDiscounts
 }
