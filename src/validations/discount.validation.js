@@ -57,6 +57,17 @@ const revokeDiscount = {
     })
 }
 
+const getAppliedProducts = {
+    params: Joi.object().keys({
+        discountId: Joi.number().integer().positive().required()
+    }),
+    query: Joi.object().keys({
+        page: Joi.number().integer().min(1).default(1),
+        limit: Joi.number().integer().min(1).default(5),
+        exclude: Joi.boolean().default(false)
+    })
+}
+
 const deleteDiscount = {
   params: Joi.object().keys({
     discountId: Joi.number().integer().positive().required()
@@ -82,6 +93,7 @@ export default {
   editDiscount,
   applyDiscount,
   revokeDiscount,
+  getAppliedProducts,
   deleteDiscount,
   getAllDiscounts
 }

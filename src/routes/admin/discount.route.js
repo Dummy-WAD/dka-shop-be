@@ -29,6 +29,12 @@ router.patch(
   discountController.editDiscount
 );
 
+router.get(
+    "/:discountId/applied-products",
+    validate(discountValidation.getAppliedProducts),
+    discountController.getAppliedProducts
+);
+
 router.post(
     "/:discountId/applied-products",
     validate(discountValidation.applyDiscount),

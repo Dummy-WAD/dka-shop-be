@@ -83,6 +83,57 @@ const getAllProductsWithDiscount = async (filter, options) => {
     };
 };
 
+const getAllProductsWithoutDiscount = async (filter, options) => {
+    const include = [
+        {
+            model: db.category,
+            attributes: ['id', 'name']
+        },
+        {
+            model: db.discountOffer,
+            attributes: [[
+                db.sequelize.literal(`
+                    CASE 
+                        WHEN CURDATE() BETWEEN DATE(start_date) AND DATE(expiration_date)
+                        AND discount_type = 'PRICE' THEN 
+                            CASE 
+                                WHEN discount_value >= product.originPrice THEN 0
+                                ELSE product.originPrice - discount_value
+                            END
+                        WHEN CURDATE() BETWEEN DATE(start_date) AND DATE(expiration_date)
+                        AND discount_type = 'PERCENTAGE' THEN product.originPrice - (product.originPrice * discount_value / 100)
+                        ELSE product.originPrice
+                    END
+                `),
+                'priceDiscounted'
+            ]],
+            where: {
+                id: { [db.Sequelize.Op.ne]: filter.id },
+                isDeleted: false
+            }
+        }
+    ];
+
+    const selectedAttributes = [['id', 'productId'], ['name', 'productName'], ['price', 'originPrice']];
+
+    const productDiscountOffers = await paginate(db.product, { isDeleted: false }, options, include, [], selectedAttributes);
+    const plainResults = productDiscountOffers.results.map(item => item.get({ plain: true }));
+
+    const products = plainResults.map(product => ({
+        ...product,
+        categoryName: product.category.name,
+        categoryId: product.category.id,
+        priceDiscounted: product.discountOffers[0]?.priceDiscounted,
+        discountOffers: undefined,
+        category: undefined
+    }));
+
+    return {
+        ...productDiscountOffers,
+        results: products
+    };
+};
+
 const createDiscount = async (payload) => {
     const discountCreated = await db.discountOffer.create({ ...payload, isDeleted: false });
     return { discountId: discountCreated.id }
@@ -334,6 +385,14 @@ const revokeDiscount = async (discountId, productId) => {
     });
 };
 
+const getAppliedProducts = async (discountId, options, exclude = false) => {
+    if (!exclude) {
+        return await getAllProductsWithDiscount({ id: discountId }, options);
+    }
+
+    return await getAllProductsWithoutDiscount({ id: discountId }, options);
+}
+
 export default {
     getDiscountDetail,
     getAllProductsWithDiscount,
@@ -342,6 +401,7 @@ export default {
     getAppliedDiscount,
     applyDiscount,
     revokeDiscount,
+    getAppliedProducts,
     deleteDiscount,
     getAllDiscounts
 }
