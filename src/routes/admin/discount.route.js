@@ -35,4 +35,10 @@ router.post(
     discountController.applyDiscount
 );
 
+router.delete(
+  "/:discountId",
+  validate(discountValidation.deleteDiscount),
+  discountController.deleteDiscount
+);
+
 export default router;

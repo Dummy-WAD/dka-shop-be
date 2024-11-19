@@ -32,10 +32,16 @@ const applyDiscount = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send("Discount applied successfully");
 });
 
+const deleteDiscount = catchAsync(async (req, res) => {
+  await discountServices.deleteDiscount(req.params.discountId);
+  res.status(httpStatus.NO_CONTENT).send();
+});
+
 export default {
   getDiscountDetail,
   getAllProductsWithDiscount,
   createDiscount,
   editDiscount,
-  applyDiscount
+  applyDiscount,
+  deleteDiscount
 };

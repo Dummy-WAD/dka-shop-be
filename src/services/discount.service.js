@@ -195,10 +195,31 @@ const applyDiscount = async (discountId, productIds, isConfirmed = false) => {
     }
 };
 
+const deleteDiscount = async (discountId) => {
+    const discount = await db.discountOffer.findOne({ where: { id: discountId, isDeleted: false } });
+    if (!discount) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'Discount not found');
+    };
+
+    // find all products that have this discount
+    const products = await db.productDiscountOffer.findAll({ where: { discountOfferId: discountId } });
+    if (products.length > 0) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Discount is being used by one or more products');
+    }
+
+    // check if discount has started
+    if (discount.startDate <= new Date()) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Cannot delete discount that has started');
+    }
+
+    await db.discountOffer.update({ isDeleted: true }, { where: { id: discountId } });
+}
+
 export default {
     getDiscountDetail,
     getAllProductsWithDiscount,
     createDiscount,
     editDiscount,
-    applyDiscount
+    applyDiscount,
+    deleteDiscount
 }

@@ -49,9 +49,16 @@ const applyDiscount = {
     })
 }
 
+const deleteDiscount = {
+  params: Joi.object().keys({
+    discountId: Joi.number().integer().positive().required()
+  })
+};
+
 export default {
   getDiscountDetail,
   createDiscount,
   editDiscount,
-  applyDiscount
+  applyDiscount,
+  deleteDiscount
 }
