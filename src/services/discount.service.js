@@ -315,7 +315,14 @@ const deleteDiscount = async (discountId) => {
     };
 
     // find all products that have this discount
-    const products = await db.productDiscountOffer.findAll({ where: { discountOfferId: discountId } });
+    const qProducts = `
+        SELECT * 
+        FROM dka_shop.product_discount_offers pdo
+        INNER JOIN discount_offers _do ON _do.id = pdo.discount_offer_id
+        WHERE _do.expiration_date >= CURRENT_TIMESTAMP() and pdo.id = ${discountId}
+    `;
+
+    const products = await db.sequelize.query(qProducts, { type: db.sequelize.QueryTypes.SELECT });
     if (products.length > 0) {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Discount is being used by one or more products');
     }
