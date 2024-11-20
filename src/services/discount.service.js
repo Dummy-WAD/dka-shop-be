@@ -97,9 +97,11 @@ const getAllProductsWithDiscount = async (filter, options) => {
     };
 };
 
-const getAllProductsWithoutDiscount = async (discountId, options) => {
+const getAllProductsWithoutDiscount = async (filter, options) => {
     const { limit, page } = options;
     const offset = limit ? (page - 1) * limit : 0;
+
+    const { discountId, keyword } = filter;
 
     const products = await db.product.findAll({
         where: {
@@ -111,7 +113,10 @@ const getAllProductsWithoutDiscount = async (discountId, options) => {
                     WHERE pdo.product_id = product.id 
                     AND pdo.discount_offer_id = ${discountId}
                 )`)
-            ]
+            ],
+            ...(keyword && { name: {
+                    [db.Sequelize.Op.like]: `%${keyword}%`
+                }})
         },
         include: [
             {
@@ -134,7 +139,10 @@ const getAllProductsWithoutDiscount = async (discountId, options) => {
                     WHERE pdo.product_id = product.id 
                     AND pdo.discount_offer_id = ${discountId}
                 )`)
-            ]
+            ],
+            ...(keyword && { name: {
+                [db.Sequelize.Op.like]: `%${keyword}%`
+            }}),
         }
     });
 
@@ -410,12 +418,13 @@ const revokeDiscount = async (discountId, productId) => {
     });
 };
 
-const getAppliedProducts = async (discountId, options, exclude = false) => {
+const getAppliedProducts = async (filter, options, exclude = false) => {
     if (!exclude) {
+        const { discountId } = filter;
         return await getAllProductsWithDiscount({ id: discountId }, options);
     }
 
-    return await getAllProductsWithoutDiscount(discountId, options);
+    return await getAllProductsWithoutDiscount(filter, options);
 }
 
 export default {

@@ -64,6 +64,7 @@ const getAppliedProducts = {
     query: Joi.object().keys({
         page: Joi.number().integer().min(1).default(1),
         limit: Joi.number().integer().min(1).default(5),
+        keyword: Joi.string().trim().max(100).optional(),
         exclude: Joi.boolean().default(false)
     })
 }
