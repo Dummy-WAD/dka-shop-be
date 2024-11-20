@@ -1,7 +1,6 @@
 import db from "../models/models/index.js";
 import ApiError from "../utils/ApiError.js";
 import httpStatus from 'http-status';
-import paginate from './plugins/paginate.plugin.js';
 import { DiscountStatus } from "../utils/enums.js";
 
 const getDiscountDetail = async (discountId) => {
@@ -36,50 +35,127 @@ const getDiscountDetail = async (discountId) => {
 };
 
 const getAllProductsWithDiscount = async (filter, options) => {
-    const include = [
-        {
-            model: db.category,
-            attributes: ['id', 'name']
-        },
-        {
-            model: db.discountOffer,
-            attributes: [[
-                db.sequelize.literal(`
-                    CASE 
-                        WHEN CURDATE() BETWEEN DATE(start_date) AND DATE(expiration_date)
-                        AND discount_type = 'PRICE' THEN 
-                            CASE 
-                                WHEN discount_value >= product.originPrice THEN 0
-                                ELSE product.originPrice - discount_value
-                            END
-                        WHEN CURDATE() BETWEEN DATE(start_date) AND DATE(expiration_date)
-                        AND discount_type = 'PERCENTAGE' THEN product.originPrice - (product.originPrice * discount_value / 100)
-                        ELSE product.originPrice
-                    END
-                `),
-                'priceDiscounted'
-            ]],
-            where: { ...filter, isDeleted: false }
-        }
-    ];
+    const { limit, page } = options;
+    const offset = limit ? (page - 1) * limit : 0;
 
-    const selectedAttributes = [['id', 'productId'], ['name', 'productName'], ['price', 'originPrice']];
+    const priceDiscountCalculate = (active) => `
+        CASE 
+            WHEN ${active ? "CURDATE() BETWEEN DATE(start_date) AND DATE(expiration_date)" : "TRUE"}
+            AND discount_type = 'PRICE' THEN 
+                CASE 
+                    WHEN discount_value >= product.price THEN 0
+                    ELSE product.price - discount_value
+                END
+            WHEN ${active ? "CURDATE() BETWEEN DATE(start_date) AND DATE(expiration_date)" : "TRUE"}
+            AND discount_type = 'PERCENTAGE' THEN product.price - (product.price * discount_value / 100)
+            ELSE product.price
+        END
+    `;
 
-    const productDiscountOffers = await paginate(db.product, { isDeleted: false }, options, include, [], selectedAttributes);
-    const plainResults = productDiscountOffers.results.map(item => item.get({ plain: true }));
+    const products = await db.product.findAll({
+        where: { isDeleted: false },
+        include: [
+            {
+                model: db.category,
+                attributes: ['id', 'name']
+            },
+            {
+                model: db.discountOffer,
+                attributes: [
+                    [db.sequelize.literal(priceDiscountCalculate(false)), 'priceDiscounted'],
+                    [db.sequelize.literal(priceDiscountCalculate(true)), 'currentPrice']
+                ],
+                where: { ...filter, isDeleted: false }
+            }
+        ],
+        attributes: [['id', 'productId'], ['name', 'productName'], ['price', 'originPrice']]
+    });
 
-     const products = plainResults.map(product => ({
-        ...product,
-        categoryName: product.category.name,
-        categoryId: product.category.id,
-        priceDiscounted: product.discountOffers[0]?.priceDiscounted,
-        discountOffers: undefined,
-        category: undefined
-    }));
+    const transformedProducts = products.map(product => {
+        const productPlain = product.get({ plain: true });
+        return {
+            ...productPlain,
+            categoryName: productPlain.category.name,
+            categoryId: productPlain.category.id,
+            priceDiscounted: productPlain.discountOffers[0]?.priceDiscounted,
+            currentPrice: productPlain.discountOffers[0]?.currentPrice,
+            discountOffers: undefined,
+            category: undefined
+        };
+    });
+
+    const totalResults = transformedProducts.length;
+    const totalPages = Math.ceil(totalResults / limit);
+    const paginatedResults = transformedProducts.slice(offset, offset + limit);
 
     return {
-        ...productDiscountOffers,
-        results: products
+        results: paginatedResults,
+        limit,
+        page,
+        totalPages,
+        totalResults
+    };
+};
+
+const getAllProductsWithoutDiscount = async (discountId, options) => {
+    const { limit, page } = options;
+    const offset = limit ? (page - 1) * limit : 0;
+
+    const products = await db.product.findAll({
+        where: {
+            isDeleted: false,
+            [db.Sequelize.Op.not]: [
+                db.Sequelize.literal(`EXISTS (
+                    SELECT 1 
+                    FROM product_discount_offers pdo 
+                    WHERE pdo.product_id = product.id 
+                    AND pdo.discount_offer_id = ${discountId}
+                )`)
+            ]
+        },
+        include: [
+            {
+                model: db.category,
+                attributes: ['id', 'name']
+            }
+        ],
+        attributes: [['id', 'productId'], ['name', 'productName'], ['price', 'originPrice']],
+        limit,
+        offset
+    });
+
+    const totalResults = await db.product.count({
+        where: {
+            isDeleted: false,
+            [db.Sequelize.Op.not]: [
+                db.Sequelize.literal(`EXISTS (
+                    SELECT 1 
+                    FROM product_discount_offers pdo 
+                    WHERE pdo.product_id = product.id 
+                    AND pdo.discount_offer_id = ${discountId}
+                )`)
+            ]
+        }
+    });
+
+    const totalPages = Math.ceil(totalResults / limit);
+
+    const transformedProducts = products.map(product => {
+        const productPlain = product.get({ plain: true });
+        return {
+            ...productPlain,
+            categoryName: productPlain.category.name,
+            categoryId: productPlain.category.id,
+            category: undefined
+        };
+    });
+
+    return {
+        results: transformedProducts,
+        page,
+        limit,
+        totalPages,
+        totalResults
     };
 };
 
@@ -120,7 +196,37 @@ const editDiscount = async (discountId, payload) => {
     await db.discountOffer.update(payload, { where: { id: discountId } });
 };
 
-const applyDiscount = async (discountId, productIds, isConfirmed = false) => {
+const getAppliedDiscount = async (productId) => {
+
+    const product = await db.product.findOne({
+        where: { id: productId, isDeleted: false }
+    });
+
+    if (!product) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'Product not found');
+    }
+
+    const currentDate = new Date().setHours(0, 0, 0, 0);
+
+    const appliedDiscount = await db.productDiscountOffer.findOne({
+        where: {
+            productId,
+        },
+        include: {
+            model: db.discountOffer,
+            where: {
+                startDate: {[db.Sequelize.Op.lte]: currentDate},
+                expirationDate: {[db.Sequelize.Op.gte]: currentDate},
+                isDeleted: false,
+            },
+            attributes: ['id', 'discountValue', 'discountType', 'startDate', 'expirationDate']
+        }
+    });
+
+    return { isDiscounted: !!appliedDiscount, activeDiscount: appliedDiscount?.discountOffer};
+}
+
+const applyDiscount = async (discountId, productIds) => {
     const transaction = await db.sequelize.transaction();
 
     try {
@@ -166,10 +272,6 @@ const applyDiscount = async (discountId, productIds, isConfirmed = false) => {
             },
             transaction
         });
-
-        if (existingDiscount.length > 0 && !isConfirmed) {
-            throw new ApiError(httpStatus.CONFLICT, 'Discount already applied to one or more products.');
-        }
 
         if (existingDiscount.length > 0) {
             await db.productDiscountOffer.destroy({
@@ -225,7 +327,7 @@ const getAllDiscounts = async (filter, options) => {
     if (filter.keyword) {
         whereConditions.id = filter.keyword;
     }
-    
+
     if (filter.type) {
         whereConditions.discountType = filter.type;
     }
@@ -285,12 +387,46 @@ const getAllDiscounts = async (filter, options) => {
     };
 };
 
+const revokeDiscount = async (discountId, productId) => {
+
+    const productDiscount = await db.productDiscountOffer.findOne({
+        where: {
+            productId,
+            discountOfferId: discountId
+        }
+    });
+
+    if (!productDiscount) {
+        throw new ApiError(httpStatus.NOT_FOUND, `Discount not found, 
+                                                product not found, 
+                                                or discount not applied to the product`);
+    }
+
+    await db.productDiscountOffer.destroy({
+        where: {
+            productId,
+            discountOfferId: discountId
+        }
+    });
+};
+
+const getAppliedProducts = async (discountId, options, exclude = false) => {
+    if (!exclude) {
+        return await getAllProductsWithDiscount({ id: discountId }, options);
+    }
+
+    return await getAllProductsWithoutDiscount(discountId, options);
+}
+
 export default {
     getDiscountDetail,
     getAllProductsWithDiscount,
     createDiscount,
     editDiscount,
+    getAppliedDiscount,
     applyDiscount,
+    revokeDiscount,
+    getAppliedProducts,
     deleteDiscount,
     getAllDiscounts
 }

@@ -25,10 +25,20 @@ const editDiscount = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ message: 'Edit discount successfully' });
 });
 
+const getAppliedProducts = catchAsync(async (req, res) => {
+    const { discountId } = req.params;
+
+    const options = pick(req.query, ['limit', 'page']);
+    const { exclude } = req.query;
+
+    const products = await discountServices.getAppliedProducts(discountId, options, !!exclude);
+    res.status(httpStatus.OK).send(products);
+});
+
 const applyDiscount = catchAsync(async (req, res) => {
   const { discountId } = req.params;
-  const { productIds, isConfirmed } = req.body;
-  await discountServices.applyDiscount(discountId, productIds, isConfirmed);
+  const { productIds } = req.body;
+  await discountServices.applyDiscount(discountId, productIds);
   res.status(httpStatus.OK).send("Discount applied successfully");
 });
 
@@ -44,6 +54,13 @@ const getAllDiscounts = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(discounts);
 });
 
+const revokeDiscount = catchAsync(async (req, res) => {
+  const { discountId } = req.params;
+  const { productId } = req.body;
+  await discountServices.revokeDiscount(discountId, productId);
+  res.status(httpStatus.OK).send("Discount revoked successfully");
+});
+
 export default {
   getDiscountDetail,
   getAllProductsWithDiscount,
@@ -51,5 +68,7 @@ export default {
   editDiscount,
   applyDiscount,
   deleteDiscount,
-  getAllDiscounts
+  getAllDiscounts,
+  revokeDiscount,
+  getAppliedProducts
 };

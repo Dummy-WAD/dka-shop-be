@@ -1,6 +1,6 @@
 import httpStatus from 'http-status';
 import catchAsync from '../utils/catchAsync.js';
-import { productServices } from '../services/index.js';
+import {discountServices, productServices} from '../services/index.js';
 import pick from '../utils/pick.js';
 
 const getAllProducts = catchAsync(async (req, res) => {
@@ -50,6 +50,12 @@ const getBestSellerProducts = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(products);
 });
 
+const getAppliedDiscount = catchAsync(async (req, res) => {
+  const { productId } = req.params;
+  const appliedDiscount = await discountServices.getAppliedDiscount(productId);
+  res.status(httpStatus.OK).send(appliedDiscount);
+});
+
 export default {
   getAllProducts,
   createProduct,
@@ -58,5 +64,6 @@ export default {
   getProductDetail,
   getProductDetailForCustomer,
   getProductsForCustomer,
-  getBestSellerProducts
+  getBestSellerProducts,
+  getAppliedDiscount
 };

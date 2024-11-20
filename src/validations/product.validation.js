@@ -135,6 +135,12 @@ const getBestSellerProducts = {
     })
 };
 
+const getAppliedDiscount = {
+    params: Joi.object().keys({
+        productId: Joi.number().integer().positive().required()
+    })
+}
+
 export default {
     getProducts,
     createProduct,
@@ -142,5 +148,6 @@ export default {
     deleteProduct,
     getProductDetail,
     getProductsForCustomer,
-    getBestSellerProducts
+    getBestSellerProducts,
+    getAppliedDiscount
 }
