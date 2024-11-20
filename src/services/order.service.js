@@ -568,40 +568,36 @@ const updateOrderStatus = async (orderId, newStatus) => {
     // =================================================
     // TODO: Create notification on order status change
     // =================================================
-
-    if (newStatus === OrderStatus.PACKAGING){
-        await db.notification.create({
-            customerId: order.customerId,
-            title: 'Your order is accepted!',
-            content: `Your order ${order.id} is accepted and is being packaging`,
-            type: NotificationType.ORDER,
-            artifactId: order.id
-        });
-    } else if (newStatus === OrderStatus.DELIVERING){
-        await db.notification.create({
-            customerId: order.customerId,
-            title: 'Your order is packaged and is on the way!',
-            content: `Your order ${order.id} is on the way to you`,
-            type: NotificationType.ORDER,
-            artifactId: order.id
-        });
-    } else if (newStatus === OrderStatus.COMPLETED){
-        await db.notification.create({
-            customerId: order.customerId,
-            title: 'Your order has arrived!',
-            content: `Your order ${order.id} has arrived. Enjoy your purchase!`,
-            type: NotificationType.ORDER,
-            artifactId: order.id
-        });
-    } else if (newStatus === OrderStatus.CANCELLED){
-        await db.notification.create({
-            customerId: order.customerId,
-            title: 'Your order has been cancelled',
-            content: `Your order ${order.id} has been cancelled. Please contact us for more information`,
-            type: NotificationType.ORDER,
-            artifactId: order.id
-        });
+    let titleNotification = '';
+    let contentNotification = '';
+    switch (newStatus) {
+        case OrderStatus.PACKAGING:
+            titleNotification = 'Your order is accepted!';
+            contentNotification = `Your order ${order.id} is accepted and is being packaging`;
+            break;
+        case OrderStatus.DELIVERING:
+            titleNotification = 'Your order is packaged and is on the way!';
+            contentNotification = `Your order ${order.id} is on the way to you`;
+            break;
+        case OrderStatus.COMPLETED:
+            titleNotification = 'Your order has arrived!';
+            contentNotification = `Your order ${order.id} has arrived. Enjoy your purchase!`;
+            break;
+        case OrderStatus.CANCELLED:
+            titleNotification = 'Your order has been cancelled';
+            contentNotification = `Your order ${order.id} has been cancelled. Please contact us for more information`;
+            break;
+        default:
+            break;
     }
+
+    await db.notification.create({
+        customerId: order.customerId,
+        title: titleNotification,
+        content: contentNotification,
+        type: NotificationType.ORDER,
+        artifactId: order.id
+    });
     // =================================================
     //#endregion
 
