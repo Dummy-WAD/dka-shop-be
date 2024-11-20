@@ -10,7 +10,8 @@ export default (sequelize, DataTypes) => {
     },
     customerId: {
       type: DataTypes.INTEGER,
-      field: 'customer_id'
+      field: 'customer_id',
+      defaultValue: 1
     },
     title: DataTypes.STRING,
     content: DataTypes.STRING,
@@ -19,20 +20,23 @@ export default (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       field: 'artifact_id'
     },
-    seen: DataTypes.BOOLEAN,
+    seen: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
     createdAt: {
       type: DataTypes.DATE,
-      field: 'created_at'
+      field: 'createdAt'
     },
     updatedAt: {
       type: DataTypes.DATE,
-      field: 'updated_at'
+      field: 'updatedAt'
     }
   });
   notification.associate = (db) => {
     notification.belongsTo(db.user, {
-      foreignKey: 'customer_id',
-      as: 'customer'
+      foreignKey: 'customerId',
+      container: false
     });
   }
   return notification;

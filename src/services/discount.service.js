@@ -290,6 +290,7 @@ const applyDiscount = async (discountId, productIds) => {
             { transaction }
         );
 
+        //#region Notification
         // ============================================================================
         // TODO: Notify user have products applied discount successfully
         // ============================================================================
@@ -322,6 +323,7 @@ const applyDiscount = async (discountId, productIds) => {
         await db.notification.bulkCreate(notificationPayload, { transaction });
 
         // ============================================================================
+        //#endregion
 
         await transaction.commit();
     } catch (error) {
