@@ -11,6 +11,8 @@ export default (sequelize, DataTypes) => {
     user_id: DataTypes.STRING,
     title: DataTypes.STRING,
     content: DataTypes.STRING,
+    type: DataTypes.STRING,
+    artifact_id: DataTypes.STRING,
     seen: DataTypes.BOOLEAN,
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE
