@@ -1,7 +1,6 @@
 import db from "../models/models/index.js";
 import ApiError from "../utils/ApiError.js";
 import httpStatus from 'http-status';
-import paginate from './plugins/paginate.plugin.js';
 import { DiscountStatus } from "../utils/enums.js";
 
 const getDiscountDetail = async (discountId) => {
@@ -120,6 +119,7 @@ const getAllProductsWithoutDiscount = async (discountId, options) => {
                 attributes: ['id', 'name']
             }
         ],
+        attributes: [['id', 'productId'], ['name', 'productName'], ['price', 'originPrice']],
         limit,
         offset
     });
@@ -140,8 +140,18 @@ const getAllProductsWithoutDiscount = async (discountId, options) => {
 
     const totalPages = Math.ceil(totalResults / limit);
 
+    const transformedProducts = products.map(product => {
+        const productPlain = product.get({ plain: true });
+        return {
+            ...productPlain,
+            categoryName: productPlain.category.name,
+            categoryId: productPlain.category.id,
+            category: undefined
+        };
+    });
+
     return {
-        results: products,
+        results: transformedProducts,
         page,
         limit,
         totalPages,
