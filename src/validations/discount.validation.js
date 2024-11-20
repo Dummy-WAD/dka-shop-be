@@ -53,6 +53,19 @@ const deleteDiscount = {
   params: Joi.object().keys({
     discountId: Joi.number().integer().positive().required()
   })
+}
+
+const getAllDiscounts = {
+  query: Joi.object().keys({
+      keyword: Joi.string().trim().max(50).optional(),
+      type: Joi.string().optional().valid(...Object.values(DiscountType)),
+      sortBy: Joi.string().valid('id', 'discountValue', 'discountType', 'startDate', 'expirationDate', 'createdAt', 'updatedAt').default('createdAt'),
+      order: Joi.string().valid('asc', 'desc').default('desc'),
+      page: Joi.number().integer().min(1).default(1),
+      limit: Joi.number().integer().min(1).max(100).default(10),
+      startDate: Joi.date().iso().optional(),
+      expirationDate: Joi.date().iso().optional(),
+  })
 };
 
 export default {
@@ -60,5 +73,6 @@ export default {
   createDiscount,
   editDiscount,
   applyDiscount,
-  deleteDiscount
+  deleteDiscount,
+  getAllDiscounts
 }

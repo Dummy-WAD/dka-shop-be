@@ -41,4 +41,10 @@ router.delete(
   discountController.deleteDiscount
 );
 
+router.get(
+  "/",
+  validate(discountValidation.getAllDiscounts),
+  discountController.getAllDiscounts
+);
+
 export default router;
