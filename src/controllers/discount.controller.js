@@ -27,11 +27,12 @@ const editDiscount = catchAsync(async (req, res) => {
 
 const getAppliedProducts = catchAsync(async (req, res) => {
     const { discountId } = req.params;
+    const { keyword, exclude } = req.query;
 
+    const filter = { discountId, keyword };
     const options = pick(req.query, ['limit', 'page']);
-    const { exclude } = req.query;
 
-    const products = await discountServices.getAppliedProducts(discountId, options, !!exclude);
+    const products = await discountServices.getAppliedProducts(filter, options, !!exclude);
     res.status(httpStatus.OK).send(products);
 });
 
