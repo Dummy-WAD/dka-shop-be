@@ -1,7 +1,8 @@
 import db from "../models/models/index.js";
 import ApiError from "../utils/ApiError.js";
 import httpStatus from 'http-status';
-import { DiscountStatus, NotificationType} from "../utils/enums.js";
+import { DiscountStatus} from "../utils/enums.js";
+import notificationService from "./notification.service.js";
 
 const getDiscountDetail = async (discountId) => {
     const currentDate = new Date(new Date().getTime() + (7 * 60 * 60 * 1000));
@@ -289,43 +290,10 @@ const applyDiscount = async (discountId, productIds) => {
             })),
             { transaction }
         );
-
-        //#region Notification
-        // ============================================================================
-        // TODO: Notify user have products applied discount successfully
-        // ============================================================================
-        const query = `
-            SELECT 
-            c.id as cardId,
-            p.id as productId,
-            c.user_id as userId,
-            p.name as productName,
-            pv.color as productColor,
-            pv.size as productSize
-            FROM cart_items c
-            INNER JOIN product_variants pv ON pv.id = c.product_variant_id and pv.is_deleted = 0
-            INNER JOIN products p ON p.id = pv.product_id and p.is_deleted = 0
-            where p.id in (${productIds.join(',')})
-        `
-
-        const productsInCart = await db.sequelize.query(query, { type: db.Sequelize.QueryTypes.SELECT, transaction });
-
-        const notificationPayload = productsInCart.map(notify => ({
-            customerId: notify.userId,
-            title: `Discount applied`,
-            content: `Your ${notify.productName} - ${notify.productColor} - ${notify.productSize} is on sale for a limited time. Grab it now!`,
-            type: NotificationType.DISCOUNT,
-            artifactId: notify.productId,
-        }));
-
-        console.log(notificationPayload);
-
-        await db.notification.bulkCreate(notificationPayload, { transaction });
-
-        // ============================================================================
-        //#endregion
-
         await transaction.commit();
+
+        await notificationService.applyDiscountOnProductNotification(productIds);
+
     } catch (error) {
         await transaction.rollback();
         throw error;

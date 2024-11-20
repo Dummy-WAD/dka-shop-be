@@ -6,6 +6,7 @@ import {OrderStatus, UserRole, NotificationType} from '../utils/enums.js';
 import { Op } from 'sequelize';
 import productService from "./product.service.js";
 import addressService from "./address.service.js";
+import notificationService from './notification.service.js';
 
 const getOrdersByCustomer = async (filter, options, id) => {
     const customer = await db.user.findOne({
@@ -489,37 +490,10 @@ const placeOrder = async (customerId, orderItemsParams, deliveryServiceParams, a
             transaction
         });
 
-        // #region Notification
-        // =================================================
-        // TODO: Create notification on order creation
-        const customer = await db.user.findOne({
-            where: {
-                id: customerId
-            },
-        });
-
-        // Create notification for admin
-        await db.notification.create({
-            title: 'New order has been placed!',
-            content: `Order ID ${orderEntity.id} has been placed by ${customer.firstName} ${customer.lastName} | ${customer.email}`,
-            type: NotificationType.ORDER,
-            artifactId: orderEntity.id
-        });
-
-        // Create notification for customer
-        await db.notification.create({
-            customerId: customerId,
-            title: 'Your order is confirmed!',
-            content: `Thanks for your order, ${customer.firstName} ${customer.lastName}. We will prepare it immediately`,
-            type: NotificationType.ORDER,
-            artifactId: orderEntity.id
-        });
-
-        // =================================================
-        // #endregion
-
-
         await transaction.commit();
+
+        // Create notification
+        await notificationService.createOrderNotification(customerId, orderEntity);
 
         return {
             orderInformation: {
@@ -564,42 +538,8 @@ const updateOrderStatus = async (orderId, newStatus) => {
     await updateOrderStatusTime(order, newStatus);
     await order.save();
 
-    //#region Notification
-    // =================================================
-    // TODO: Create notification on order status change
-    // =================================================
-    let titleNotification = '';
-    let contentNotification = '';
-    switch (newStatus) {
-        case OrderStatus.PACKAGING:
-            titleNotification = 'Your order is accepted!';
-            contentNotification = `Your order ${order.id} is accepted and is being packaging`;
-            break;
-        case OrderStatus.DELIVERING:
-            titleNotification = 'Your order is packaged and is on the way!';
-            contentNotification = `Your order ${order.id} is on the way to you`;
-            break;
-        case OrderStatus.COMPLETED:
-            titleNotification = 'Your order has arrived!';
-            contentNotification = `Your order ${order.id} has arrived. Enjoy your purchase!`;
-            break;
-        case OrderStatus.CANCELLED:
-            titleNotification = 'Your order has been cancelled';
-            contentNotification = `Your order ${order.id} has been cancelled. Please contact us for more information`;
-            break;
-        default:
-            break;
-    }
-
-    await db.notification.create({
-        customerId: order.customerId,
-        title: titleNotification,
-        content: contentNotification,
-        type: NotificationType.ORDER,
-        artifactId: order.id
-    });
-    // =================================================
-    //#endregion
+    // Create notification
+    await notificationService.updateOrderStatusNotification(order, newStatus);
 
     return {
         orderId: order.id,
