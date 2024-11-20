@@ -54,3 +54,9 @@ export const DiscountStatus = Object.freeze({
     ACTIVE: 'ACTIVE',
     EXPIRED: 'EXPIRED'
 });
+
+export const NotificationType = Object.freeze({
+    ORDER: 'ORDER',
+    DISCOUNT: 'DISCOUNT',
+    SYSTEM: 'SYSTEM'
+});

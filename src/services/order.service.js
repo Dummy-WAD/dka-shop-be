@@ -2,7 +2,7 @@ import paginate from './plugins/paginate.plugin.js';
 import db from '../models/models/index.js';
 import httpStatus from 'http-status';
 import ApiError from '../utils/ApiError.js';
-import {OrderStatus, UserRole} from '../utils/enums.js';
+import {OrderStatus, UserRole, NotificationType} from '../utils/enums.js';
 import { Op } from 'sequelize';
 import productService from "./product.service.js";
 import addressService from "./address.service.js";
@@ -489,6 +489,36 @@ const placeOrder = async (customerId, orderItemsParams, deliveryServiceParams, a
             transaction
         });
 
+        // #region Notification
+        // =================================================
+        // TODO: Create notification on order creation
+        const customer = await db.user.findOne({
+            where: {
+                id: customerId
+            },
+        });
+
+        // Create notification for admin
+        await db.notification.create({
+            title: 'New order has been placed!',
+            content: `Order ID ${orderEntity.id} has been placed by ${customer.firstName} ${customer.lastName} | ${customer.email}`,
+            type: NotificationType.ORDER,
+            artifactId: orderEntity.id
+        });
+
+        // Create notification for customer
+        await db.notification.create({
+            customerId: customerId,
+            title: 'Your order is confirmed!',
+            content: `Thanks for your order, ${customer.firstName} ${customer.lastName}. We will prepare it immediately`,
+            type: NotificationType.ORDER,
+            artifactId: orderEntity.id
+        });
+
+        // =================================================
+        // #endregion
+
+
         await transaction.commit();
 
         return {
@@ -532,8 +562,49 @@ const updateOrderStatus = async (orderId, newStatus) => {
     order.status = newStatus;
     // Update order's status time
     await updateOrderStatusTime(order, newStatus);
-
     await order.save();
+
+    //#region Notification
+    // =================================================
+    // TODO: Create notification on order status change
+    // =================================================
+
+    if (newStatus === OrderStatus.PACKAGING){
+        await db.notification.create({
+            customerId: order.customerId,
+            title: 'Your order is accepted!',
+            content: `Your order ${order.id} is accepted and is being packaging`,
+            type: NotificationType.ORDER,
+            artifactId: order.id
+        });
+    } else if (newStatus === OrderStatus.DELIVERING){
+        await db.notification.create({
+            customerId: order.customerId,
+            title: 'Your order is packaged and is on the way!',
+            content: `Your order ${order.id} is on the way to you`,
+            type: NotificationType.ORDER,
+            artifactId: order.id
+        });
+    } else if (newStatus === OrderStatus.COMPLETED){
+        await db.notification.create({
+            customerId: order.customerId,
+            title: 'Your order has arrived!',
+            content: `Your order ${order.id} has arrived. Enjoy your purchase!`,
+            type: NotificationType.ORDER,
+            artifactId: order.id
+        });
+    } else if (newStatus === OrderStatus.CANCELLED){
+        await db.notification.create({
+            customerId: order.customerId,
+            title: 'Your order has been cancelled',
+            content: `Your order ${order.id} has been cancelled. Please contact us for more information`,
+            type: NotificationType.ORDER,
+            artifactId: order.id
+        });
+    }
+    // =================================================
+    //#endregion
+
     return {
         orderId: order.id,
         status: order.status,
