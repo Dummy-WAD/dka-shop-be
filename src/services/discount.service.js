@@ -313,7 +313,7 @@ const deleteDiscount = async (discountId) => {
     }
 
     // check if discount has started
-    if (discount.startDate <= new Date()) {
+    if (discount.startDate <= new Date() && discount.expirationDate >= new Date()) {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Cannot delete discount that has started');
     }
 
