@@ -292,7 +292,7 @@ const applyDiscount = async (discountId, productIds) => {
         );
         await transaction.commit();
 
-        await notificationService.applyDiscountOnProductNotification(productIds);
+        notificationService.applyDiscountOnProductNotification(productIds);
 
     } catch (error) {
         await transaction.rollback();

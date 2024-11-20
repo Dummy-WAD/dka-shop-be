@@ -493,7 +493,7 @@ const placeOrder = async (customerId, orderItemsParams, deliveryServiceParams, a
         await transaction.commit();
 
         // Create notification
-        await notificationService.createOrderNotification(customerId, orderEntity);
+        notificationService.createOrderNotification(customerId, orderEntity);
 
         return {
             orderInformation: {
@@ -539,7 +539,7 @@ const updateOrderStatus = async (orderId, newStatus) => {
     await order.save();
 
     // Create notification
-    await notificationService.updateOrderStatusNotification(order, newStatus);
+    notificationService.updateOrderStatusNotification(order, newStatus);
 
     return {
         orderId: order.id,
