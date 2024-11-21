@@ -5,6 +5,7 @@ import personalRoute from "./customer/personal.route.js";
 import addressRoute from "./customer/address.route.js";
 import cartRoute from "./customer/cart.route.js";
 import orderRoute from "./customer/order.route.js";
+import notificationRoute from "./customer/notification.route.js";
 import deliveryServiceRoute from "./customer/delivery-service.route.js";
 
 const router = express.Router();
@@ -16,5 +17,6 @@ router.use("/products", productRoute);
 router.use("/personal", personalRoute);
 router.use("/addresses", addressRoute);
 router.use("/delivery-services", deliveryServiceRoute);
+router.use("/notifications", notificationRoute);
 
 export default router;

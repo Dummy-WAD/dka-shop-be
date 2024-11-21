@@ -64,8 +64,8 @@ const getAllCartItems = async (filter, options) => {
         const discountOffer = discountOfferMap[productId]?.discountOffer ?? null;
         const priceDiscounted = discountOffer ?
             discountOffer.discountType === DiscountType.PRICE ?
-                price - discountOffer.discountValue :
-                price - (price * discountOffer.discountValue / 100) :
+                Math.max(0, price - discountOffer.discountValue) :
+                Math.max(0, price - (price * discountOffer.discountValue / 100)) :
             price;
 
         return {
@@ -195,8 +195,8 @@ const editCartItemQuantity = async (userId, { productVariantId, quantity, curren
 
         const priceDiscounted = discountOffers ?
             discountOffers.discountType === DiscountType.PRICE ?
-                price - discountOffers.discountValue :
-                price - (price * discountOffers.discountValue / 100) :
+                Math.max(0, price - discountOffers.discountValue) :
+                Math.max(0, price - (price * discountOffers.discountValue / 100)) :
             price;
 
         if (priceDiscounted !== currentPrice) throw new ApiError(httpStatus.BAD_REQUEST, 'The price of this product has been updated. Please check the new price')

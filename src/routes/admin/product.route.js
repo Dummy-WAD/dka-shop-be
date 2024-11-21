@@ -33,5 +33,11 @@ router.get(
     validate(productValidation.getProductDetail),
     productController.getProductDetail
   );
+
+router.get(
+    "/:productId/discounts",
+    validate(productValidation.getAppliedDiscount),
+    productController.getAppliedDiscount
+  );
   
 export default router;

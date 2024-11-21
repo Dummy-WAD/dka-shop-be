@@ -2,10 +2,11 @@ import paginate from './plugins/paginate.plugin.js';
 import db from '../models/models/index.js';
 import httpStatus from 'http-status';
 import ApiError from '../utils/ApiError.js';
-import {OrderStatus, UserRole} from '../utils/enums.js';
+import {OrderStatus, UserRole, NotificationType} from '../utils/enums.js';
 import { Op } from 'sequelize';
 import productService from "./product.service.js";
 import addressService from "./address.service.js";
+import notificationService from './notification.service.js';
 
 const getOrdersByCustomer = async (filter, options, id) => {
     const customer = await db.user.findOne({
@@ -491,6 +492,9 @@ const placeOrder = async (customerId, orderItemsParams, deliveryServiceParams, a
 
         await transaction.commit();
 
+        // Create notification
+        notificationService.createOrderNotification(customerId, orderEntity);
+
         return {
             orderInformation: {
                 orderId: orderEntity.id,
@@ -532,8 +536,11 @@ const updateOrderStatus = async (orderId, newStatus) => {
     order.status = newStatus;
     // Update order's status time
     await updateOrderStatusTime(order, newStatus);
-
     await order.save();
+
+    // Create notification
+    notificationService.updateOrderStatusNotification(order, newStatus);
+
     return {
         orderId: order.id,
         status: order.status,

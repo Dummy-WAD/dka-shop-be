@@ -8,17 +8,35 @@ export default (sequelize, DataTypes) => {
       primaryKey: true,
       type: DataTypes.INTEGER
     },
-    user_id: DataTypes.STRING,
+    customerId: {
+      type: DataTypes.INTEGER,
+      field: 'customer_id',
+      defaultValue: 1
+    },
     title: DataTypes.STRING,
     content: DataTypes.STRING,
-    seen: DataTypes.BOOLEAN,
-    createdAt: DataTypes.DATE,
-    updatedAt: DataTypes.DATE
+    type: DataTypes.STRING,
+    artifactId: {
+      type: DataTypes.INTEGER,
+      field: 'artifact_id'
+    },
+    seen: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      field: 'createdAt'
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      field: 'updatedAt'
+    }
   });
   notification.associate = (db) => {
     notification.belongsTo(db.user, {
-      foreignKey: 'user_id',
-      constraints: false
+      foreignKey: 'customerId',
+      container: false
     });
   }
   return notification;
