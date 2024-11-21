@@ -4,6 +4,7 @@ import httpStatus from 'http-status';
 import { DiscountStatus} from "../utils/enums.js";
 import notificationService from "./notification.service.js";
 import { format } from 'date-fns';
+import { convertTime } from "../utils/convert-time.js";
 
 const getDiscountDetail = async (discountId) => {
     const currentDateLocal = format(new Date(), 'yyyy-MM-dd');
@@ -169,33 +170,37 @@ const getAllProductsWithoutDiscount = async (filter, options) => {
     };
 };
 
-const createDiscount = async (payload) => {
+const createDiscount = async (payloadDiscount) => {
+    const payload = {
+        ...payloadDiscount,
+        startDate: convertTime(payloadDiscount?.startDate),
+        expirationDate: convertTime(payloadDiscount?.expirationDate)
+    };
 
-    console.log('======= DEBUG_payload_createDiscount', payload);
     const discountCreated = await db.discountOffer.create({ ...payload, isDeleted: false });
     return { discountId: discountCreated.id }
 };
 
-const editDiscount = async (discountId, payload) => {
+const editDiscount = async (discountId, payloadDiscount) => {
     const discount = await db.discountOffer.findOne({ where: { id: discountId, isDeleted: false } });
     if (!discount) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Discount not found');
     };
 
+    const payload = {
+        ...payloadDiscount,
+        startDate: convertTime(payloadDiscount?.startDate),
+        expirationDate: convertTime(payloadDiscount?.expirationDate)
+    };
+
     const startDate = payload?.startDate ?? discount.startDate;
     const expirationDate = payload?.expirationDate ?? discount.expirationDate;
     const currentDate = new Date().setHours(0, 0, 0, 0);
-    console.log('======= DEBUG_startDate_editDiscount', startDate);
-    console.log('======= DEBUG_expirationDate_editDiscount', expirationDate);
-    console.log('======= DEBUG_currentDate_editDiscount', currentDate);
 
     const isValidStartDate = (date) => new Date(date) >= currentDate;
     const isValidExpirationDate = (date) => new Date(date) >= currentDate;
     const isValidExpirationAfterStartDate = (startDate, expirationDate) => new Date(expirationDate) >= new Date(startDate);
     const normalizeDate = (date) => date ? new Date(date).toISOString().split('T')[0] : null;
-
-    console.log('======= DEBUG_normalizeDate(payload?.startDate)_editDiscount', normalizeDate(payload?.startDate));
-    console.log('======= DEBUG_normalizeDate(payload?.expirationDate)_editDiscount', normalizeDate(payload?.expirationDate));
 
     if (!(normalizeDate(payload?.startDate) == normalizeDate(discount.startDate) && normalizeDate(payload?.expirationDate) == normalizeDate(discount.expirationDate))) {
         if (payload?.startDate && !isValidStartDate(payload.startDate)) {
