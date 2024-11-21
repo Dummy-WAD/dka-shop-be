@@ -10,9 +10,19 @@ router.use(passport.authenticate("jwt", { session: false }));
 router.use(isCustomer);
 
 router.get(
-    '/',
-    validate(notificationValidation.getNotifications),
-    notificationController.getNotifications
-  );
+  '/',
+  validate(notificationValidation.getNotifications),
+  notificationController.getNotifications
+);
+
+router.get(
+  '/count',
+  notificationController.getNotificationsCount
+);
+
+router.patch(
+  '/mark-as-read',
+  notificationController.markNotificationsAsRead
+);
 
 export default router;
