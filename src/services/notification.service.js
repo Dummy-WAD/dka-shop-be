@@ -96,8 +96,38 @@ const applyDiscountOnProductNotification = async (productIds) => {
     await db.notification.bulkCreate(notificationPayload);
 };
 
+const getNotifications = async (filter, options) => {
+    const { limit, page } = options;
+
+    const queryOptions = {
+        where: {
+            customerId: filter.id,
+        },
+        order: [['createdAt', 'desc']],
+        limit: limit ? parseInt(limit, 10) : null,
+        offset: page ? (parseInt(page, 10) - 1) * (limit ? parseInt(limit, 10) : 10) : null,
+        attributes: {
+            exclude: ['customer_id'],
+        }
+    };
+
+    const notifications = await db.notification.findAll(queryOptions);
+    
+    const totalResults = await db.notification.count({ where: queryOptions.where });
+    const totalPages = limit ? Math.ceil(totalResults / limit) : 1;
+
+    return {
+        results: notifications,
+        page: page ? parseInt(page, 10) : 1,
+        limit: limit ? parseInt(limit, 10) : totalResults,
+        totalPages,
+        totalResults,
+    };
+}
+
 export default {
     createOrderNotification,
     updateOrderStatusNotification,
-    applyDiscountOnProductNotification
+    applyDiscountOnProductNotification,
+    getNotifications
 }
