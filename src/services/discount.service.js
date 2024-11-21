@@ -3,9 +3,10 @@ import ApiError from "../utils/ApiError.js";
 import httpStatus from 'http-status';
 import { DiscountStatus} from "../utils/enums.js";
 import notificationService from "./notification.service.js";
+import { format } from 'date-fns';
 
 const getDiscountDetail = async (discountId) => {
-    const currentDate = new Date(new Date().getTime() + (7 * 60 * 60 * 1000));
+    const currentDateLocal = format(new Date(), 'yyyy-MM-dd');
 
     const discount = await db.discountOffer.findOne({
         where: { id: discountId, isDeleted: false },
@@ -15,8 +16,8 @@ const getDiscountDetail = async (discountId) => {
                 [
                     db.Sequelize.literal(`
                         CASE
-                            WHEN start_date > '${currentDate.toISOString()}' THEN '${DiscountStatus.UPCOMING}'
-                            WHEN start_date <= '${currentDate.toISOString()}' AND expiration_date >= '${currentDate.toISOString()}' THEN '${DiscountStatus.ACTIVE}'
+                            WHEN DATE(start_date) > DATE('${currentDateLocal}') THEN '${DiscountStatus.UPCOMING}'
+                            WHEN DATE(start_date) <= DATE('${currentDateLocal}') AND DATE(expiration_date) >= DATE('${currentDateLocal}') THEN '${DiscountStatus.ACTIVE}'
                             ELSE '${DiscountStatus.EXPIRED}'
                         END
                     `),
@@ -169,6 +170,8 @@ const getAllProductsWithoutDiscount = async (filter, options) => {
 };
 
 const createDiscount = async (payload) => {
+
+    console.log('======= DEBUG_payload_createDiscount', payload);
     const discountCreated = await db.discountOffer.create({ ...payload, isDeleted: false });
     return { discountId: discountCreated.id }
 };
@@ -182,11 +185,17 @@ const editDiscount = async (discountId, payload) => {
     const startDate = payload?.startDate ?? discount.startDate;
     const expirationDate = payload?.expirationDate ?? discount.expirationDate;
     const currentDate = new Date().setHours(0, 0, 0, 0);
+    console.log('======= DEBUG_startDate_editDiscount', startDate);
+    console.log('======= DEBUG_expirationDate_editDiscount', expirationDate);
+    console.log('======= DEBUG_currentDate_editDiscount', currentDate);
 
     const isValidStartDate = (date) => new Date(date) >= currentDate;
     const isValidExpirationDate = (date) => new Date(date) >= currentDate;
     const isValidExpirationAfterStartDate = (startDate, expirationDate) => new Date(expirationDate) >= new Date(startDate);
     const normalizeDate = (date) => date ? new Date(date).toISOString().split('T')[0] : null;
+
+    console.log('======= DEBUG_normalizeDate(payload?.startDate)_editDiscount', normalizeDate(payload?.startDate));
+    console.log('======= DEBUG_normalizeDate(payload?.expirationDate)_editDiscount', normalizeDate(payload?.expirationDate));
 
     if (!(normalizeDate(payload?.startDate) == normalizeDate(discount.startDate) && normalizeDate(payload?.expirationDate) == normalizeDate(discount.expirationDate))) {
         if (payload?.startDate && !isValidStartDate(payload.startDate)) {
@@ -336,7 +345,7 @@ const deleteDiscount = async (discountId) => {
 };
 
 const getAllDiscounts = async (filter, options) => {
-    const currentDate = new Date(new Date().getTime() + (7 * 60 * 60 * 1000));
+    const currentDateLocal = format(new Date(), 'yyyy-MM-dd');
 
     const whereConditions = {
         isDeleted: false,
@@ -378,8 +387,8 @@ const getAllDiscounts = async (filter, options) => {
                 [
                     db.Sequelize.literal(`
                         CASE
-                            WHEN start_date > '${currentDate.toISOString()}' THEN '${DiscountStatus.UPCOMING}'
-                            WHEN start_date <= '${currentDate.toISOString()}' AND expiration_date >= '${currentDate.toISOString()}' THEN '${DiscountStatus.ACTIVE}'
+                            WHEN DATE(start_date) > DATE('${currentDateLocal}') THEN '${DiscountStatus.UPCOMING}'
+                            WHEN DATE(start_date) <= DATE('${currentDateLocal}') AND DATE(expiration_date) >= DATE('${currentDateLocal}') THEN '${DiscountStatus.ACTIVE}'
                             ELSE '${DiscountStatus.EXPIRED}'
                         END
                     `),

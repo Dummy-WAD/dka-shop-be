@@ -24,6 +24,7 @@ const phoneNumber = (value, helpers) => {
 const validateStartDate = (value, helpers) => {
   const currentDate = new Date();
   currentDate.setHours(0, 0, 0, 0);
+  console.log('======= DEBUG_currentDate_validation', currentDate);
 
   if (new Date(value) < currentDate) {
     return helpers.message('Start Date must be greater than or equal to the Current Date');
@@ -34,6 +35,7 @@ const validateStartDate = (value, helpers) => {
 
 const validateExpirationDate = (value, helpers) => {
   const startDate = helpers.state.ancestors[0]?.startDate;
+  console.log('======= DEBUG_startDate_validation', startDate);
   
   if (startDate && new Date(value) < new Date(startDate)) {
     return helpers.message('Expiration Date must be greater than or equal to the Start Date');
