@@ -48,3 +48,15 @@ export const OrderType = Object.freeze({
     DESC: 'DESC',
     ASC: 'ASC'
 });
+
+export const DiscountStatus = Object.freeze({
+    UPCOMING: 'UPCOMING',
+    ACTIVE: 'ACTIVE',
+    EXPIRED: 'EXPIRED'
+});
+
+export const NotificationType = Object.freeze({
+    ORDER: 'ORDER',
+    DISCOUNT: 'DISCOUNT',
+    SYSTEM: 'SYSTEM'
+});

@@ -41,7 +41,7 @@ const generatePeriods = (startPeriod, unit, limit) => {
 };
 
 
-export const generatePeriodForType = (type, limit) => {
+export const generatePeriodForType = (type, limit, dateField) => {
     let dateFormat;
     let interval;
     let allPeriods = [];
@@ -54,25 +54,25 @@ export const generatePeriodForType = (type, limit) => {
 
     switch (type) {
         case StatisticsPeriod.YEAR:
-            dateFormat = "YEAR(created_at)";
+            dateFormat = `YEAR(${dateField})`;
             interval = 'year';
             allPeriods = generatePeriods(`${currentYear}`, 'year', limit);
             break;
     
         case StatisticsPeriod.QUARTER:
-            dateFormat = "CONCAT(YEAR(created_at), '-', LPAD(QUARTER(created_at), 2, '0'))";
+            dateFormat = `CONCAT(YEAR(${dateField}), '-', LPAD(QUARTER(${dateField}), 2, '0'))`;
             interval = 'quarter';
             allPeriods = allPeriods.concat(generatePeriods(`${currentYear}-${String(currentQuarter).padStart(2, '0')}`, 'quarter', limit));
             break;
     
         case StatisticsPeriod.MONTH:
-            dateFormat = "DATE_FORMAT(created_at, '%Y-%m')";
+            dateFormat = `DATE_FORMAT(${dateField}, '%Y-%m')`;
             interval = 'month';
             allPeriods = allPeriods.concat(generatePeriods(`${currentYear}-${String(currentMonth).padStart(2, '0')}`, 'month', limit));
             break;
     
         case StatisticsPeriod.WEEK:
-            dateFormat = "CONCAT(YEAR(created_at), '-', LPAD(WEEK(created_at, 1), 2, '0'))";
+            dateFormat = `CONCAT(YEAR(${dateField}), '-', LPAD(WEEK(${dateField}, 1), 2, '0'))`;
             interval = 'week';
             allPeriods = generatePeriods(`${currentYear}-${String(currentWeek).padStart(2, '0')}`, 'week', limit);
             break;

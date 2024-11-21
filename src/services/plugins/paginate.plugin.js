@@ -19,7 +19,11 @@ const paginate = async function (model, filter = {}, options = {}, include = [],
         }));
       } else if (key === 'name') {
         whereClause[key] = { [Op.like]: `%${filter[key].trim()}%` };
-      } else {
+      }
+      else if (key === 'exclude') {
+        whereClause.id = { [Op.notIn]: filter[key] };
+      }
+      else {
         whereClause[key] = filter[key].toString().trim();
       }
     });
