@@ -10,6 +10,18 @@ const getNotifications = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(notifications);
 });
 
+const getNotificationsCount = catchAsync(async (req, res) => {
+  const notificationsCount = await notificationService.getNotificationsCount(req.user.id);
+  res.status(httpStatus.OK).send({ notificationsCount });
+});
+
+const markNotificationsAsRead = catchAsync(async (req, res) => {
+  await notificationService.markNotificationsAsRead(req.user.id);
+  res.status(httpStatus.OK).send({ message: 'Mark notifications as read successfully.' });
+});
+
 export default {
-  getNotifications
+  getNotifications,
+  getNotificationsCount,
+  markNotificationsAsRead
 };

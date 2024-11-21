@@ -123,11 +123,27 @@ const getNotifications = async (filter, options) => {
         totalPages,
         totalResults,
     };
-}
+};
+
+const getNotificationsCount = async (userId) => {
+    return await db.notification.count({
+        where: { customerId: userId, seen: false }
+    });
+};
+
+const markNotificationsAsRead = async (userId) => {
+    await db.notification.update(
+        { seen: true },
+        { where: { customerId: userId, seen: false } }
+    );
+};
+
 
 export default {
     createOrderNotification,
     updateOrderStatusNotification,
     applyDiscountOnProductNotification,
-    getNotifications
+    getNotifications,
+    getNotificationsCount,
+    markNotificationsAsRead
 }
