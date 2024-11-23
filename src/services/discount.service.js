@@ -202,17 +202,24 @@ const editDiscount = async (discountId, payloadDiscount) => {
     const isValidExpirationAfterStartDate = (startDate, expirationDate) => new Date(expirationDate) >= new Date(startDate);
     const normalizeDate = (date) => date ? new Date(date).toISOString().split('T')[0] : null;
 
-    if (!(normalizeDate(payload?.startDate) == normalizeDate(discount.startDate) && normalizeDate(payload?.expirationDate) == normalizeDate(discount.expirationDate))) {
+    if (!isValidExpirationDate(discount.expirationDate)) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Cannot update the expired discount');
+    };
+
+    const isStartDateChanged = normalizeDate(payload?.startDate) !== normalizeDate(discount.startDate);
+    const isExpirationDateChanged = normalizeDate(payload?.expirationDate) !== normalizeDate(discount.expirationDate);
+
+    if (isStartDateChanged || isExpirationDateChanged) {
         if (payload?.startDate && !isValidStartDate(payload.startDate)) {
-            throw new ApiError(httpStatus.BAD_REQUEST, 'Start Date must be greater than or equal to Current Date');
+            throw new ApiError(httpStatus.BAD_REQUEST, 'Start date must be greater than or equal to current date');
         }
 
         if (payload?.expirationDate && !isValidExpirationDate(payload.expirationDate)) {
-            throw new ApiError(httpStatus.BAD_REQUEST, 'Expiration Date must be greater than or equal to Current Date');
+            throw new ApiError(httpStatus.BAD_REQUEST, 'Expiration date must be greater than or equal to current date');
         }
 
         if (!isValidExpirationAfterStartDate(startDate, expirationDate)) {
-            throw new ApiError(httpStatus.BAD_REQUEST, 'Expiration Date must be greater than or equal to Start Date');
+            throw new ApiError(httpStatus.BAD_REQUEST, 'Expiration date must be greater than or equal to start date');
         }
     };
 
