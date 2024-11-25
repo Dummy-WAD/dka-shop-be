@@ -33,11 +33,11 @@ export default (sequelize, DataTypes) => {
     });
     productVariant.belongsToMany(db.order, { 
       through: db.orderItem,
-			foreignKey: 'product_variant_id',
+      foreignKey: 'productVariantId',
       constraints: false
     });
     productVariant.hasMany(db.cartItem, { 
-			foreignKey: 'product_variant_id',
+      foreignKey: 'productVariantId',
       constraints: false
     });
   };
