@@ -28,7 +28,7 @@ const validateStartDate = (value, helpers) => {
   const startDate = convertTime(value);
   
   if (startDate < currentDate) {
-    return helpers.message('Start Date must be greater than or equal to the Current Date');
+    return helpers.message('Start date must be greater than or equal to the current date');
   }
   return value;
 };
@@ -39,7 +39,7 @@ const validateExpirationDate = (value, helpers) => {
   const expirationDate = convertTime(value);
   
   if (expirationDate < startDate) {
-    return helpers.message('Expiration Date must be greater than or equal to the Start Date');
+    return helpers.message('Expiration date must be greater than or equal to the start date');
   }
   return value;
 };
