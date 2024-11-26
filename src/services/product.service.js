@@ -24,7 +24,11 @@ const DISCOUNTED_PRICE_CALCULATION = {
             'priceDiscounted'
         ]
     ],
-    where: { isDeleted: false }
+    where: { 
+        isDeleted: false,
+        start_date: { [Op.lte]: db.sequelize.fn('CURDATE') },
+        expiration_date: { [Op.gte]: db.sequelize.fn('CURDATE') }
+    },
 };
 
 const getAllProductsByCondition = async (filter, options) => {
