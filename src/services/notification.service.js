@@ -97,33 +97,41 @@ const applyDiscountOnProductNotification = async (productIds) => {
 };
 
 const getNotifications = async (filter, options) => {
-    const { limit, page } = options;
+    const { after, limit } = options;
 
     const queryOptions = {
         where: {
             customerId: filter.id,
+            ...(after && {
+                createdAt: {
+                    [db.Sequelize.Op.lt]: new Date(after),
+                },
+            }),
         },
         order: [['createdAt', 'desc']],
-        limit: limit ? parseInt(limit, 10) : null,
-        offset: page ? (parseInt(page, 10) - 1) * (limit ? parseInt(limit, 10) : 10) : null,
+        limit: limit + 1,
         attributes: {
             exclude: ['customer_id'],
-        }
+        },
     };
 
     const notifications = await db.notification.findAll(queryOptions);
-    
-    const totalResults = await db.notification.count({ where: queryOptions.where });
-    const totalPages = limit ? Math.ceil(totalResults / limit) : 1;
+
+    const isLast = notifications.length <= limit;
+
+    const results = notifications.slice(0, limit);
+
+    const nextCursor =
+        results.length > 0
+            ? results[results.length - 1].createdAt
+            : null;
 
     return {
-        results: notifications,
-        page: page ? parseInt(page, 10) : 1,
-        limit: limit ? parseInt(limit, 10) : totalResults,
-        totalPages,
-        totalResults,
+        results,
+        nextCursor: nextCursor ? nextCursor.toISOString() : null,
+        isLast,
     };
-};
+}
 
 const getNotificationsCount = async (userId) => {
     return await db.notification.count({
