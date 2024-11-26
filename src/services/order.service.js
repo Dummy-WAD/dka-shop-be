@@ -2,7 +2,7 @@ import paginate from './plugins/paginate.plugin.js';
 import db from '../models/models/index.js';
 import httpStatus from 'http-status';
 import ApiError from '../utils/ApiError.js';
-import {OrderStatus, UserRole, NotificationType} from '../utils/enums.js';
+import {OrderStatus, UserRole} from '../utils/enums.js';
 import { Op } from 'sequelize';
 import productService from "./product.service.js";
 import addressService from "./address.service.js";
@@ -439,7 +439,7 @@ const placeOrder = async (customerId, orderItemsParams, deliveryServiceParams, a
             variant.quantity -= itemParams.quantity;
 
             return {
-                product_variant_id: productVariantId,
+                productVariantId,
                 productName: variant.product.name,
                 size: variant.size,
                 color: variant.color,
@@ -477,7 +477,7 @@ const placeOrder = async (customerId, orderItemsParams, deliveryServiceParams, a
             status: OrderStatus.PENDING,
         }, { transaction });
 
-        orderItems = orderItems.map(item => ({ ...item, order_id: orderEntity.id }));
+        orderItems = orderItems.map(item => ({ ...item, orderId: orderEntity.id }));
         await db.orderItem.bulkCreate(orderItems, { transaction });
 
         await Promise.all(productVariantEntities.map(entity => entity.save({ transaction })));
@@ -532,6 +532,9 @@ const updateOrderStatus = async (orderId, newStatus) => {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Order cannot be updated to ' + newStatus);
     }
 
+    if (newStatus === OrderStatus.CANCELLED) {
+        await restoreStockQuantity(order);
+    }
     // Update order's status
     order.status = newStatus;
     // Update order's status time
@@ -565,6 +568,24 @@ const updateOrderStatusTime = async (order, newStatus) => {
         default:
             break;
     }
+}
+
+const restoreStockQuantity = async (order) => {
+    const orderItems = await db.orderItem.findAll({
+        where: {
+            orderId: order.id
+        },
+        include: {
+            model: db.productVariant,
+            attributes: ['id', 'quantity']
+        }
+    });
+
+    await Promise.all(orderItems.map(async item => {
+        const variant = item.productVariant;
+        variant.quantity += item.quantity;
+        await variant.save();
+    }));
 }
 
 export default {

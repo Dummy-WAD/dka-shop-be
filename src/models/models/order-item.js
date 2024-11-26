@@ -8,8 +8,14 @@ export default (sequelize, DataTypes) => {
       primaryKey: true,
       type: DataTypes.INTEGER
     },
-    order_id: DataTypes.INTEGER,
-    product_variant_id: DataTypes.INTEGER,
+    orderId: {
+      type: DataTypes.INTEGER,
+      field: 'order_id'
+    },
+    productVariantId: {
+      type: DataTypes.INTEGER,
+      field: 'product_variant_id'
+    },
     productName: {
       type: DataTypes.STRING,
       field: 'product_name'
@@ -32,11 +38,11 @@ export default (sequelize, DataTypes) => {
   });
   orderItem.associate = (db) => {
     orderItem.belongsTo(db.order, {
-      foreignKey: 'order_id',
+      foreignKey: 'orderId',
       constraints: false
     });
     orderItem.belongsTo(db.productVariant, {
-      foreignKey: 'product_variant_id',
+      foreignKey: 'productVariantId',
       constraints: false
     })
   }

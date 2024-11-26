@@ -28,7 +28,7 @@ export default (sequelize, DataTypes) => {
     });
 
     cartItem.belongsTo(db.productVariant, {
-      foreignKey: 'product_variant_id',
+      foreignKey: 'productVariantId',
       constraints: false
     });
   }
