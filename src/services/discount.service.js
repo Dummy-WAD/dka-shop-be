@@ -4,7 +4,6 @@ import httpStatus from 'http-status';
 import { DiscountStatus} from "../utils/enums.js";
 import notificationService from "./notification.service.js";
 import { format } from 'date-fns';
-import { convertTime } from "../utils/convert-time.js";
 
 const getDiscountDetail = async (discountId) => {
     const currentDateLocal = format(new Date(), 'yyyy-MM-dd');
@@ -170,27 +169,15 @@ const getAllProductsWithoutDiscount = async (filter, options) => {
     };
 };
 
-const createDiscount = async (payloadDiscount) => {
-    const payload = {
-        ...payloadDiscount,
-        startDate: convertTime(payloadDiscount?.startDate),
-        expirationDate: convertTime(payloadDiscount?.expirationDate)
-    };
-
+const createDiscount = async (payload) => {
     const discountCreated = await db.discountOffer.create({ ...payload, isDeleted: false });
     return { discountId: discountCreated.id }
 };
 
-const editDiscount = async (discountId, payloadDiscount) => {
+const editDiscount = async (discountId, payload) => {
     const discount = await db.discountOffer.findOne({ where: { id: discountId, isDeleted: false } });
     if (!discount) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Discount not found');
-    };
-
-    const payload = {
-        ...payloadDiscount,
-        startDate: convertTime(payloadDiscount?.startDate),
-        expirationDate: convertTime(payloadDiscount?.expirationDate)
     };
 
     const startDate = payload?.startDate ?? discount.startDate;
