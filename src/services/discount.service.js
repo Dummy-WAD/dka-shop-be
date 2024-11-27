@@ -185,8 +185,8 @@ const editDiscount = async (discountId, payload) => {
     const expirationDate = payload?.expirationDate ?? discount.expirationDate;
     const currentDate = new Date().setHours(0, 0, 0, 0);
 
-    const isValidStartDate = (date) => convertTime(date) >= convertTime(currentDate);
-    const isValidExpirationDate = (date) => convertTime(date) >= convertTime(currentDate);
+    const isValidStartDate = (date) => convertTime(date) >= currentDate;
+    const isValidExpirationDate = (date) => convertTime(date) >= currentDate;
     const isValidExpirationAfterStartDate = (startDate, expirationDate) => convertTime(expirationDate) >= convertTime(startDate);
     const normalizeDate = (date) => date ? new Date(date).toISOString().split('T')[0] : null;
 
