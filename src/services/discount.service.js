@@ -4,6 +4,7 @@ import httpStatus from 'http-status';
 import { DiscountStatus} from "../utils/enums.js";
 import notificationService from "./notification.service.js";
 import { format } from 'date-fns';
+import { convertTime } from "../utils/convert-time.js";
 
 const getDiscountDetail = async (discountId) => {
     const currentDateLocal = format(new Date(), 'yyyy-MM-dd');
@@ -184,9 +185,9 @@ const editDiscount = async (discountId, payload) => {
     const expirationDate = payload?.expirationDate ?? discount.expirationDate;
     const currentDate = new Date().setHours(0, 0, 0, 0);
 
-    const isValidStartDate = (date) => new Date(date) >= currentDate;
-    const isValidExpirationDate = (date) => new Date(date) >= currentDate;
-    const isValidExpirationAfterStartDate = (startDate, expirationDate) => new Date(expirationDate) >= new Date(startDate);
+    const isValidStartDate = (date) => convertTime(date) >= convertTime(currentDate);
+    const isValidExpirationDate = (date) => convertTime(date) >= convertTime(currentDate);
+    const isValidExpirationAfterStartDate = (startDate, expirationDate) => convertTime(expirationDate) >= convertTime(startDate);
     const normalizeDate = (date) => date ? new Date(date).toISOString().split('T')[0] : null;
 
     if (!isValidExpirationDate(discount.expirationDate)) {
