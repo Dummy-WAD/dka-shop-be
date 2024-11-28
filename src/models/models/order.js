@@ -67,7 +67,7 @@ export default (sequelize, DataTypes) => {
     });
     order.belongsToMany(db.productVariant, { 
       through: db.orderItem,
-      foreignKey: 'order_id',
+      foreignKey: 'orderId',
       constraints: false
     });
   }

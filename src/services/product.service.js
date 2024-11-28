@@ -5,6 +5,32 @@ import httpStatus from 'http-status';
 import { DeleteStatus } from '../utils/enums.js';
 import { Op } from 'sequelize';
 
+const DISCOUNTED_PRICE_CALCULATION = {
+    model: db.discountOffer,
+    required: false,
+    attributes: [
+        [
+            db.sequelize.literal(`CASE 
+                WHEN CURDATE() BETWEEN DATE(discountOffers.start_date) AND DATE(discountOffers.expiration_date)
+                AND discountOffers.discount_type = 'PRICE' THEN
+                    CASE
+                        WHEN discountOffers.discount_value >= product.price THEN 0
+                        ELSE product.price - discountOffers.discount_value
+                    END
+                WHEN CURDATE() BETWEEN DATE(discountOffers.start_date) AND DATE(discountOffers.expiration_date)
+                AND discountOffers.discount_type = 'PERCENTAGE' THEN product.price - (product.price * discountOffers.discount_value / 100)
+                ELSE product.price
+            END`),
+            'priceDiscounted'
+        ]
+    ],
+    where: { 
+        isDeleted: false,
+        start_date: { [Op.lte]: db.sequelize.fn('CURDATE') },
+        expiration_date: { [Op.gte]: db.sequelize.fn('CURDATE') }
+    },
+};
+
 const getAllProductsByCondition = async (filter, options) => {
     const include = [
         {
@@ -20,9 +46,24 @@ const getAllProductsByCondition = async (filter, options) => {
             where: {
                 is_primary: true,
             },
-        }
+        },
+        { ...DISCOUNTED_PRICE_CALCULATION }
     ];
-    return await paginate(db.product, filter, options, include);
+    const products = await paginate(db.product, filter, options, include);
+
+    const results = products.results.map(product => {
+        const productData = product.get({ plain: true });
+        return {
+            ...productData,
+            currentPrice: productData.discountOffers?.[0]?.priceDiscounted ?? productData.price,
+            discountOffers: undefined
+        };
+    });
+    
+    return {
+        ...products,
+        results,
+    };
 };
 
 const createProduct = async (productBody) => {
@@ -252,18 +293,22 @@ const getProductDetail = async (productId) => {
                 where: { isDeleted: false },
                 attributes: ['id', 'size', 'color', 'quantity', 'isDeleted'],
                 required: false
-            }
-        ],
+            },
+            { ...DISCOUNTED_PRICE_CALCULATION }
+        ]
     });
 
     if (!productDetail) throw new ApiError(httpStatus.NOT_FOUND, 'Product not found!');
-
-    const { productImages, isDeleted, categoryId, ...basicInfo } = productDetail.get();
+    
+    const productPlain = productDetail.get({ plain: true });
+    const { productImages, isDeleted, categoryId, discountOffers, ...basicInfo } = productPlain;
+    const currentPrice = productPlain.discountOffers[0]?.priceDiscounted ?? basicInfo.price;
 
     const { primaryImage, otherImages } = separateProductImages(productImages);
 
     return {
         ...basicInfo,
+        currentPrice,
         primaryImage,
         otherImages
     };
@@ -291,34 +336,7 @@ const getProductDetailForCustomer = async (productId) => {
                 attributes: ['id', 'size', 'color', 'quantity'],
                 required: false
             },
-            {
-                model: db.discountOffer,
-                required: false,
-                attributes: {
-                    include: [
-                        [
-                            db.sequelize.literal(`CASE 
-                                WHEN CURDATE() BETWEEN DATE(discountOffers.start_date) AND DATE(discountOffers.expiration_date)
-                                AND discountOffers.discount_type = 'PRICE' THEN
-                                    CASE
-                                        WHEN discountOffers.discount_value >= product.price THEN 0
-                                        ELSE product.price - discountOffers.discount_value
-                                    END
-                                WHEN CURDATE() BETWEEN DATE(discountOffers.start_date) AND DATE(discountOffers.expiration_date)
-                                AND discountOffers.discount_type = 'PERCENTAGE' THEN product.price - (product.price * discountOffers.discount_value / 100)
-                                ELSE product.price
-                            END`),
-                            'priceDiscounted'
-                        ]
-                    ],
-                    exclude: ['createdAt', 'updatedAt', 'isDeleted', 'startDate', 'expirationDate']
-                },
-                through: {
-                    model: db.productDiscountOffer,
-                    attributes: []
-                },
-                where: { isDeleted: false }
-            }
+            { ...DISCOUNTED_PRICE_CALCULATION }
         ],
     });
 
@@ -385,31 +403,7 @@ const getProductsForCustomer = async (filter, search, options) => {
                 where: { isPrimary: true },
                 required: false
             },
-            {
-                model: db.discountOffer,
-                through: { attributes: [] },
-                required: false,
-                attributes: {
-                    include: [
-                        [
-                            db.sequelize.literal(`CASE 
-                                WHEN CURDATE() BETWEEN DATE(discountOffers.start_date) AND DATE(discountOffers.expiration_date)
-                                AND discountOffers.discount_type = 'PRICE' THEN
-                                    CASE
-                                        WHEN discountOffers.discount_value >= product.price THEN 0
-                                        ELSE product.price - discountOffers.discount_value
-                                    END
-                                WHEN CURDATE() BETWEEN DATE(discountOffers.start_date) AND DATE(discountOffers.expiration_date)
-                                AND discountOffers.discount_type = 'PERCENTAGE' THEN product.price - (product.price * discountOffers.discount_value / 100)
-                                ELSE product.price
-                            END`),
-                            'priceDiscounted'
-                        ]
-                    ],
-                    exclude: ['createdAt', 'updatedAt', 'isDeleted', 'startDate', 'expirationDate']
-                },
-                where: { isDeleted: false }
-            }
+            { ...DISCOUNTED_PRICE_CALCULATION }
         ]
     });
 
@@ -466,31 +460,7 @@ async function getBestSellerProducts(bestSellerRequest) {
                 where: { isPrimary: true },
                 required: false
             },
-            {
-                model: db.discountOffer,
-                through: { attributes: [] },
-                required: false,
-                attributes: {
-                    include: [
-                        [
-                            db.sequelize.literal(`CASE 
-                                WHEN CURDATE() BETWEEN DATE(discountOffers.start_date) AND DATE(discountOffers.expiration_date)
-                                AND discountOffers.discount_type = 'PRICE' THEN
-                                    CASE
-                                        WHEN discountOffers.discount_value >= product.price THEN 0
-                                        ELSE product.price - discountOffers.discount_value
-                                    END
-                                WHEN CURDATE() BETWEEN DATE(discountOffers.start_date) AND DATE(discountOffers.expiration_date)
-                                AND discountOffers.discount_type = 'PERCENTAGE' THEN product.price - (product.price * discountOffers.discount_value / 100)
-                                ELSE product.price
-                            END`),
-                            'priceDiscounted'
-                        ]
-                    ],
-                    exclude: ['createdAt', 'updatedAt', 'isDeleted', 'startDate', 'expirationDate']
-                },
-                where: { isDeleted: false }
-            }
+            { ...DISCOUNTED_PRICE_CALCULATION }
         ],
         where: { isDeleted: false, ...(categoryId ? { categoryId } : {}) },
         order: [[db.sequelize.literal(`
@@ -518,33 +488,7 @@ const getDiscountedPriceOfProducts = async (productIds) => {
     const discountedPrices = await db.product.findAll({
         attributes: ['id'],
         where: { id: productIds },
-        include: [
-            {
-                model: db.discountOffer,
-                through: { attributes: [] },
-                required: false,
-                attributes: {
-                    include: [
-                        [
-                            db.sequelize.literal(`CASE 
-                                WHEN CURDATE() BETWEEN DATE(discountOffers.start_date) AND DATE(discountOffers.expiration_date)
-                                AND discountOffers.discount_type = 'PRICE' THEN
-                                    CASE
-                                        WHEN discountOffers.discount_value >= product.price THEN 0
-                                        ELSE product.price - discountOffers.discount_value
-                                    END
-                                WHEN CURDATE() BETWEEN DATE(discountOffers.start_date) AND DATE(discountOffers.expiration_date)
-                                AND discountOffers.discount_type = 'PERCENTAGE' THEN product.price - (product.price * discountOffers.discount_value / 100)
-                                ELSE product.price
-                            END`),
-                            'priceDiscounted'
-                        ]
-                    ],
-                    exclude: ['createdAt', 'updatedAt', 'isDeleted', 'startDate', 'expirationDate']
-                },
-                where: { isDeleted: false }
-            }
-        ],
+        include: { ...DISCOUNTED_PRICE_CALCULATION },
         raw: true,
         nest: true
     });

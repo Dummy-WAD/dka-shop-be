@@ -42,11 +42,21 @@ const getAllCartItems = async (filter, options) => {
             {
                 model: db.discountOffer,
                 where: {
-                    startDate: { [db.Sequelize.Op.lte]: new Date() },
-                    expirationDate: { [db.Sequelize.Op.gte]: new Date() },
-                    isDeleted: false,
+                    [db.Sequelize.Op.and]: [
+                        db.Sequelize.where(
+                            db.Sequelize.fn('DATE', db.Sequelize.col('start_date')),
+                            '<=',
+                            db.Sequelize.fn('CURDATE')
+                        ),
+                        db.Sequelize.where(
+                            db.Sequelize.fn('DATE', db.Sequelize.col('expiration_date')),
+                            '>=',
+                            db.Sequelize.fn('CURDATE')
+                        ),
+                        { isDeleted: false }
+                    ],
                 },
-            }
+            },
         ],
         raw: true,
         nest: true
@@ -168,9 +178,19 @@ const editCartItemQuantity = async (userId, { productVariantId, quantity, curren
                 model: db.discountOffer,
                 attributes: ['discountType', 'discountValue'],
                 where: {
-                    startDate: { [db.Sequelize.Op.lte]: new Date() },
-                    expirationDate: { [db.Sequelize.Op.gte]: new Date() },
-                    isDeleted: false,
+                    [db.Sequelize.Op.and]: [
+                        db.Sequelize.where(
+                            db.Sequelize.fn('DATE', db.Sequelize.col('start_date')),
+                            '<=',
+                            db.Sequelize.fn('CURDATE')
+                        ),
+                        db.Sequelize.where(
+                            db.Sequelize.fn('DATE', db.Sequelize.col('expiration_date')),
+                            '>=',
+                            db.Sequelize.fn('CURDATE')
+                        ),
+                        { isDeleted: false }
+                    ],
                 },
                 required: false,
                 through: {
