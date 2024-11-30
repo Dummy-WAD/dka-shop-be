@@ -79,7 +79,8 @@ const updateOrderStatus = {
         orderId: Joi.number().integer().positive().required()
     }),
     body: Joi.object().keys({
-        status: Joi.string().valid(...Object.values(OrderStatus)).required()
+        status: Joi.string().valid(...Object.values(OrderStatus)).required(),
+        cancelReason: Joi.string().trim().max(255).optional()
     })
 }
 

@@ -47,8 +47,8 @@ const placeOrder = catchAsync(async (req, res) => {
 });
 
 const updateOrderStatus = catchAsync(async (req, res) => {
-  const { status } = req.body;
-  const order = await orderService.updateOrderStatus(req.params.orderId, status);
+  const { status, cancelReason } = req.body;
+  const order = await orderService.updateOrderStatus(req.params.orderId, status, cancelReason);
   res.status(httpStatus.OK).send(order);
 });
 

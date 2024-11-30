@@ -517,7 +517,7 @@ const orderStatusConditions = {
     [OrderStatus.CANCELLED]: [OrderStatus.PENDING, OrderStatus.PACKAGING]
 }
 
-const updateOrderStatus = async (orderId, newStatus) => {
+const updateOrderStatus = async (orderId, newStatus, reason = null) => {
     const order = await db.order.findByPk(orderId);
 
     if (!order) {
@@ -533,6 +533,10 @@ const updateOrderStatus = async (orderId, newStatus) => {
     }
 
     if (newStatus === OrderStatus.CANCELLED) {
+        if (!reason) {
+            throw new ApiError(httpStatus.BAD_REQUEST, 'Reason is required for cancelling order');
+        }
+        order.cancelReason = reason;
         await restoreStockQuantity(order);
     }
     // Update order's status
