@@ -44,7 +44,11 @@ export default (sequelize, DataTypes) => {
     orderItem.belongsTo(db.productVariant, {
       foreignKey: 'productVariantId',
       constraints: false
-    })
+    });
+    orderItem.hasOne(db.review, {
+      foreignKey: 'orderItemId',
+      constraints: false
+    });
   }
   return orderItem;
 };
