@@ -50,7 +50,7 @@ const updateOrderStatusNotification = async (order, status) => {
             break;
         case OrderStatus.CANCELLED:
             titleNotification = 'Your order has been cancelled';
-            contentNotification = `Your order ${order.id} has been cancelled. Please contact us for more information`;
+            contentNotification = `Your order ${order.id} has been cancelled due to: ${order.cancelReason}. Please contact us for more information`;
             break;
         default:
             break;
