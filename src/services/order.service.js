@@ -253,7 +253,7 @@ const getCustomerOrderById = async (orderId, customerId) => {
                     }
                 },
                 through: {
-                    attributes: ['product_name', 'price', 'quantity', 'size', 'color']
+                    attributes: ['id', 'product_name', 'price', 'quantity', 'size', 'color']
                 }
             }
     });
@@ -266,6 +266,25 @@ const getCustomerOrderById = async (orderId, customerId) => {
     if (order.dataValues.customer_id !== customerId) {
         throw new ApiError(httpStatus.FORBIDDEN, 'You do not have permission to access this order');
     }
+
+    const orderItemIds = order.productVariants.map((variant) => {
+        const variantPlain = variant.get({ plain: true });
+        return variantPlain?.orderItem.id
+    });
+
+    const reviews = await db.review.findAll({
+        where: { orderItemId: orderItemIds },
+        attributes: ['orderItemId']
+    });
+
+    const reviewedItemIds = new Set(reviews.map((review) => review.orderItemId));
+
+    const orderItems = order.productVariants.map((variant) => {
+        return {
+            ...variant.get({ plain: true }),
+            isReviewed: reviewedItemIds.has(variant.orderItem.id)
+        }
+    });
 
     // find delivery service
     const deliveryService = await db.deliveryService.findByPk(order.dataValues.delivery_service_id, {
@@ -309,7 +328,7 @@ const getCustomerOrderById = async (orderId, customerId) => {
             }
         },
         deliveryService: deliveryServiceData,
-        orderItems: order.productVariants,
+        orderItems,
     };
 
     return orderDetailResponse;
