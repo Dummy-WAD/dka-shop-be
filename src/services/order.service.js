@@ -533,9 +533,6 @@ const updateOrderStatus = async (orderId, newStatus, reason = null) => {
     }
 
     if (newStatus === OrderStatus.CANCELLED) {
-        if (!reason) {
-            throw new ApiError(httpStatus.BAD_REQUEST, 'Reason is required for cancelling order');
-        }
         order.cancelReason = reason;
         await restoreStockQuantity(order);
     }
