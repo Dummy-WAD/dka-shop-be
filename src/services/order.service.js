@@ -589,6 +589,34 @@ const restoreStockQuantity = async (order) => {
     }));
 }
 
+const cancelOrderAsCustomer = async (orderId, reason) => {
+    const order = await db.order.findByPk(orderId);
+
+    if (!order) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'Order not found');
+    }
+
+    if (order.status !== OrderStatus.PENDING) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Only pending order can be cancelled');
+    }
+
+    order.status = OrderStatus.CANCELLED;
+    order.cancelReason = reason;
+    await restoreStockQuantity(order);
+    // Update order's status time
+    await updateOrderStatusTime(order, OrderStatus.CANCELLED);
+    await order.save();
+
+    // Create notification
+    notificationService.cancelOrderNotification(order);
+
+    return {
+        orderId: order.id,
+        status: order.status,
+        updatedAt: order.updatedAt
+    };
+};
+
 export default {
     getOrdersByCustomer,
     getOrdersByAdmin,
@@ -597,5 +625,6 @@ export default {
     getCustomerOrderById,
     prepareOrder,
     placeOrder,
-    updateOrderStatus
+    updateOrderStatus,
+    cancelOrderAsCustomer
 };
