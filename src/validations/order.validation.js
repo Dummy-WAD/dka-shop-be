@@ -88,6 +88,15 @@ const updateOrderStatus = {
     })
 }
 
+const cancelOrderAsCustomer = {
+    params: Joi.object().keys({
+        orderId: Joi.number().integer().positive().required()
+    }),
+    body: Joi.object().keys({
+        cancelReason: Joi.string().trim().max(255).required()
+    })
+}
+
 export default {
     getOrdersByCustomer,
     getOrdersByAdmin,
@@ -96,5 +105,6 @@ export default {
     getCustomerOrderById,
     prepareOrder,
     placeOrder,
-    updateOrderStatus
+    updateOrderStatus,
+    cancelOrderAsCustomer
 }

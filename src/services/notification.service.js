@@ -146,6 +146,17 @@ const markNotificationsAsRead = async (userId) => {
     );
 };
 
+const cancelOrderNotification = async (order) => {
+    // Create notification for customer
+    await db.notification.create({
+        customerId: order.customerId,
+        title: 'Your order has been cancelled',
+        content: 'Your order has been cancelled successfully. Hope to assist you with another order soon.',
+        type: NotificationType.ORDER,
+        artifactId: order.id
+    });
+}
+
 
 export default {
     createOrderNotification,
@@ -153,5 +164,6 @@ export default {
     applyDiscountOnProductNotification,
     getNotifications,
     getNotificationsCount,
-    markNotificationsAsRead
+    markNotificationsAsRead,
+    cancelOrderNotification
 }
