@@ -18,4 +18,9 @@ router.post('/',
     reviewController.createNewReview
 );
 
+router.get('/products/:productId', 
+    validate(reviewValidation.getReviewsByProduct),
+    reviewController.getReviewsByProduct
+);
+
 export default router;
