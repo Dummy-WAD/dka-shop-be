@@ -380,6 +380,33 @@ const getAllDiscounts = async (filter, options) => {
         };
     }
 
+    if (filter.status) {
+        const statusConditions = [];
+        if (filter.status === 'UPCOMING') {
+            statusConditions.push({
+                startDate: {
+                    [db.Sequelize.Op.gt]: currentDateLocal,
+                },
+            });
+        } else if (filter.status === 'ACTIVE') {
+            statusConditions.push({
+                startDate: {
+                    [db.Sequelize.Op.lte]: currentDateLocal,
+                },
+                expirationDate: {
+                    [db.Sequelize.Op.gte]: currentDateLocal,
+                },
+            });
+        } else if (filter.status === 'EXPIRED') {
+            statusConditions.push({
+                expirationDate: {
+                    [db.Sequelize.Op.lt]: currentDateLocal,
+                },
+            });
+        }
+        whereConditions[db.Sequelize.Op.or] = statusConditions;
+    }
+
     const totalResults = await db.discountOffer.count({
         where: whereConditions,
     });
