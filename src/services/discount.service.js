@@ -170,49 +170,44 @@ const getAllProductsWithoutDiscount = async (filter, options) => {
     };
 };
 
-const createDiscount = async (payloadDiscount) => {
-    const payload = {
-        ...payloadDiscount,
-        startDate: convertTime(payloadDiscount?.startDate),
-        expirationDate: convertTime(payloadDiscount?.expirationDate)
-    };
-
+const createDiscount = async (payload) => {
     const discountCreated = await db.discountOffer.create({ ...payload, isDeleted: false });
     return { discountId: discountCreated.id }
 };
 
-const editDiscount = async (discountId, payloadDiscount) => {
+const editDiscount = async (discountId, payload) => {
     const discount = await db.discountOffer.findOne({ where: { id: discountId, isDeleted: false } });
     if (!discount) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Discount not found');
-    };
-
-    const payload = {
-        ...payloadDiscount,
-        startDate: convertTime(payloadDiscount?.startDate),
-        expirationDate: convertTime(payloadDiscount?.expirationDate)
     };
 
     const startDate = payload?.startDate ?? discount.startDate;
     const expirationDate = payload?.expirationDate ?? discount.expirationDate;
     const currentDate = new Date().setHours(0, 0, 0, 0);
 
-    const isValidStartDate = (date) => new Date(date) >= currentDate;
-    const isValidExpirationDate = (date) => new Date(date) >= currentDate;
-    const isValidExpirationAfterStartDate = (startDate, expirationDate) => new Date(expirationDate) >= new Date(startDate);
+    const isValidStartDate = (date) => convertTime(date) >= currentDate;
+    const isValidExpirationDate = (date) => convertTime(date) >= currentDate;
+    const isValidExpirationAfterStartDate = (startDate, expirationDate) => convertTime(expirationDate) >= convertTime(startDate);
     const normalizeDate = (date) => date ? new Date(date).toISOString().split('T')[0] : null;
 
-    if (!(normalizeDate(payload?.startDate) == normalizeDate(discount.startDate) && normalizeDate(payload?.expirationDate) == normalizeDate(discount.expirationDate))) {
+    if (!isValidExpirationDate(discount.expirationDate)) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Cannot update the expired discount');
+    };
+
+    const isStartDateChanged = normalizeDate(payload?.startDate) !== normalizeDate(discount.startDate);
+    const isExpirationDateChanged = normalizeDate(payload?.expirationDate) !== normalizeDate(discount.expirationDate);
+
+    if (isStartDateChanged || isExpirationDateChanged) {
         if (payload?.startDate && !isValidStartDate(payload.startDate)) {
-            throw new ApiError(httpStatus.BAD_REQUEST, 'Start Date must be greater than or equal to Current Date');
+            throw new ApiError(httpStatus.BAD_REQUEST, 'Start date must be greater than or equal to current date');
         }
 
         if (payload?.expirationDate && !isValidExpirationDate(payload.expirationDate)) {
-            throw new ApiError(httpStatus.BAD_REQUEST, 'Expiration Date must be greater than or equal to Current Date');
+            throw new ApiError(httpStatus.BAD_REQUEST, 'Expiration date must be greater than or equal to current date');
         }
 
         if (!isValidExpirationAfterStartDate(startDate, expirationDate)) {
-            throw new ApiError(httpStatus.BAD_REQUEST, 'Expiration Date must be greater than or equal to Start Date');
+            throw new ApiError(httpStatus.BAD_REQUEST, 'Expiration date must be greater than or equal to start date');
         }
     };
 
@@ -238,7 +233,6 @@ const getAppliedDiscount = async (productId) => {
         include: {
             model: db.discountOffer,
             where: {
-                startDate: {[db.Sequelize.Op.lte]: currentDate},
                 expirationDate: {[db.Sequelize.Op.gte]: currentDate},
                 isDeleted: false,
             },
@@ -253,12 +247,12 @@ const applyDiscount = async (discountId, productIds) => {
     const transaction = await db.sequelize.transaction();
 
     try {
-        const discount = await db.discountOffer.findOne({
+        const futureDiscount = await db.discountOffer.findOne({
             where: { id: discountId, isDeleted: false },
             transaction
         });
 
-        if (!discount) {
+        if (!futureDiscount) {
             throw new ApiError(httpStatus.NOT_FOUND, 'Discount not found');
         }
 
@@ -275,31 +269,36 @@ const applyDiscount = async (discountId, productIds) => {
         }
 
         const currentDate = new Date().setHours(0, 0, 0, 0);
-        const expirationDate = new Date(discount.expirationDate).setHours(0, 0, 0, 0);
+        const expirationDateFuture = new Date(futureDiscount.expirationDate).setHours(0, 0, 0, 0);
 
-        if (currentDate > expirationDate) {
+        if (currentDate > expirationDateFuture) {
             throw new ApiError(httpStatus.BAD_REQUEST, 'Discount has expired');
         }
 
-        const existingDiscount = await db.productDiscountOffer.findAll({
+        const existingDiscounts = await db.productDiscountOffer.findAll({
             where: {
                 productId: productIds
             },
             include: {
                 model: db.discountOffer,
                 where: {
-                    startDate: { [db.Sequelize.Op.lte]: currentDate },
-                    expirationDate: { [db.Sequelize.Op.gte]: currentDate },
                     isDeleted: false
                 }
             },
             transaction
         });
 
-        if (existingDiscount.length > 0) {
+        const discountsToRemove = existingDiscounts.filter(item => {
+            const currentDiscount = item.discountOffer;
+            const expirationDateCurrent = new Date(currentDiscount.expirationDate).setHours(0, 0, 0, 0);
+            return expirationDateCurrent >= currentDate;
+        });
+
+        if (discountsToRemove.length > 0) {
             await db.productDiscountOffer.destroy({
                 where: {
-                    productId: existingDiscount.map(item => item.productId),
+                    productId: productIds,
+                    discountOfferId: discountsToRemove.map(discount => discount.discountOffer.id)
                 },
                 transaction
             });

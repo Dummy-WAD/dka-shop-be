@@ -54,7 +54,11 @@ export default (sequelize, DataTypes) => {
     deliveryServiceId: {
       type: DataTypes.INTEGER,
       field: 'delivery_service_id',
-    }
+    },
+    cancelReason: {
+      type: DataTypes.STRING,
+      field: 'cancel_reason'
+    },
   });
   order.associate = (db) => {
     order.belongsTo(db.user, {
@@ -67,7 +71,7 @@ export default (sequelize, DataTypes) => {
     });
     order.belongsToMany(db.productVariant, { 
       through: db.orderItem,
-      foreignKey: 'order_id',
+      foreignKey: 'orderId',
       constraints: false
     });
   }

@@ -5,7 +5,7 @@ import notificationService from '../services/notification.service.js';
 
 const getNotifications = catchAsync(async (req, res) => {
   const filter = pick(req.user.dataValues, ['id']);
-  const options = pick(req.query, ['limit', 'page']);
+  const options = pick(req.query, ['limit', 'after']);
   const notifications = await notificationService.getNotifications(filter, options);
   res.status(httpStatus.OK).send(notifications);
 });
