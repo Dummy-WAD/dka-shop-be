@@ -2,6 +2,7 @@ import httpStatus from 'http-status';
 import catchAsync from '../utils/catchAsync.js';
 import pick from '../utils/pick.js';
 import orderService from '../services/order.service.js';
+import {OrderStatus} from "../utils/enums.js";
 
 const getOrdersByCustomer = catchAsync(async (req, res) => {
   const id = pick(req.params, ['customerId'])
@@ -47,8 +48,13 @@ const placeOrder = catchAsync(async (req, res) => {
 });
 
 const updateOrderStatus = catchAsync(async (req, res) => {
-  const { status } = req.body;
-  const order = await orderService.updateOrderStatus(req.params.orderId, status);
+  const { status, cancelReason } = req.body;
+  const order = await orderService.updateOrderStatus(req.params.orderId, status, cancelReason);
+  res.status(httpStatus.OK).send(order);
+});
+
+const cancelOrderAsCustomer = catchAsync(async (req, res) => {
+  const order = await orderService.cancelOrderAsCustomer(req.params.orderId, req.body.cancelReason);
   res.status(httpStatus.OK).send(order);
 });
 
@@ -60,5 +66,6 @@ export default {
     getCustomerOrderById,
     prepareOrder,
     placeOrder,
-    updateOrderStatus
+    updateOrderStatus,
+    cancelOrderAsCustomer
 };

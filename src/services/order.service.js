@@ -253,7 +253,7 @@ const getCustomerOrderById = async (orderId, customerId) => {
                     }
                 },
                 through: {
-                    attributes: ['product_name', 'price', 'quantity', 'size', 'color']
+                    attributes: ['id', 'product_name', 'price', 'quantity', 'size', 'color']
                 }
             }
     });
@@ -266,6 +266,25 @@ const getCustomerOrderById = async (orderId, customerId) => {
     if (order.dataValues.customer_id !== customerId) {
         throw new ApiError(httpStatus.FORBIDDEN, 'You do not have permission to access this order');
     }
+
+    const orderItemIds = order.productVariants.map((variant) => {
+        const variantPlain = variant.get({ plain: true });
+        return variantPlain?.orderItem.id
+    });
+
+    const reviews = await db.review.findAll({
+        where: { orderItemId: orderItemIds },
+        attributes: ['orderItemId']
+    });
+
+    const reviewedItemIds = new Set(reviews.map((review) => review.orderItemId));
+
+    const orderItems = order.productVariants.map((variant) => {
+        return {
+            ...variant.get({ plain: true }),
+            isReviewed: reviewedItemIds.has(variant.orderItem.id)
+        }
+    });
 
     // find delivery service
     const deliveryService = await db.deliveryService.findByPk(order.dataValues.delivery_service_id, {
@@ -309,7 +328,7 @@ const getCustomerOrderById = async (orderId, customerId) => {
             }
         },
         deliveryService: deliveryServiceData,
-        orderItems: order.productVariants,
+        orderItems,
     };
 
     return orderDetailResponse;
@@ -517,7 +536,7 @@ const orderStatusConditions = {
     [OrderStatus.CANCELLED]: [OrderStatus.PENDING, OrderStatus.PACKAGING]
 }
 
-const updateOrderStatus = async (orderId, newStatus) => {
+const updateOrderStatus = async (orderId, newStatus, reason = null) => {
     const order = await db.order.findByPk(orderId);
 
     if (!order) {
@@ -533,6 +552,7 @@ const updateOrderStatus = async (orderId, newStatus) => {
     }
 
     if (newStatus === OrderStatus.CANCELLED) {
+        order.cancelReason = reason;
         await restoreStockQuantity(order);
     }
     // Update order's status
@@ -588,6 +608,34 @@ const restoreStockQuantity = async (order) => {
     }));
 }
 
+const cancelOrderAsCustomer = async (orderId, reason) => {
+    const order = await db.order.findByPk(orderId);
+
+    if (!order) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'Order not found');
+    }
+
+    if (order.status !== OrderStatus.PENDING) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Only pending order can be cancelled');
+    }
+
+    order.status = OrderStatus.CANCELLED;
+    order.cancelReason = reason;
+    await restoreStockQuantity(order);
+    // Update order's status time
+    await updateOrderStatusTime(order, OrderStatus.CANCELLED);
+    await order.save();
+
+    // Create notification
+    notificationService.cancelOrderNotification(order);
+
+    return {
+        orderId: order.id,
+        status: order.status,
+        updatedAt: order.updatedAt
+    };
+};
+
 export default {
     getOrdersByCustomer,
     getOrdersByAdmin,
@@ -596,5 +644,6 @@ export default {
     getCustomerOrderById,
     prepareOrder,
     placeOrder,
-    updateOrderStatus
+    updateOrderStatus,
+    cancelOrderAsCustomer
 };
