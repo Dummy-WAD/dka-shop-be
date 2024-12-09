@@ -608,11 +608,15 @@ const restoreStockQuantity = async (order) => {
     }));
 }
 
-const cancelOrderAsCustomer = async (orderId, reason) => {
+const cancelOrderAsCustomer = async (customerId, orderId, reason) => {
     const order = await db.order.findByPk(orderId);
 
     if (!order) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Order not found');
+    }
+
+    if (order.customerId !== customerId) {
+        throw new ApiError(httpStatus.FORBIDDEN, 'You do not have permission to cancel this order');
     }
 
     if (order.status !== OrderStatus.PENDING) {
@@ -627,7 +631,7 @@ const cancelOrderAsCustomer = async (orderId, reason) => {
     await order.save();
 
     // Create notification
-    notificationService.cancelOrderNotification(order);
+    notificationService.cancelOrderNotification(customerId, order);
 
     return {
         orderId: order.id,
