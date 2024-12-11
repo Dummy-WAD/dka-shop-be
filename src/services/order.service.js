@@ -164,7 +164,7 @@ const getOrderById = async (orderId) => {
     // Find order by id
 
     const order = await db.order.findByPk(orderId, {
-        attributes: ['id', 'customer_id', 'total', 'delivery_fee', 'status', 'created_at', 'updated_at', 'address', 'contact_name', 'phone_number', "packaged_at", "delivered_at", "completed_at", "cancelled_at", "delivery_service_id"],
+        attributes: ['id', 'customer_id', 'total', 'delivery_fee', 'status', 'created_at', 'updated_at', 'address', 'contact_name', 'phone_number', "packaged_at", "delivered_at", "completed_at", "cancelled_at", "cancel_reason", "delivery_service_id"],
         include: {
                 model: db.productVariant,
                 attributes: ['product_id'],
@@ -197,7 +197,9 @@ const getOrderById = async (orderId) => {
 
     const {
         id, customer_id, total, delivery_fee, status, created_at, updated_at,
-        address, contact_name, phone_number, packaged_at, delivered_at, completed_at, cancelled_at, deliveryService: deliveryServiceData
+        address, contact_name, phone_number, packaged_at, delivered_at, completed_at, cancelled_at, 
+        cancel_reason,
+        deliveryService: deliveryServiceData
     } = order.dataValues;
 
     const orderDetailResponse = {
@@ -215,6 +217,7 @@ const getOrderById = async (orderId) => {
             cancelled: {
                 name: "Cancelled",
                 at: cancelled_at,
+                cancelReason: cancel_reason
             },
             packaged: {
                 name: "Packaged",
@@ -239,7 +242,7 @@ const getOrderById = async (orderId) => {
 const getCustomerOrderById = async (orderId, customerId) => {
     // Find order by id
     const order = await db.order.findByPk(orderId, {
-        attributes: ['id', 'customer_id', 'total', 'delivery_fee', 'status', 'created_at', 'updated_at', 'address', 'contact_name', 'phone_number', "packaged_at", "delivered_at", "completed_at", "cancelled_at", "delivery_service_id"],
+        attributes: ['id', 'customer_id', 'total', 'delivery_fee', 'status', 'created_at', 'updated_at', 'address', 'contact_name', 'phone_number', "packaged_at", "delivered_at", "completed_at", "cancelled_at", "cancel_reason", "delivery_service_id"],
         include: {
                 model: db.productVariant,
                 attributes: ['product_id'],
@@ -295,7 +298,7 @@ const getCustomerOrderById = async (orderId, customerId) => {
 
     const {
         id, customer_id, total, delivery_fee, status, created_at, updated_at,
-        address, contact_name, phone_number, packaged_at, delivered_at, completed_at, cancelled_at, deliveryService: deliveryServiceData
+        address, contact_name, phone_number, packaged_at, delivered_at, completed_at, cancelled_at, cancel_reason, deliveryService: deliveryServiceData
     } = order.dataValues;
 
     const orderDetailResponse = {
@@ -313,6 +316,7 @@ const getCustomerOrderById = async (orderId, customerId) => {
             cancelled: {
                 name: "Cancelled",
                 at: cancelled_at,
+                cancelReason: cancel_reason
             },
             packaged: {
                 name: "Packaged",
@@ -608,11 +612,15 @@ const restoreStockQuantity = async (order) => {
     }));
 }
 
-const cancelOrderAsCustomer = async (orderId, reason) => {
+const cancelOrderAsCustomer = async (customerId, orderId, reason) => {
     const order = await db.order.findByPk(orderId);
 
     if (!order) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Order not found');
+    }
+
+    if (order.customerId !== customerId) {
+        throw new ApiError(httpStatus.FORBIDDEN, 'You do not have permission to cancel this order');
     }
 
     if (order.status !== OrderStatus.PENDING) {
@@ -627,7 +635,7 @@ const cancelOrderAsCustomer = async (orderId, reason) => {
     await order.save();
 
     // Create notification
-    notificationService.cancelOrderNotification(order);
+    notificationService.cancelOrderNotification(customerId, order);
 
     return {
         orderId: order.id,
