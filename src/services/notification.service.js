@@ -146,12 +146,26 @@ const markNotificationsAsRead = async (userId) => {
     );
 };
 
-const cancelOrderNotification = async (order) => {
+const cancelOrderNotification = async (customerId, order) => {
+    const customer = await db.user.findOne({
+        where: {
+            id: customerId
+        },
+    });
+
     // Create notification for customer
     await db.notification.create({
         customerId: order.customerId,
         title: 'Your order has been cancelled',
         content: 'Your order has been cancelled successfully. Hope to assist you with another order soon.',
+        type: NotificationType.ORDER,
+        artifactId: order.id
+    });
+
+    // Create notification for admin
+    await db.notification.create({
+        title: 'Order has been cancelled',
+        content: `Order ID ${order.id} has been cancelled by ${customer.firstName} ${customer.lastName} | ${customer.email}`,
         type: NotificationType.ORDER,
         artifactId: order.id
     });
