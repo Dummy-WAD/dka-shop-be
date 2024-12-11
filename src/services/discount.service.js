@@ -233,7 +233,6 @@ const getAppliedDiscount = async (productId) => {
         include: {
             model: db.discountOffer,
             where: {
-                startDate: {[db.Sequelize.Op.lte]: currentDate},
                 expirationDate: {[db.Sequelize.Op.gte]: currentDate},
                 isDeleted: false,
             },
@@ -248,12 +247,12 @@ const applyDiscount = async (discountId, productIds) => {
     const transaction = await db.sequelize.transaction();
 
     try {
-        const discount = await db.discountOffer.findOne({
+        const futureDiscount = await db.discountOffer.findOne({
             where: { id: discountId, isDeleted: false },
             transaction
         });
 
-        if (!discount) {
+        if (!futureDiscount) {
             throw new ApiError(httpStatus.NOT_FOUND, 'Discount not found');
         }
 
@@ -270,31 +269,36 @@ const applyDiscount = async (discountId, productIds) => {
         }
 
         const currentDate = new Date().setHours(0, 0, 0, 0);
-        const expirationDate = new Date(discount.expirationDate).setHours(0, 0, 0, 0);
+        const expirationDateFuture = new Date(futureDiscount.expirationDate).setHours(0, 0, 0, 0);
 
-        if (currentDate > expirationDate) {
+        if (currentDate > expirationDateFuture) {
             throw new ApiError(httpStatus.BAD_REQUEST, 'Discount has expired');
         }
 
-        const existingDiscount = await db.productDiscountOffer.findAll({
+        const existingDiscounts = await db.productDiscountOffer.findAll({
             where: {
                 productId: productIds
             },
             include: {
                 model: db.discountOffer,
                 where: {
-                    startDate: { [db.Sequelize.Op.lte]: currentDate },
-                    expirationDate: { [db.Sequelize.Op.gte]: currentDate },
                     isDeleted: false
                 }
             },
             transaction
         });
 
-        if (existingDiscount.length > 0) {
+        const discountsToRemove = existingDiscounts.filter(item => {
+            const currentDiscount = item.discountOffer;
+            const expirationDateCurrent = new Date(currentDiscount.expirationDate).setHours(0, 0, 0, 0);
+            return expirationDateCurrent >= currentDate;
+        });
+
+        if (discountsToRemove.length > 0) {
             await db.productDiscountOffer.destroy({
                 where: {
-                    productId: existingDiscount.map(item => item.productId),
+                    productId: productIds,
+                    discountOfferId: discountsToRemove.map(discount => discount.discountOffer.id)
                 },
                 transaction
             });
@@ -374,6 +378,31 @@ const getAllDiscounts = async (filter, options) => {
         whereConditions.expirationDate = {
             [db.Sequelize.Op.lte]: filter.expirationDate,
         };
+    }
+
+    if (filter.status) {
+        const statusConditions = [];
+        if (filter.status === 'UPCOMING') {
+            statusConditions.push({
+                [db.Sequelize.Op.and]: [
+                    db.Sequelize.where(db.Sequelize.fn('DATE', db.Sequelize.col('start_date')), '>', currentDateLocal)
+                ]
+            });
+        } else if (filter.status === 'ACTIVE') {
+            statusConditions.push({
+                [db.Sequelize.Op.and]: [
+                    db.Sequelize.where(db.Sequelize.fn('DATE', db.Sequelize.col('start_date')), '<=', currentDateLocal),
+                    db.Sequelize.where(db.Sequelize.fn('DATE', db.Sequelize.col('expiration_date')), '>=', currentDateLocal)
+                ]
+            });
+        } else if (filter.status === 'EXPIRED') {
+            statusConditions.push({
+                [db.Sequelize.Op.and]: [
+                    db.Sequelize.where(db.Sequelize.fn('DATE', db.Sequelize.col('expiration_date')), '<', currentDateLocal)
+                ]
+            });
+        }
+        whereConditions[db.Sequelize.Op.or] = statusConditions;
     }
 
     const totalResults = await db.discountOffer.count({

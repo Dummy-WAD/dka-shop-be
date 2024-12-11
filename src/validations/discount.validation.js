@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { DiscountType } from '../utils/enums.js';
+import { DiscountType, DiscountStatus } from '../utils/enums.js';
 import customValidation from './custom.validation.js'
 
 const getDiscountDetail = {
@@ -79,6 +79,7 @@ const getAllDiscounts = {
   query: Joi.object().keys({
       keyword: Joi.string().trim().max(50).optional(),
       type: Joi.string().optional().valid(...Object.values(DiscountType)),
+      status: Joi.string().optional().valid(...Object.values(DiscountStatus)),
       sortBy: Joi.string().valid('id', 'discountValue', 'discountType', 'startDate', 'expirationDate', 'createdAt', 'updatedAt').default('createdAt'),
       order: Joi.string().valid('asc', 'desc').default('desc'),
       page: Joi.number().integer().min(1).default(1),

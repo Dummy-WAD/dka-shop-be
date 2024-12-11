@@ -79,7 +79,21 @@ const updateOrderStatus = {
         orderId: Joi.number().integer().positive().required()
     }),
     body: Joi.object().keys({
-        status: Joi.string().valid(...Object.values(OrderStatus)).required()
+        status: Joi.string().valid(...Object.values(OrderStatus)).required(),
+        cancelReason: Joi.string().trim().max(255).when('status', {
+            is: OrderStatus.CANCELLED,
+            then: Joi.required(),
+            otherwise: Joi.optional()
+        })
+    })
+}
+
+const cancelOrderAsCustomer = {
+    params: Joi.object().keys({
+        orderId: Joi.number().integer().positive().required()
+    }),
+    body: Joi.object().keys({
+        cancelReason: Joi.string().trim().max(255).required()
     })
 }
 
@@ -91,5 +105,6 @@ export default {
     getCustomerOrderById,
     prepareOrder,
     placeOrder,
-    updateOrderStatus
+    updateOrderStatus,
+    cancelOrderAsCustomer
 }

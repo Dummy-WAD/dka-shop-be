@@ -6,3 +6,4 @@ export { default as imageValidation } from './image.validation.js';
 export { default as cartValidation } from './cart.validation.js';
 export { default as statisticsValidation } from './statistics.validation.js';
 export { default as discountValidation } from './discount.validation.js';
+export { default as reviewValidation } from './review.validation.js';

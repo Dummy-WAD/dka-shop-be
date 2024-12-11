@@ -31,6 +31,36 @@ const DISCOUNTED_PRICE_CALCULATION = {
     },
 };
 
+const RATING_CALCULATION = async (product_id) => {
+    const q = `
+    SELECT 
+        AVG(r.rating) AS average_rating, 
+        COUNT(r.rating) AS total_reviews
+    FROM dka_shop.reviews AS r
+    INNER JOIN order_items AS oi ON oi.id = r.order_item_id
+    INNER JOIN product_variants AS pv ON pv.id = oi.product_variant_id
+    INNER JOIN products AS p ON p.id = pv.product_id
+    WHERE p.id = ${product_id}`;
+    const result = await db.sequelize.query(q, { type: db.sequelize.QueryTypes.SELECT });
+    // if (result[0].average_rating === null) return 0;
+    // return parseFloat(result[0].average_rating);
+    return result[0];
+}
+
+const CALCULATE_RATING_ONLY = async (product_id) => {
+    const r = await RATING_CALCULATION(product_id);
+    if (!r) return 0;
+    if (r.average_rating === null) return 0;
+    return parseFloat(r.average_rating);
+}
+
+const CALCULATE_RATING_AND_TOTAL_REVIEWS = async (product_id) => {
+    const r = await RATING_CALCULATION(product_id);
+    if (!r) return { average_rating: 0, total_reviews: 0 };
+    if (r.average_rating === null) return { average_rating: 0, total_reviews: 0 };
+    return { average_rating: parseFloat(r.average_rating), total_reviews: parseInt(r.total_reviews) };
+}
+
 const getAllProductsByCondition = async (filter, options) => {
     const include = [
         {
@@ -305,9 +335,16 @@ const getProductDetail = async (productId) => {
     const currentPrice = productPlain.discountOffers[0]?.priceDiscounted ?? basicInfo.price;
 
     const { primaryImage, otherImages } = separateProductImages(productImages);
+    
+    // Calculate average rating and total reviews
+    const r = await CALCULATE_RATING_AND_TOTAL_REVIEWS(productId);
+    const averageRating = r.average_rating;
+    const totalReviews = r.total_reviews;
 
     return {
         ...basicInfo,
+        averageRating,
+        totalReviews,
         currentPrice,
         primaryImage,
         otherImages
@@ -348,9 +385,15 @@ const getProductDetailForCustomer = async (productId) => {
     const priceDiscounted = productPlain.discountOffers[0]?.priceDiscounted ?? basicInfo.price;
 
     const { primaryImage, otherImages } = separateProductImages(productImages);
+    // Calculate average rating and total reviews
+    const r = await CALCULATE_RATING_AND_TOTAL_REVIEWS(productId);
+    const averageRating = r.average_rating;
+    const totalReviews = r.total_reviews;
 
     return {
         ...basicInfo,
+        averageRating,
+        totalReviews,
         categoryName: category?.name ?? null,
         priceDiscounted,
         primaryImage,
@@ -434,11 +477,18 @@ const getProductsForCustomer = async (filter, search, options) => {
     });
 
     const paginatedProducts = sortedProducts.slice((page - 1) * limit, page * limit);
+
+    // add average rating
+    const paginatedProductsWithRating = await Promise.all(paginatedProducts.map(async product => {
+        const averageRating = await CALCULATE_RATING_ONLY(product.id);
+        return { ...product, averageRating };
+    }));
+
     const totalResults = filteredProducts.length;
     const totalPages = Math.ceil(totalResults / limit);
 
     return {
-        results: paginatedProducts,
+        results: paginatedProductsWithRating,
         page,
         limit,
         totalPages,
@@ -474,7 +524,14 @@ async function getBestSellerProducts(bestSellerRequest) {
         nest: true
     });
 
-    return bestSellingProducts.map(product => {
+    // add average rating
+    const bestSellingProductsWithRating = await Promise.all(bestSellingProducts.map(async product => {
+        const averageRating = await CALCULATE_RATING_ONLY(product.id);
+        return { ...product, averageRating };
+    }));
+
+
+    return bestSellingProductsWithRating.map(product => {
         const { discountOffers, productImages, ...basicInfo } = product;
         return {
             ...basicInfo,

@@ -49,7 +49,7 @@ const deleteDiscount = catchAsync(async (req, res) => {
 })
 
 const getAllDiscounts = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['keyword', 'type', 'startDate', 'expirationDate']);
+  const filter = pick(req.query, ['keyword', 'status', 'type', 'startDate', 'expirationDate']);
   const options = pick(req.query, ['sortBy','order', 'limit', 'page']);
   const discounts = await discountServices.getAllDiscounts(filter, options);
   res.status(httpStatus.OK).send(discounts);

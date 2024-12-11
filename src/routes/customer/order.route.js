@@ -34,4 +34,10 @@ router.post(
     orderController.placeOrder
   );
 
+router.patch(
+  '/:orderId/cancel',
+  validate(orderValidation.cancelOrderAsCustomer),
+  orderController.cancelOrderAsCustomer
+);
+
 export default router;
