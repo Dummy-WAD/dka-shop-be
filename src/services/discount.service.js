@@ -269,9 +269,9 @@ const applyDiscount = async (discountId, productIds) => {
         }
 
         const currentDate = new Date().setHours(0, 0, 0, 0);
-        const isValidExpirationDate = (date) => convertTime(date) >= currentDate;
+        const expirationDateFuture = new Date(futureDiscount.expirationDate).setHours(0, 0, 0, 0);
 
-        if (!isValidExpirationDate) {
+        if (currentDate > expirationDateFuture) {
             throw new ApiError(httpStatus.BAD_REQUEST, 'Discount has expired');
         }
 
@@ -378,31 +378,6 @@ const getAllDiscounts = async (filter, options) => {
         whereConditions.expirationDate = {
             [db.Sequelize.Op.lte]: filter.expirationDate,
         };
-    }
-
-    if (filter.status) {
-        const statusConditions = [];
-        if (filter.status === 'UPCOMING') {
-            statusConditions.push({
-                [db.Sequelize.Op.and]: [
-                    db.Sequelize.where(db.Sequelize.fn('DATE', db.Sequelize.col('start_date')), '>', currentDateLocal)
-                ]
-            });
-        } else if (filter.status === 'ACTIVE') {
-            statusConditions.push({
-                [db.Sequelize.Op.and]: [
-                    db.Sequelize.where(db.Sequelize.fn('DATE', db.Sequelize.col('start_date')), '<=', currentDateLocal),
-                    db.Sequelize.where(db.Sequelize.fn('DATE', db.Sequelize.col('expiration_date')), '>=', currentDateLocal)
-                ]
-            });
-        } else if (filter.status === 'EXPIRED') {
-            statusConditions.push({
-                [db.Sequelize.Op.and]: [
-                    db.Sequelize.where(db.Sequelize.fn('DATE', db.Sequelize.col('expiration_date')), '<', currentDateLocal)
-                ]
-            });
-        }
-        whereConditions[db.Sequelize.Op.or] = statusConditions;
     }
 
     const totalResults = await db.discountOffer.count({
