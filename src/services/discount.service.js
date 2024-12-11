@@ -269,9 +269,9 @@ const applyDiscount = async (discountId, productIds) => {
         }
 
         const currentDate = new Date().setHours(0, 0, 0, 0);
-        const expirationDateFuture = new Date(futureDiscount.expirationDate).setHours(0, 0, 0, 0);
+        const isValidExpirationDate = (date) => convertTime(date) >= currentDate;
 
-        if (currentDate > expirationDateFuture) {
+        if (!isValidExpirationDate) {
             throw new ApiError(httpStatus.BAD_REQUEST, 'Discount has expired');
         }
 
